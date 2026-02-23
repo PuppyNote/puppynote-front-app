@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Layout } from '../components';
 
 // Mock data for walks
 const walks = [
@@ -61,9 +62,11 @@ const WalkCard = ({ walk }: any) => (
 );
 
 const WalkManagementScreen = ({ navigation }: any) => {
+  const insets = useSafeAreaInsets();
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <Layout edges={['left', 'right']}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerTop}>
           <View style={styles.headerTitleContainer}>
             <View style={styles.iconContainer}>
@@ -71,8 +74,8 @@ const WalkManagementScreen = ({ navigation }: any) => {
             </View>
             <Text style={styles.headerTitle}>Walks</Text>
           </View>
-          <TouchableOpacity style={styles.addButton}>
-            <Text style={styles.addButtonText}>+</Text>
+          <TouchableOpacity style={styles.addButton} onPress={() => navigation.goBack()}>
+            <Text style={styles.addButtonText}>×</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.tabs}>
@@ -90,25 +93,26 @@ const WalkManagementScreen = ({ navigation }: any) => {
       <ScrollView style={styles.mainContent}>
         {walks.map(walk => <WalkCard key={walk.id} walk={walk} />)}
       </ScrollView>
-    </SafeAreaView>
+    </Layout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fcfaf2',
-  },
   header: {
     backgroundColor: 'white',
     paddingHorizontal: 24,
-    paddingTop: 48,
     paddingBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: 16,
   },
   headerTitleContainer: {
     flexDirection: 'row',
@@ -139,12 +143,13 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#eebd2b',
+    backgroundColor: '#f1f5f9',
     borderRadius: 9999,
   },
   addButtonText: {
-    color: 'white',
+    color: '#64748b',
     fontSize: 24,
+    fontWeight: '300',
   },
   tabs: {
     flexDirection: 'row',

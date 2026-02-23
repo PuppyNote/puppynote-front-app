@@ -1,97 +1,88 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Layout } from '../components';
 
 export default function AddSupplyScreen({ navigation }: any) {
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.flex1}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.headerCancelText}>Cancel</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitleText}>Add New Supply</Text>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.headerDoneText}>Done</Text>
+    <Layout edges={['left', 'right']}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.headerCancelText}>Cancel</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitleText}>Add New Supply</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.headerDoneText}>Done</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.photoUploadSection}>
+          <TouchableOpacity style={styles.photoPlaceholder} activeOpacity={0.7}>
+            <Text style={styles.photoEmoji}>📸</Text>
+            <Text style={styles.photoLabelText}>Add Photo</Text>
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          <View style={styles.photoUploadSection}>
-            <TouchableOpacity style={styles.photoPlaceholder} activeOpacity={0.7}>
-              <Text style={styles.photoEmoji}>📸</Text>
-              <Text style={styles.photoLabelText}>Add Photo</Text>
-            </TouchableOpacity>
+        <View style={styles.formContainer}>
+          <View style={styles.inputFieldGroup}>
+            <Text style={styles.inputLabelText}>Item Name</Text>
+            <View style={styles.textInputWrapper}>
+              <TextInput style={styles.textInput} placeholder="e.g. Organic Puppy Food" placeholderTextColor="#cbd5e1" />
+            </View>
           </View>
 
-          <View style={styles.formContainer}>
-            <View style={styles.inputFieldGroup}>
-              <Text style={styles.inputLabelText}>Item Name</Text>
-              <View style={styles.textInputWrapper}>
-                <TextInput style={styles.textInput} placeholder="e.g. Organic Puppy Food" placeholderTextColor="#cbd5e1" />
+          <View style={styles.inputFieldGroup}>
+            <Text style={styles.inputLabelText}>Purchase Link</Text>
+            <View style={styles.linkInputWrapper}>
+              <Text style={styles.linkIcon}>🔗</Text>
+              <TextInput style={styles.textInputFlex} placeholder="https://..." placeholderTextColor="#cbd5e1" />
+            </View>
+          </View>
+
+          <View style={styles.rowInputs}>
+            <View style={styles.inputFieldGroupFlex}>
+              <Text style={styles.inputLabelText}>Reminder</Text>
+              <View style={styles.reminderInputWrapper}>
+                <TextInput style={styles.textInputFlex} placeholder="30" placeholderTextColor="#cbd5e1" keyboardType="numeric" />
+                <Text style={styles.reminderUnitText}>days</Text>
               </View>
             </View>
-
-            <View style={styles.inputFieldGroup}>
-              <Text style={styles.inputLabelText}>Purchase Link</Text>
-              <View style={styles.linkInputWrapper}>
-                <Text style={styles.linkIcon}>🔗</Text>
-                <TextInput style={styles.textInputFlex} placeholder="https://..." placeholderTextColor="#cbd5e1" />
-              </View>
-            </View>
-
-            <View style={styles.rowInputs}>
-              <View style={styles.inputFieldGroupFlex}>
-                <Text style={styles.inputLabelText}>Reminder</Text>
-                <View style={styles.reminderInputWrapper}>
-                  <TextInput style={styles.textInputFlex} placeholder="30" placeholderTextColor="#cbd5e1" keyboardType="numeric" />
-                  <Text style={styles.reminderUnitText}>days</Text>
-                </View>
-              </View>
-              <View style={styles.inputFieldGroupFlex}>
-                <Text style={styles.inputLabelText}>Category</Text>
-                <View style={styles.categoryPickerWrapper}>
-                  <Text style={styles.categoryText}>Food</Text>
-                  <Text style={styles.pickerArrow}>▼</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.inputFieldGroup}>
-              <Text style={styles.inputLabelText}>Notes</Text>
-              <View style={styles.textInputWrapper}>
-                <TextInput 
-                  style={styles.notesInput} 
-                  placeholder="Add any details about the item..." 
-                  placeholderTextColor="#cbd5e1"
-                  multiline={true}
-                  textAlignVertical="top"
-                />
+            <View style={styles.inputFieldGroupFlex}>
+              <Text style={styles.inputLabelText}>Category</Text>
+              <View style={styles.categoryPickerWrapper}>
+                <Text style={styles.categoryText}>Food</Text>
+                <Text style={styles.pickerArrow}>▼</Text>
               </View>
             </View>
           </View>
 
-          <TouchableOpacity 
-            style={styles.saveButton}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.9}
-          >
-            <Text style={styles.saveButtonText}>Save Item</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </SafeAreaView>
-    </View>
+          <View style={styles.inputFieldGroup}>
+            <Text style={styles.inputLabelText}>Notes</Text>
+            <View style={styles.textInputWrapper}>
+              <TextInput 
+                style={styles.notesInput} 
+                placeholder="Add any details about the item..." 
+                placeholderTextColor="#cbd5e1"
+                multiline={true}
+                textAlignVertical="top"
+              />
+            </View>
+          </View>
+        </View>
+
+        <TouchableOpacity 
+          style={styles.saveButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.9}
+        >
+          <Text style={styles.saveButtonText}>Save Item</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </Layout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fcfaf2',
-  },
-  flex1: {
-    flex: 1,
-  },
   header: {
     paddingHorizontal: 24,
     paddingTop: 16,
