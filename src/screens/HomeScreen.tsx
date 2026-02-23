@@ -1,25 +1,26 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, Image, StyleSheet } from 'react-native';
 import Layout from '../components/Layout';
 import Card from '../components/Card';
 import ActivityItem from '../components/ActivityItem';
+import SubTabs from '../components/SubTabs';
 
 export default function HomeScreen({ navigation }: any) {
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const tabs = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'activity', label: 'Activity' },
+    { id: 'notifications', label: 'Notifications' },
+  ];
+
   return (
     <Layout>
-      <View style={styles.subTabs}>
-        <View style={styles.tabRow}>
-          <TouchableOpacity style={styles.activeTab}>
-            <Text style={styles.tabTextActive}>Overview</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.inactiveTab}>
-            <Text style={styles.tabTextInactive}>Activity</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.inactiveTab}>
-            <Text style={styles.tabTextInactive}>Notifications</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <SubTabs 
+        tabs={tabs} 
+        activeTabId={activeTab} 
+        onTabPress={setActiveTab} 
+      />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <Card style={styles.mb24}>
@@ -46,13 +47,9 @@ export default function HomeScreen({ navigation }: any) {
               <Text style={styles.profileSubtitle}>30 min session planned in the park</Text>
             </View>
           </View>
-          <TouchableOpacity 
-            style={styles.buttonYellow}
-            onPress={() => navigation.navigate('Walks')}
-            activeOpacity={0.9}
-          >
+          <View style={styles.buttonYellow}>
             <Text style={styles.buttonText}>Start Activity</Text>
-          </TouchableOpacity>
+          </View>
         </Card>
 
         <View style={styles.mb24}>
@@ -79,38 +76,6 @@ export default function HomeScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  subTabs: {
-    backgroundColor: 'white',
-    paddingHorizontal: 24,
-    paddingBottom: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    gap: 24,
-  },
-  activeTab: {
-    paddingBottom: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: '#eebd2b',
-  },
-  inactiveTab: {
-    paddingBottom: 12,
-  },
-  tabTextActive: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#0f172a',
-  },
-  tabTextInactive: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#64748b',
-  },
   scrollView: {
     flex: 1,
     paddingHorizontal: 24,

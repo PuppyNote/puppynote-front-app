@@ -1,25 +1,26 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, ScrollView, StyleSheet } from 'react-native';
 import Layout from '../components/Layout';
 import FloatingActionButton from '../components/FloatingActionButton';
 import SupplyItem from '../components/SupplyItem';
+import SubTabs from '../components/SubTabs';
 
 export default function SuppliesScreen({ navigation }: any) {
+  const [activeTab, setActiveTab] = useState('all');
+
+  const tabs = [
+    { id: 'all', label: 'All Items' },
+    { id: 'low_stock', label: 'Low Stock' },
+    { id: 'history', label: 'History' },
+  ];
+
   return (
     <Layout>
-      <View style={styles.subTabs}>
-        <View style={styles.tabRow}>
-          <TouchableOpacity style={styles.activeTab}>
-            <Text style={styles.tabTextActive}>All Items</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.inactiveTab}>
-            <Text style={styles.tabTextInactive}>Low Stock</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.inactiveTab}>
-            <Text style={styles.tabTextInactive}>History</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <SubTabs 
+        tabs={tabs} 
+        activeTabId={activeTab} 
+        onTabPress={setActiveTab} 
+      />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <SupplyItem 
@@ -52,38 +53,6 @@ export default function SuppliesScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  subTabs: {
-    backgroundColor: 'white',
-    paddingHorizontal: 24,
-    paddingBottom: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    gap: 24,
-  },
-  activeTab: {
-    paddingBottom: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: '#eebd2b',
-  },
-  inactiveTab: {
-    paddingBottom: 12,
-  },
-  tabTextActive: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#0f172a',
-  },
-  tabTextInactive: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#64748b',
-  },
   scrollView: {
     flex: 1,
     paddingHorizontal: 24,
