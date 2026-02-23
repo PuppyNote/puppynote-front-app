@@ -3,10 +3,10 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 export default function BottomTab({ state, descriptors, navigation }: any) {
   const tabs = [
-    { name: 'Home', icon: '🏠', label: 'Home' },
-    { name: 'Supplies', icon: '📦', label: 'Supplies' },
-    { name: 'Health', icon: '🏥', label: 'Health' },
-    { name: 'Settings', icon: '⚙️', label: 'Settings' },
+    { name: 'Home', icon: '🏠', label: '홈' },
+    { name: 'Supplies', icon: '📦', label: '용품' },
+    { name: 'Health', icon: '🏥', label: '건강' },
+    { name: 'Settings', icon: '⚙️', label: '설정' },
   ];
 
   return (

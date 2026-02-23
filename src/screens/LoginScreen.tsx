@@ -10,19 +10,18 @@ export default function LoginScreen({ navigation }: any) {
           <Text style={styles.logoEmoji}>📖</Text>
         </View>
         <Text style={styles.titleText}>PuppyNote</Text>
-        <Text style={styles.subtitleText}>Daily care for your best friend</Text>
       </View>
 
       <View style={styles.formContainer}>
         <View style={styles.inputGroup}>
           <TextInput 
             style={styles.input}
-            placeholder="Email Address"
+            placeholder="이메일 주소"
             placeholderTextColor="#94a3b8"
           />
           <TextInput 
             style={styles.input}
-            placeholder="Password"
+            placeholder="비밀번호"
             placeholderTextColor="#94a3b8"
             secureTextEntry={true}
           />
@@ -33,29 +32,29 @@ export default function LoginScreen({ navigation }: any) {
           onPress={() => navigation.navigate('MainTabs')}
           activeOpacity={0.8}
         >
-          <Text style={styles.loginButtonText}>Login</Text>
+          <Text style={styles.loginButtonText}>로그인</Text>
         </TouchableOpacity>
 
         <View style={styles.dividerRow}>
           <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or continue with</Text>
+          <Text style={styles.dividerText}>또는 다음으로 계속</Text>
           <View style={styles.dividerLine} />
         </View>
 
         <View style={styles.socialButtonGroup}>
           <TouchableOpacity style={styles.kakaoButton} activeOpacity={0.8}>
-            <Text style={styles.socialButtonText}>💬 Continue with Kakao</Text>
+            <Text style={styles.socialButtonText}>KAKAO</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.googleButton} activeOpacity={0.8}>
-            <Text style={styles.socialButtonText}>G Continue with Google</Text>
+            <Text style={styles.socialButtonText}>GOOGLE</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       <View style={styles.signupContainer}>
-        <Text style={styles.signupText}>Don't have an account?</Text>
+        <Text style={styles.signupText}>계정이 없으신가요?</Text>
         <TouchableOpacity>
-          <Text style={styles.signupLink}>Sign up</Text>
+          <Text style={styles.signupLink}>회원가입</Text>
         </TouchableOpacity>
       </View>
     </Layout>

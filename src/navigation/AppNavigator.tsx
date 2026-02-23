@@ -27,22 +27,22 @@ function TabNavigator() {
       <Tab.Screen 
         name="Home" 
         component={HomeScreen} 
-        options={{ headerTitle: 'Home', headerIcon: '🌱' }}
+        options={{ headerTitle: '홈', headerIcon: '🌱' }}
       />
       <Tab.Screen 
         name="Supplies" 
         component={SuppliesScreen} 
-        options={{ headerTitle: 'Supplies', headerIcon: '📦' }}
+        options={{ headerTitle: '용품', headerIcon: '📦' }}
       />
       <Tab.Screen 
         name="Health" 
         component={HealthScreen} 
-        options={{ headerTitle: 'Vet & Health', headerIcon: '🏥' }}
+        options={{ headerTitle: '건강', headerIcon: '🏥' }}
       />
       <Tab.Screen 
         name="Settings" 
         component={HomeScreen} 
-        options={{ headerTitle: 'Settings', headerIcon: '⚙️' }}
+        options={{ headerTitle: '설정', headerIcon: '⚙️' }}
       />
     </Tab.Navigator>
   );
