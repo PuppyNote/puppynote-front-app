@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import Layout from '../components/Layout';
-import Card from '../components/Card';
-import FloatingActionButton from '../components/FloatingActionButton';
-import HealthItem from '../components/HealthItem';
-import SubTabs from '../components/SubTabs';
+import { View, ScrollView, StyleSheet } from 'react-native';
+import { 
+  Layout, 
+  SubTabs, 
+  Calendar, 
+  HealthItem, 
+  FloatingActionButton 
+} from '../components';
 
 export default function HealthScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState('calendar');
@@ -24,28 +26,11 @@ export default function HealthScreen({ navigation }: any) {
       />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <Card style={styles.calendarCard}>
-          <View style={styles.calendarHeader}>
-            <Text style={styles.calendarHeaderText}>October 2023</Text>
-            <View style={styles.arrowRow}>
-              <TouchableOpacity><Text style={styles.arrowText}>◀</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.arrowText}>▶</Text></TouchableOpacity>
-            </View>
-          </View>
-          <View style={styles.daysRow}>
-            {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(day => (
-              <Text key={day} style={styles.dayLabel}>{day}</Text>
-            ))}
-          </View>
-          <View style={styles.calendarGrid}>
-            {[...Array(14)].map((_, i) => (
-              <View key={i} style={styles.dayContainer}>
-                <Text style={[styles.dayText, i === 7 && styles.activeDay]}>{i + 1}</Text>
-                {i === 2 && <View style={styles.eventDot} />}
-              </View>
-            ))}
-          </View>
-        </Card>
+        {/* 컴포넌트로 분리된 Calendar 사용 */}
+        <Calendar 
+          onDateSelect={(date) => console.log('Selected date:', date)}
+          events={[5, 15, 24]}
+        />
 
         <HealthItem 
           title="Rabies Booster" 
@@ -66,7 +51,7 @@ export default function HealthScreen({ navigation }: any) {
         <HealthItem 
           title="Weight Check" 
           location="Current: 12.4 lbs" 
-          time="Completed: Oct 2" 
+          time="Completed: Feb 2" 
           status="Done" 
           statusVariant="neutral"
           icon="⚖️"
@@ -84,74 +69,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
     paddingVertical: 24,
-  },
-  calendarCard: {
-    marginBottom: 24,
-    padding: 16,
-  },
-  calendarHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  calendarHeaderText: {
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  arrowRow: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  arrowText: {
-    color: '#94a3b8',
-    fontSize: 14,
-  },
-  daysRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  dayLabel: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#94a3b8',
-    width: 32,
-    textAlign: 'center',
-  },
-  calendarGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  dayContainer: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  dayText: {
-    fontSize: 14,
-    color: '#0f172a',
-  },
-  activeDay: {
-    fontWeight: 'bold',
-    backgroundColor: '#eebd2b33',
-    borderRadius: 999,
-    color: '#eebd2b',
-    width: 24,
-    height: 24,
-    textAlign: 'center',
-    textAlignVertical: 'center',
-    lineHeight: 24,
-  },
-  eventDot: {
-    width: 4,
-    height: 4,
-    backgroundColor: '#ef4444',
-    borderRadius: 2,
-    marginTop: 4,
   },
   spacer: {
     height: 128,

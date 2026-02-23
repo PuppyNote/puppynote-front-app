@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, Animated, StyleSheet } from 'react-native';
-import Layout from '../components/Layout';
+import { Layout } from '../components';
 
 export default function SplashScreen({ navigation }: any) {
   const fadeAnim = new Animated.Value(0);

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import Layout from '../components/Layout';
-import FloatingActionButton from '../components/FloatingActionButton';
-import SupplyItem from '../components/SupplyItem';
-import SubTabs from '../components/SubTabs';
+import { 
+  Layout, 
+  SubTabs, 
+  SupplyItem, 
+  FloatingActionButton 
+} from '../components';
 
 export default function SuppliesScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState('all');
