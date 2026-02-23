@@ -1,8 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 export default function BottomTab({ state, descriptors, navigation }: any) {
-  // 탭 목록 정의 (Home, Supplies, Health, Settings)
   const tabs = [
     { name: 'Home', icon: '🏠', label: 'Home' },
     { name: 'Supplies', icon: '📦', label: 'Supplies' },
@@ -11,7 +10,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
   ];
 
   return (
-    <View className="absolute bottom-0 left-0 right-0 bg-white/90 border-t border-slate-200 px-6 pb-8 pt-3 flex-row justify-between items-center">
+    <View style={styles.tabBar}>
       {tabs.map((tab, index) => {
         const isFocused = state.index === index;
 
@@ -30,11 +29,16 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         return (
           <TouchableOpacity 
             key={tab.name}
-            className="items-center space-y-1" 
+            style={styles.tabItem} 
             onPress={onPress}
+            activeOpacity={0.7}
           >
-            <Text className={`text-xl ${isFocused ? 'text-[#eebd2b]' : 'text-slate-400'}`}>{tab.icon}</Text>
-            <Text className={`text-[10px] ${isFocused ? 'font-bold text-[#eebd2b]' : 'font-medium text-slate-400'}`}>{tab.label}</Text>
+            <Text style={[styles.icon, isFocused ? styles.iconActive : styles.iconInactive]}>
+              {tab.icon}
+            </Text>
+            <Text style={[styles.label, isFocused ? styles.labelActive : styles.labelInactive]}>
+              {tab.label}
+            </Text>
           </TouchableOpacity>
         );
       })}
@@ -42,3 +46,44 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
   );
 }
 
+const styles = StyleSheet.create({
+  tabBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+    paddingTop: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  tabItem: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  icon: {
+    fontSize: 20,
+  },
+  iconActive: {
+    color: '#eebd2b',
+  },
+  iconInactive: {
+    color: '#94a3b8',
+  },
+  label: {
+    fontSize: 10,
+  },
+  labelActive: {
+    fontWeight: 'bold',
+    color: '#eebd2b',
+  },
+  labelInactive: {
+    fontWeight: '500',
+    color: '#94a3b8',
+  },
+});

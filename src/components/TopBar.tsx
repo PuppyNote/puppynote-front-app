@@ -1,21 +1,63 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TopBar({ options, route }: any) {
-  // 내비게이션 옵션에서 title과 icon을 가져옵니다.
+  const insets = useSafeAreaInsets();
   const title = options?.headerTitle || route?.name || 'PuppyNote';
   const icon = options?.headerIcon || '🐾';
 
   return (
-    <View className="bg-white px-6 pt-12 pb-2 shadow-sm border-b border-slate-100">
-      <View className="flex-row items-center py-2">
-        <View className="flex-row items-center space-x-3">
-          <View className="p-2 rounded-full bg-[#fcfaf2] shadow-sm border border-[#eebd2b1a]">
-            <Text className="text-[#eebd2b]">{icon}</Text>
-          </View>
-          <Text className="text-2xl font-bold tracking-tight text-slate-900">{title}</Text>
+    <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+      <View style={styles.content}>
+        <View style={styles.iconContainer}>
+          <Text style={styles.icon}>{icon}</Text>
         </View>
+        <Text style={styles.title}>{title}</Text>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    backgroundColor: 'white',
+    paddingHorizontal: 24,
+    paddingBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+  },
+  iconContainer: {
+    padding: 8,
+    borderRadius: 999,
+    backgroundColor: '#fcfaf2',
+    borderWidth: 1,
+    borderColor: '#eebd2b1a',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  icon: {
+    color: '#eebd2b',
+    fontSize: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    letterSpacing: -0.5,
+    color: '#0f172a',
+  },
+});

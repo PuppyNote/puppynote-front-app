@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, Text, Image, Animated } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Animated, StyleSheet } from 'react-native';
+import Layout from '../components/Layout';
 
 export default function SplashScreen({ navigation }: any) {
   const fadeAnim = new Animated.Value(0);
@@ -20,40 +20,134 @@ export default function SplashScreen({ navigation }: any) {
   }, []);
 
   return (
-    <View className="flex-1 bg-[#fcfbf8]">
-      <SafeAreaView className="flex-1 px-8 pb-16 items-center justify-between">
-        <View className="flex-1" />
-        
-        <Animated.View style={{ opacity: fadeAnim, alignItems: 'center' }}>
-          <View className="w-40 h-40 bg-[#eebd2b1a] rounded-2xl shadow-sm border-2 border-[#eebd2b33] items-center justify-center relative overflow-hidden">
-            <View className="absolute inset-0 bg-[#eebd2b0d]" />
-            <Text className="text-[#eebd2b] text-6xl">📖</Text>
-            <View className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-4">
-              <Text className="text-[#eebd2b] text-4xl font-bold">🐾</Text>
-            </View>
-          </View>
-          
-          <View className="items-center mt-8">
-            <Text className="text-slate-900 text-4xl font-bold tracking-tight mb-2">
-              PuppyNote
-            </Text>
-            <Text className="text-[#eebd2b] font-medium tracking-wide uppercase text-xs">
-              Growth & Health Tracker
-            </Text>
-          </View>
-        </Animated.View>
-
-        <View className="flex-1 justify-end w-full max-w-xs">
-          <View className="items-center space-y-6">
-            <Text className="text-slate-600 text-sm font-medium text-center leading-relaxed px-4">
-              Starting your journey with your furry friend...
-            </Text>
-            <View className="w-full h-1.5 bg-[#eebd2b33] rounded-full overflow-hidden">
-              <View className="h-full bg-[#eebd2b] rounded-full w-1/3 shadow-[0_0_8px_rgba(238,189,43,0.5)]" />
-            </View>
+    <Layout edges={['top', 'bottom', 'left', 'right']} backgroundColor="#fcfbf8" style={styles.center}>
+      <View style={styles.spacer} />
+      
+      <Animated.View style={[styles.animatedContent, { opacity: fadeAnim }]}>
+        <View style={styles.logoContainer}>
+          <View style={styles.logoInnerOverlay} />
+          <Text style={styles.logoEmoji}>📖</Text>
+          <View style={styles.pawEmojiContainer}>
+            <Text style={styles.pawEmoji}>🐾</Text>
           </View>
         </View>
-      </SafeAreaView>
-    </View>
+        
+        <View style={styles.titleContainer}>
+          <Text style={styles.titleText}>PuppyNote</Text>
+          <Text style={styles.subtitleText}>Growth & Health Tracker</Text>
+        </View>
+      </Animated.View>
+
+      <View style={styles.footer}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.footerText}>
+            Starting your journey with your furry friend...
+          </Text>
+          <View style={styles.progressBarBg}>
+            <View style={styles.progressBarFill} />
+          </View>
+        </View>
+      </View>
+    </Layout>
   );
 }
+
+const styles = StyleSheet.create({
+  center: {
+    paddingHorizontal: 32,
+    paddingBottom: 64,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  spacer: {
+    flex: 1,
+  },
+  animatedContent: {
+    alignItems: 'center',
+  },
+  logoContainer: {
+    width: 160,
+    height: 160,
+    backgroundColor: '#eebd2b1a',
+    borderRadius: 24,
+    borderWidth: 2,
+    borderColor: '#eebd2b33',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  logoInnerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#eebd2b0d',
+  },
+  logoEmoji: {
+    color: '#eebd2b',
+    fontSize: 60,
+  },
+  pawEmojiContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginLeft: -20,
+    marginTop: -4,
+  },
+  pawEmoji: {
+    color: '#eebd2b',
+    fontSize: 40,
+    fontWeight: 'bold',
+  },
+  titleContainer: {
+    alignItems: 'center',
+    marginTop: 32,
+  },
+  titleText: {
+    color: '#0f172a',
+    fontSize: 40,
+    fontWeight: 'bold',
+    letterSpacing: -1,
+    marginBottom: 8,
+  },
+  subtitleText: {
+    color: '#eebd2b',
+    fontWeight: '500',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    fontSize: 12,
+  },
+  footer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    width: '100%',
+    maxWidth: 320,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    gap: 24,
+  },
+  footerText: {
+    color: '#475569',
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 16,
+  },
+  progressBarBg: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#eebd2b33',
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#eebd2b',
+    borderRadius: 999,
+    width: '33%',
+  },
+});
