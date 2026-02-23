@@ -126,6 +126,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   icon: {
+    fontSize: 18,
     color: '#eebd2b',
   },
   headerTitle: {
@@ -181,12 +182,12 @@ const styles = StyleSheet.create({
     shadowRadius: 1.41,
     elevation: 2,
     marginBottom: 24,
-    gap: 16,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    marginBottom: 16,
   },
   cardHeaderInfo: {
     flexDirection: 'row',
