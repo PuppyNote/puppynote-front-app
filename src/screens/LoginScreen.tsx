@@ -30,7 +30,7 @@ export default function LoginScreen({ navigation }: any) {
 
         <TouchableOpacity 
           className="w-full py-4 bg-[#eebd2b] rounded-full shadow-lg items-center justify-center mt-2"
-          onPress={() => navigation.navigate('Home')}
+          onPress={() => navigation.navigate('MainTabs')}
         >
           <Text className="text-slate-900 font-bold">Login</Text>
         </TouchableOpacity>

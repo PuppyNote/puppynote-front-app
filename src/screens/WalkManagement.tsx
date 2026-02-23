@@ -39,7 +39,7 @@ const walks = [
   },
 ];
 
-const WalkCard = ({ walk }) => (
+const WalkCard = ({ walk }: any) => (
   <View style={styles.card}>
     <View style={styles.cardHeader}>
       <View style={styles.cardHeaderInfo}>
@@ -60,7 +60,7 @@ const WalkCard = ({ walk }) => (
   </View>
 );
 
-const WalkManagementScreen = () => {
+const WalkManagementScreen = ({ navigation }: any) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -90,20 +90,6 @@ const WalkManagementScreen = () => {
       <ScrollView style={styles.mainContent}>
         {walks.map(walk => <WalkCard key={walk.id} walk={walk} />)}
       </ScrollView>
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.navText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.navText}>Diary</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={[styles.navText, styles.activeNavText]}>Stats</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.navText}>Settings</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 };
@@ -244,30 +230,6 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     color: '#111827',
-    fontWeight: 'bold',
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingHorizontal: 24,
-    paddingBottom: 32,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-  },
-  navItem: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  navText: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: '#9ca3af',
-  },
-  activeNavText: {
-    color: '#eebd2b',
     fontWeight: 'bold',
   },
 });
