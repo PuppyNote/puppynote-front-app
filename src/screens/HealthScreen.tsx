@@ -1,26 +1,27 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import Layout from '../components/Layout';
 import Card from '../components/Card';
 import FloatingActionButton from '../components/FloatingActionButton';
 import HealthItem from '../components/HealthItem';
+import SubTabs from '../components/SubTabs';
 
 export default function HealthScreen({ navigation }: any) {
+  const [activeTab, setActiveTab] = useState('calendar');
+
+  const tabs = [
+    { id: 'calendar', label: 'Calendar' },
+    { id: 'records', label: 'Records' },
+    { id: 'clinics', label: 'Clinics' },
+  ];
+
   return (
     <Layout>
-      <View style={styles.subTabs}>
-        <View style={styles.tabRow}>
-          <TouchableOpacity style={styles.activeTab}>
-            <Text style={styles.tabTextActive}>Calendar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.inactiveTab}>
-            <Text style={styles.tabTextInactive}>Records</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.inactiveTab}>
-            <Text style={styles.tabTextInactive}>Clinics</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <SubTabs 
+        tabs={tabs} 
+        activeTabId={activeTab} 
+        onTabPress={setActiveTab} 
+      />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <Card style={styles.calendarCard}>
@@ -79,38 +80,6 @@ export default function HealthScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  subTabs: {
-    backgroundColor: 'white',
-    paddingHorizontal: 24,
-    paddingBottom: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    gap: 24,
-  },
-  activeTab: {
-    paddingBottom: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: '#eebd2b',
-  },
-  inactiveTab: {
-    paddingBottom: 12,
-  },
-  tabTextActive: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#0f172a',
-  },
-  tabTextInactive: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#64748b',
-  },
   scrollView: {
     flex: 1,
     paddingHorizontal: 24,
