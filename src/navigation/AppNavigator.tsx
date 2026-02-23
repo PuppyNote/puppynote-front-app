@@ -10,8 +10,8 @@ import WalkManagementScreen from '../screens/WalkManagement';
 import SuppliesScreen from '../screens/SuppliesScreen';
 import AddSupplyScreen from '../screens/AddSupplyScreen';
 import HealthScreen from '../screens/HealthScreen';
-import BottomTab from '../components/BottomTab';
-import TopBar from '../components/TopBar';
+import BottomTab from '../components/tabs/BottomTab';
+import TopBar from '../components/tabs/TopBar';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
