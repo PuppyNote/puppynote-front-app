@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Image, StyleSheet } from 'react-native';
-import Layout from '../components/Layout';
-import Card from '../components/Card';
-import ActivityItem from '../components/ActivityItem';
-import SubTabs from '../components/SubTabs';
+import { 
+  Layout, 
+  SubTabs, 
+  Card, 
+  ActivityItem 
+} from '../components';
 
 export default function HomeScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState('overview');
