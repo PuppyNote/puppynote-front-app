@@ -5,23 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function SuppliesScreen({ navigation }: any) {
   return (
     <View className="flex-1 bg-[#fcfaf2]">
-      <SafeAreaView className="flex-1">
-        <View className="bg-white px-6 pt-4 pb-0 shadow-sm border-b border-slate-100">
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center space-x-3">
-              <View className="p-2 rounded-full bg-[#fcfaf2] shadow-sm">
-                <Text className="text-[#eebd2b]">📦</Text>
-              </View>
-              <Text className="text-2xl font-bold tracking-tight text-slate-900">Supplies</Text>
-            </View>
-            <TouchableOpacity 
-              className="w-10 h-10 items-center justify-center bg-[#eebd2b] rounded-full shadow-lg"
-              onPress={() => navigation.navigate('AddSupply')}
-            >
-              <Text className="text-white text-2xl">+</Text>
-            </TouchableOpacity>
-          </View>
-          <View className="flex-row space-x-6 mt-6">
+      <SafeAreaView className="flex-1" edges={['left', 'right']}>
+        <View className="bg-white px-6 pb-4 shadow-sm">
+          <View className="flex-row space-x-6">
             <TouchableOpacity className="pb-3 border-b-2 border-[#eebd2b]">
               <Text className="text-sm font-bold text-slate-900">All Items</Text>
             </TouchableOpacity>
@@ -61,6 +47,13 @@ export default function SuppliesScreen({ navigation }: any) {
           />
           <View className="h-32" />
         </ScrollView>
+
+        <TouchableOpacity 
+          className="absolute bottom-28 right-6 w-14 h-14 items-center justify-center bg-[#eebd2b] rounded-full shadow-xl z-50"
+          onPress={() => navigation.navigate('AddSupply')}
+        >
+          <Text className="text-white text-3xl font-light">+</Text>
+        </TouchableOpacity>
       </SafeAreaView>
     </View>
   );
@@ -80,4 +73,3 @@ function SupplyItem({ title, category, status, statusColor, statusBg, image }: a
     </View>
   );
 }
-
