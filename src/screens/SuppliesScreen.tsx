@@ -61,14 +61,6 @@ export default function SuppliesScreen({ navigation }: any) {
           />
           <View className="h-32" />
         </ScrollView>
-
-        <View className="absolute bottom-0 left-0 right-0 bg-white/90 border-t border-slate-200 px-6 pb-8 pt-3 flex-row justify-between items-center">
-          <TabItem icon="🏠" label="Home" onPress={() => navigation.navigate('Home')} />
-          <TabItem icon="📖" label="Diary" />
-          <TabItem icon="📦" label="Supplies" active />
-          <TabItem icon="📊" label="Stats" />
-          <TabItem icon="⚙️" label="Settings" />
-        </View>
       </SafeAreaView>
     </View>
   );
@@ -89,11 +81,3 @@ function SupplyItem({ title, category, status, statusColor, statusBg, image }: a
   );
 }
 
-function TabItem({ icon, label, active, onPress }: any) {
-  return (
-    <TouchableOpacity className="items-center space-y-1" onPress={onPress}>
-      <Text className={`text-xl ${active ? 'text-[#eebd2b]' : 'text-slate-400'}`}>{icon}</Text>
-      <Text className={`text-[10px] ${active ? 'font-bold text-[#eebd2b]' : 'font-medium text-slate-400'}`}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
