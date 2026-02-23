@@ -11,6 +11,7 @@ import SuppliesScreen from '../screens/SuppliesScreen';
 import AddSupplyScreen from '../screens/AddSupplyScreen';
 import HealthScreen from '../screens/HealthScreen';
 import BottomTab from '../components/BottomTab';
+import TopBar from '../components/TopBar';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -20,13 +21,30 @@ function TabNavigator() {
     <Tab.Navigator
       tabBar={(props) => <BottomTab {...props} />}
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
+        header: (props) => <TopBar {...props} />,
       }}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Supplies" component={SuppliesScreen} />
-      <Tab.Screen name="Health" component={HealthScreen} />
-      <Tab.Screen name="Settings" component={HomeScreen} />
+      <Tab.Screen 
+        name="Home" 
+        component={HomeScreen} 
+        options={{ headerTitle: 'Home', headerIcon: '🌱' }}
+      />
+      <Tab.Screen 
+        name="Supplies" 
+        component={SuppliesScreen} 
+        options={{ headerTitle: 'Supplies', headerIcon: '📦' }}
+      />
+      <Tab.Screen 
+        name="Health" 
+        component={HealthScreen} 
+        options={{ headerTitle: 'Vet & Health', headerIcon: '🏥' }}
+      />
+      <Tab.Screen 
+        name="Settings" 
+        component={HomeScreen} 
+        options={{ headerTitle: 'Settings', headerIcon: '⚙️' }}
+      />
     </Tab.Navigator>
   );
 }
