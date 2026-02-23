@@ -55,15 +55,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
-    paddingHorizontal: 24,
     paddingBottom: 32,
     paddingTop: 12,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
   tabItem: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 4,
   },
   icon: {
