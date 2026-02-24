@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Layout, Text, SubTabs } from '../components';
+import { Layout, Text, SubTabs, TimePickerCard } from '../components';
 
 // Mock data for walks
 const walks = [
@@ -79,13 +79,16 @@ const WalkManagementScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
 
   return (
-    <Layout>
-      <SubTabs 
+    <Layout style={{ flex: 1 }}>
+      {/* <SubTabs 
         tabs={tabs} 
         activeTabId={activeTab} 
         onTabPress={setActiveTab} 
-      />
-      <ScrollView style={styles.mainContent}>
+      /> */}
+      <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+        <TimePickerCard />
+      </View>
+      <ScrollView contentContainerStyle={styles.mainContent}>
         {walks.map(walk => <WalkCard key={walk.id} walk={walk} />)}
       </ScrollView>
     </Layout>
@@ -94,9 +97,8 @@ const WalkManagementScreen = ({ navigation }: any) => {
 
 const styles = StyleSheet.create({
   mainContent: {
-    flex: 1,
     paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingBottom: 50,
   },
   card: {
     backgroundColor: 'white',
