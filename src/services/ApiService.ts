@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+import { storageService } from './StorageService';
 
 const BASE_URL = 'https://sangkihan.co.kr/puppynote';
 
@@ -23,10 +24,11 @@ class ApiService {
 
     // Request Interceptor
     this.instance.interceptors.request.use(
-      (config) => {
-        // You can add auth token here later
-        // const token = await AsyncStorage.getItem('token');
-        // if (token) config.headers.Authorization = `Bearer ${token}`;
+      async (config) => {
+        const token = await storageService.getAccessToken();
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
         return config;
       },
       (error) => Promise.reject(error)

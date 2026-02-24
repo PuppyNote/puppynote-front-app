@@ -1,8 +1,53 @@
-import React from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { Layout, Text } from '../../components';
+import React, { useState } from 'react';
+import { View, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { Layout, Text, CustomAlert } from '../../components';
+import { authService } from '../../services/AuthService';
+import { storageService } from '../../services/StorageService';
 
 export default function LoginScreen({ navigation }: any) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Custom Alert State
+  const [alertConfig, setAlertConfig] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
+  const showAlert = (title: string, message: string, onConfirm = () => setAlertConfig(prev => ({ ...prev, visible: false }))) => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      onConfirm,
+    });
+  };
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      showAlert('알림', '이메일과 비밀번호를 모두 입력해주세요.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await authService.login(email, password);
+
+      // Save tokens
+      await storageService.saveAccessToken(response.accessToken);
+      await storageService.saveRefreshToken(response.refreshToken);
+
+      setIsLoading(false);
+      navigation.replace('MainTabs');
+    } catch (error: any) {
+      setIsLoading(false);
+      showAlert('오류', error.message || '로그인에 실패했습니다.');
+    }
+  };
+
   return (
     <Layout edges={['top', 'bottom', 'left', 'right']} style={styles.center}>
       <View style={styles.headerContainer}>
@@ -21,21 +66,32 @@ export default function LoginScreen({ navigation }: any) {
             style={styles.input}
             placeholder="이메일 주소"
             placeholderTextColor="#94a3b8"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
           />
           <TextInput 
             style={styles.input}
             placeholder="비밀번호"
             placeholderTextColor="#94a3b8"
             secureTextEntry={true}
+            value={password}
+            onChangeText={setPassword}
           />
         </View>
 
         <TouchableOpacity 
           style={styles.loginButton}
-          onPress={() => navigation.navigate('MainTabs')}
+          onPress={handleLogin}
           activeOpacity={0.8}
+          disabled={isLoading}
         >
-          <Text style={styles.loginButtonText}>로그인</Text>
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#0f172a" />
+          ) : (
+            <Text style={styles.loginButtonText}>로그인</Text>
+          )}
         </TouchableOpacity>
 
         <View style={styles.dividerRow}>
@@ -66,6 +122,13 @@ export default function LoginScreen({ navigation }: any) {
           <Text style={styles.signupLink}>회원가입</Text>
         </TouchableOpacity>
       </View>
+
+      <CustomAlert 
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onConfirm={alertConfig.onConfirm}
+      />
     </Layout>
   );
 }

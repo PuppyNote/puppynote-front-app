@@ -1,4 +1,5 @@
 import { apiService } from './ApiService';
+import { deviceService } from './DeviceService';
 
 export interface UserData {
   email: string;
@@ -9,6 +10,20 @@ export interface RegisterRequest {
   email: string;
   nickName: string;
   password: string;
+}
+
+export interface LoginData {
+  accessToken: string;
+  refreshToken: string;
+  email: string;
+  nickName: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password?: string;
+  deviceId?: string;
+  pushKey?: string;
 }
 
 class AuthService {
@@ -34,9 +49,19 @@ class AuthService {
     return response.data;
   }
 
-  // 로그인 API
-  public async login(email: string, password?: string): Promise<UserData> {
-    const response = await apiService.post<UserData>('/api/v1/user/login', { email, password });
+  // 로그인 API (기기 정보 자동 수집)
+  public async login(email: string, password?: string): Promise<LoginData> {
+    const deviceId = await deviceService.getDeviceId();
+    const pushKey = await deviceService.getPushKey();
+
+    console.log('Login Request Data:', { email, deviceId, pushKey });
+
+    const response = await apiService.post<LoginData>('/api/v1/user/login', {
+      email,
+      password,
+      deviceId,
+      pushKey,
+    });
     
     if (response.statusCode !== 200) {
       throw new Error(response.message || '로그인에 실패했습니다.');
