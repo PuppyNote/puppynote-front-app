@@ -1,4 +1,4 @@
-import { apiService } from './ApiService';
+import { apiService } from '../ApiService';
 import { deviceService } from './DeviceService';
 
 export interface UserData {

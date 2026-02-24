@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
-import { storageService } from './StorageService';
+import { storageService } from './auth/StorageService';
 
 const BASE_URL = 'https://sangkihan.co.kr/puppynote';
 

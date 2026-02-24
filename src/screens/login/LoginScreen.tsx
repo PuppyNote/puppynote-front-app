@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { Layout, Text, CustomAlert } from '../../components';
-import { authService } from '../../services/AuthService';
-import { storageService } from '../../services/StorageService';
+import { authService } from '../../services/auth/AuthService';
+import { storageService } from '../../services/auth/StorageService';
 
 export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, ActivityIndicator, Platform } from 'react-native';
 import { Layout, Text, CustomAlert } from '../../components';
-import { authService } from '../../services/AuthService';
+import { authService } from '../../services/auth/AuthService';
 
 export default function RegisterScreen({ navigation }: any) {
   const [showVerification, setShowVerification] = useState(false);
