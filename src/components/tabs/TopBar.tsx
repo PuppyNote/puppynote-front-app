@@ -1,19 +1,38 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text } from '..';
 
 export default function TopBar({ options, route }: any) {
+  const [hasNotification, setHasNotification] = useState(true);
   const insets = useSafeAreaInsets();
   const title = options?.headerTitle || route?.name || 'PuppyNote';
-  const icon = options?.headerIcon || '🐾';
+  const iconSource = options?.headerIcon || require('../../../assets/puppynote-icon.png');
+
+  const handleNotificationPress = () => {
+    console.log('Notification button pressed!');
+    // TODO: Implement navigation to notification screen
+  };
 
   return (
     <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
       <View style={styles.content}>
-        <View style={styles.iconContainer}>
-          <Text style={styles.icon}>{icon}</Text>
+        <View style={styles.leftContent}>
+          <View style={styles.iconContainer}>
+            {typeof iconSource === 'string' ? (
+              <Text style={styles.icon}>{iconSource}</Text>
+            ) : (
+              <Image source={iconSource} style={{ width: 32, height: 32 }} />
+            )}
+          </View>
+          <Text style={styles.title}>{title}</Text>
         </View>
-        <Text style={styles.title}>{title}</Text>
+        <TouchableOpacity onPress={handleNotificationPress} style={styles.notificationButton}>
+          <Image 
+            source={hasNotification ? require('../../../assets/alarm/alarm-on.png') : require('../../../assets/alarm/alarm.png')}
+            style={styles.notificationIcon}
+          />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -21,22 +40,20 @@ export default function TopBar({ options, route }: any) {
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: 'white',
+    backgroundColor: '#fcfaf2',
     paddingHorizontal: 24,
-    paddingBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    paddingBottom: 16,
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
     paddingVertical: 8,
+  },
+  leftContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   iconContainer: {
     padding: 8,
@@ -46,7 +63,6 @@ const styles = StyleSheet.create({
     borderColor: '#eebd2b1a',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 2,
   },
@@ -59,5 +75,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: -0.5,
     color: '#0f172a',
+  },
+  notificationButton: {
+    padding: 8,
+    borderRadius: 999,
+  },
+  notificationIcon: {
+    width: 32,
+    height: 32,
   },
 });

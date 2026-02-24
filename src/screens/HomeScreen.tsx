@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, StyleSheet } from 'react-native';
-import { 
-  Layout, 
-  SubTabs, 
-  Card, 
-  ActivityItem 
+import { View, ScrollView, Image, StyleSheet } from 'react-native';
+import {
+  Layout,
+  Card,
+  ActivityItem,
+  Text,
 } from '../components';
 
 export default function HomeScreen({ navigation }: any) {
@@ -18,12 +18,6 @@ export default function HomeScreen({ navigation }: any) {
 
   return (
     <Layout>
-      <SubTabs 
-        tabs={tabs} 
-        activeTabId={activeTab} 
-        onTabPress={setActiveTab} 
-      />
-
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <Card style={styles.mb24}>
           <View style={styles.cardHeader}>
@@ -39,8 +33,8 @@ export default function HomeScreen({ navigation }: any) {
           </View>
           <View style={styles.profileRow}>
             <View style={styles.profileImageBorder}>
-              <Image 
-                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBo4RaKYrDo53w-hlMwsCvFNFfxl48s5ZtDRjKRpS5uB23ANcl8Q3aUz86pA_gmntrTMwbpUzicU2okQeVF1F77u9_J76WK2AcOcB0DAdfm5NSbuH1eHguFRQfD__wXcoguqzzKVC44zrcrjYOfOYmVG4lzCYo02p_iL8OI5m-7rUF4tQzw1DmnoxmSrVZ3T0Whbua3HbvvkcEvH1AGDsJM8otqKfuSJD_62_bCtT9Jhvz5xAlE5Zg-5qLJFSo3F3GizyLMsT-lwIA' }} 
+              <Image
+                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBo4RaKYrDo53w-hlMwsCvFNFfxl48s5ZtDRjKRpS5uB23ANcl8Q3aUz86pA_gmntrTMwbpUzicU2okQeVF1F77u9_J76WK2AcOcB0DAdfm5NSbuH1eHguFRQfD__wXcoguqzzKVC44zrcrjYOfOYmVG4lzCYo02p_iL8OI5m-7rUF4tQzw1DmnoxmSrVZ3T0Whbua3HbvvkcEvH1AGDsJM7otqKfuSJD_62_bCtT9Jhvz5xAlE5Zg-5qLJFSo3F3GizyLMsT-lwIA' }}
                 style={styles.fullImage}
               />
             </View>
@@ -193,3 +187,5 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
+
+

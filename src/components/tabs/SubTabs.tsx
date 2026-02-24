@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { Text } from '..';
 
 interface TabItem {
   id: string;
@@ -15,55 +16,54 @@ interface SubTabsProps {
 export default function SubTabs({ tabs, activeTabId, onTabPress }: SubTabsProps) {
   return (
     <View style={styles.subTabs}>
-      <View style={styles.tabRow}>
-        {tabs.map((tab) => {
-          const isActive = tab.id === activeTabId;
-          return (
-            <TouchableOpacity 
-              key={tab.id} 
-              style={[styles.tab, isActive && styles.activeTab]}
-              onPress={() => onTabPress(tab.id)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.tabText, isActive ? styles.tabTextActive : styles.tabTextInactive]}>
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View style={styles.tabRow}>
+          {tabs.map((tab) => {
+            const isActive = tab.id === activeTabId;
+            return (
+              <TouchableOpacity 
+                key={tab.id} 
+                style={[styles.tab, isActive && styles.activeTab]}
+                onPress={() => onTabPress(tab.id)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.tabText, isActive ? styles.tabTextActive : styles.tabTextInactive]}>
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   subTabs: {
-    backgroundColor: 'white',
+    backgroundColor: '#fcfaf2',
     paddingHorizontal: 24,
     paddingBottom: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
   },
   tabRow: {
     flexDirection: 'row',
-    gap: 24,
+    gap: 12,
   },
   tab: {
-    padding: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 9999,
+    backgroundColor: 'white',
   },
   activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#eebd2b',
+    backgroundColor: '#eebd2b',
   },
   tabText: {
     fontSize: 14,
   },
   tabTextActive: {
     fontWeight: 'bold',
-    color: '#0f172a',
+    color: 'white',
   },
   tabTextInactive: {
     fontWeight: '500',

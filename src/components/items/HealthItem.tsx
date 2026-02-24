@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Badge from '../badge/Badge';
+import { Text } from '..';
 
 export default function HealthItem({ title, location, time, status, statusVariant, icon, onPress }: any) {
   return (

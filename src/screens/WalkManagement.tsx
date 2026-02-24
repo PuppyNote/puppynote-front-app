@@ -1,7 +1,7 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Layout } from '../components';
+import { Layout, Text, SubTabs } from '../components';
 
 // Mock data for walks
 const walks = [
@@ -62,34 +62,29 @@ const WalkCard = ({ walk }: any) => (
 );
 
 const WalkManagementScreen = ({ navigation }: any) => {
+  const [activeTab, setActiveTab] = useState('all');
+
+  const tabs = [
+    { id: 'all', label: 'All Walks' },
+    { id: 'scheduled', label: 'Scheduled' },
+    { id: 'history', label: 'History' },
+    { id: 'today', label: 'Today' },
+    { id: 'tomorrow', label: 'Tomorrow' },
+    { id: 'next_week', label: 'Next Week' },
+    { id: 'last_week', label: 'Last Week' },
+    { id: 'missed', label: 'Missed' },
+    { id: 'completed', label: 'Completed' },
+    { id: 'favorites', label: 'Favorites' },
+  ];
   const insets = useSafeAreaInsets();
 
   return (
-    <Layout edges={['left', 'right']}>
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <View style={styles.headerTop}>
-          <View style={styles.headerTitleContainer}>
-            <View style={styles.iconContainer}>
-              <Text style={styles.icon}>🐾</Text>
-            </View>
-            <Text style={styles.headerTitle}>Walks</Text>
-          </View>
-          <TouchableOpacity style={styles.addButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.addButtonText}>×</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.tabs}>
-          <TouchableOpacity style={styles.tab}>
-            <Text style={[styles.tabText, styles.activeTabText]}>All Walks</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.tab}>
-            <Text style={styles.tabText}>Scheduled</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.tab}>
-            <Text style={styles.tabText}>History</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+    <Layout>
+      <SubTabs 
+        tabs={tabs} 
+        activeTabId={activeTab} 
+        onTabPress={setActiveTab} 
+      />
       <ScrollView style={styles.mainContent}>
         {walks.map(walk => <WalkCard key={walk.id} walk={walk} />)}
       </ScrollView>
@@ -98,80 +93,6 @@ const WalkManagementScreen = ({ navigation }: any) => {
 };
 
 const styles = StyleSheet.create({
-  header: {
-    backgroundColor: 'white',
-    paddingHorizontal: 24,
-    paddingBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 16,
-  },
-  headerTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  iconContainer: {
-    padding: 8,
-    borderRadius: 9999,
-    backgroundColor: '#fcfaf2',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 1.41,
-    elevation: 2,
-  },
-  icon: {
-    fontSize: 18,
-    color: '#eebd2b',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    letterSpacing: -0.5,
-  },
-  addButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f1f5f9',
-    borderRadius: 9999,
-  },
-  addButtonText: {
-    color: '#64748b',
-    fontSize: 24,
-    fontWeight: '300',
-  },
-  tabs: {
-    flexDirection: 'row',
-    gap: 16,
-    marginTop: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  tab: {
-    paddingBottom: 12,
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6b7280',
-  },
-  activeTabText: {
-    color: '#111827',
-    borderBottomWidth: 2,
-    borderBottomColor: '#eebd2b',
-    fontWeight: 'bold',
-  },
   mainContent: {
     flex: 1,
     paddingHorizontal: 24,

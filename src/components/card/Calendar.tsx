@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Card from './Card';
+import { Text } from '..';
 
 interface CalendarProps {
   onDateSelect?: (date: Date) => void;
