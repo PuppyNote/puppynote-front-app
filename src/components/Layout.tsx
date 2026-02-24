@@ -12,7 +12,7 @@ interface LayoutProps {
 export default function Layout({ 
   children, 
   style, 
-  edges = ['left', 'right'], // 기본적으로 좌우만 처리 (상단바/하단바가 있을 경우 대비)
+  edges = ['left', 'right', 'bottom'], // 기본적으로 좌우만 처리 (상단바/하단바가 있을 경우 대비)
   backgroundColor = '#fcfaf2'
 }: LayoutProps) {
   return (
