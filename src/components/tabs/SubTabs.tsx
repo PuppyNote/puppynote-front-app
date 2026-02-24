@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { Text } from '..';
+import { CustomText as Text } from '../CustomText';
 
 interface TabItem {
   id: string;

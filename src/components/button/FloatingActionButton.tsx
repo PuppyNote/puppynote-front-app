@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
-import { Text } from '..';
+import { CustomText as Text } from '../CustomText';
 
 interface FABProps {
   onPress: () => void;

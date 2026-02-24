@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Text } from '..';
+import { CustomText as Text } from '../CustomText';
 
 export default function ActivityItem({ icon, title, subtitle, time, color, iconColor }: any) {
   return (

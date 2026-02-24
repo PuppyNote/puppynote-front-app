@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import Badge from '../badge/Badge';
-import { Text } from '..';
+import { CustomText as Text } from '../CustomText';
 
 export default function SupplyItem({ title, category, status, statusVariant, image }: any) {
   return (

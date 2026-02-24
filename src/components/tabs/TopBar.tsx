@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text } from '..';
+import { CustomText as Text } from '../CustomText';
 
 export default function TopBar({ options, route }: any) {
   const [hasNotification, setHasNotification] = useState(true);
