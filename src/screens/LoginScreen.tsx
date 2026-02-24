@@ -45,11 +45,17 @@ export default function LoginScreen({ navigation }: any) {
         </View>
 
         <View style={styles.socialButtonGroup}>
-          <TouchableOpacity style={styles.kakaoButton} activeOpacity={0.8}>
-            <Text style={styles.socialButtonText}>KAKAO</Text>
+          <TouchableOpacity activeOpacity={0.8}>
+            <Image 
+              source={require('../../assets/loginButton/kakao.png')}
+              style={styles.socialButtonImage}
+            />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.googleButton} activeOpacity={0.8}>
-            <Text style={styles.socialButtonText}>GOOGLE</Text>
+          <TouchableOpacity activeOpacity={0.8}>
+            <Image 
+              source={require('../../assets/loginButton/google.png')}
+              style={styles.socialButtonImage}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -155,34 +161,14 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   socialButtonGroup: {
-    gap: 12,
-  },
-  kakaoButton: {
-    width: '100%',
-    paddingVertical: 16,
-    backgroundColor: '#FEE500',
-    borderRadius: 999,
-    alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'center',
+    gap: 16,
   },
-  googleButton: {
-    width: '100%',
-    paddingVertical: 16,
-    backgroundColor: 'white',
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  socialButtonText: {
-    color: '#0f172a',
-    fontWeight: 'bold',
+  socialButtonImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
   },
   signupContainer: {
     marginTop: 48,
