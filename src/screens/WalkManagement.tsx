@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, ScrollView, Image, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Layout, Text, SubTabs, TimePickerCard } from '../components';
+import { Layout, Text, SubTabs, TimePickerCard, Calendar } from '../components';
 
 // Mock data for walks
 const walks = [
@@ -63,6 +63,7 @@ const WalkCard = ({ walk }: any) => (
 
 const WalkManagementScreen = ({ navigation }: any) => {
   const [activeTab, setActiveTab] = useState('all');
+  const { width } = useWindowDimensions();
 
   const tabs = [
     { id: 'all', label: 'All Walks' },
@@ -79,18 +80,33 @@ const WalkManagementScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
 
   return (
-    <Layout style={{ flex: 1 }}>
+    <Layout>
       {/* <SubTabs 
         tabs={tabs} 
         activeTabId={activeTab} 
         onTabPress={setActiveTab} 
       /> */}
-      <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
-        <TimePickerCard />
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+        >
+          <View style={{ width, paddingHorizontal: 24, paddingVertical: 24 }}>
+            <TimePickerCard />
+          </View>
+          <View style={{ width, paddingHorizontal: 24, paddingVertical: 24 }}>
+            <Calendar />
+          </View>
+        </ScrollView>
       </View>
-      <ScrollView contentContainerStyle={styles.mainContent}>
-        {walks.map(walk => <WalkCard key={walk.id} walk={walk} />)}
-      </ScrollView>
+      <View style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={styles.mainContent}>
+          {walks.map((walk) => (
+            <WalkCard key={walk.id} walk={walk} />
+          ))}
+        </ScrollView>
+      </View>
     </Layout>
   );
 };
