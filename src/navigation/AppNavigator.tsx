@@ -4,12 +4,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import SplashScreen from '../screens/SplashScreen';
-import LoginScreen from '../screens/LoginScreen';
+import LoginScreen from '../screens/login/LoginScreen';
+import RegisterScreen from '../screens/login/RegisterScreen';
 import HomeScreen from '../screens/home/HomeScreen';
 import WalkManagementScreen from '../screens/walk/WalkManagement';
 import SuppliesScreen from '../screens/supply/SuppliesScreen';
 import AddSupplyScreen from '../screens/supply/AddSupplyScreen';
-import HealthScreen from '../screens//health/HealthScreen';
+import HealthScreen from '../screens/health/HealthScreen';
 import { BottomTab, TopBar } from '../components';
 
 const Stack = createNativeStackNavigator();
@@ -64,6 +65,7 @@ export default function AppNavigator() {
       >
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="MainTabs" component={TabNavigator} />
         <Stack.Screen name="Walks" component={WalkManagementScreen} />
         <Stack.Screen name="AddSupply" component={AddSupplyScreen} />

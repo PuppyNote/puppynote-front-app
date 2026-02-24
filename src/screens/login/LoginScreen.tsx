@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { Layout, Text } from '../components';
+import { Layout, Text } from '../../components';
 
 export default function LoginScreen({ navigation }: any) {
   return (
@@ -8,7 +8,7 @@ export default function LoginScreen({ navigation }: any) {
       <View style={styles.headerContainer}>
         <View style={styles.logoBox}>
           <Image 
-            source={require('../../assets/puppynote-icon.png')}
+            source={require('../../../assets/puppynote-icon.png')}
             style={styles.logoImage}
           />
         </View>
@@ -47,13 +47,13 @@ export default function LoginScreen({ navigation }: any) {
         <View style={styles.socialButtonGroup}>
           <TouchableOpacity activeOpacity={0.8}>
             <Image 
-              source={require('../../assets/loginButton/kakao.png')}
+              source={require('../../../assets/loginButton/kakao.png')}
               style={styles.socialButtonImage}
             />
           </TouchableOpacity>
           <TouchableOpacity activeOpacity={0.8}>
             <Image 
-              source={require('../../assets/loginButton/google.png')}
+              source={require('../../../assets/loginButton/google.png')}
               style={styles.socialButtonImage}
             />
           </TouchableOpacity>
@@ -62,7 +62,7 @@ export default function LoginScreen({ navigation }: any) {
 
       <View style={styles.signupContainer}>
         <Text style={styles.signupText}>계정이 없으신가요?</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
           <Text style={styles.signupLink}>회원가입</Text>
         </TouchableOpacity>
       </View>
@@ -185,4 +185,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
