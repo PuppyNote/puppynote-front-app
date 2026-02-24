@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, Text, Animated, StyleSheet } from 'react-native';
-import { Layout } from '../components';
+import { View, Animated, StyleSheet, Image } from 'react-native';
+import { Layout, Text } from '../components';
 
 export default function SplashScreen({ navigation }: any) {
   const fadeAnim = new Animated.Value(0);
@@ -25,11 +25,10 @@ export default function SplashScreen({ navigation }: any) {
       
       <Animated.View style={[styles.animatedContent, { opacity: fadeAnim }]}>
         <View style={styles.logoContainer}>
-          <View style={styles.logoInnerOverlay} />
-          <Text style={styles.logoEmoji}>📖</Text>
-          <View style={styles.pawEmojiContainer}>
-            <Text style={styles.pawEmoji}>🐾</Text>
-          </View>
+          <Image 
+            source={require('../../assets/puppynote-icon.png')}
+            style={styles.logoImage}
+          />
         </View>
         
         <View style={styles.titleContainer}>
@@ -68,38 +67,12 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: 160,
     height: 160,
-    backgroundColor: '#eebd2b1a',
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: '#eebd2b33',
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
-    overflow: 'hidden',
   },
-  logoInnerOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#eebd2b0d',
-  },
-  logoEmoji: {
-    color: '#eebd2b',
-    fontSize: 60,
-  },
-  pawEmojiContainer: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginLeft: -20,
-    marginTop: -4,
-  },
-  pawEmoji: {
-    color: '#eebd2b',
-    fontSize: 40,
-    fontWeight: 'bold',
+  logoImage: {
+    width: 120,
+    height: 120,
   },
   titleContainer: {
     alignItems: 'center',
@@ -151,3 +124,4 @@ const styles = StyleSheet.create({
     width: '33%',
   },
 });
+

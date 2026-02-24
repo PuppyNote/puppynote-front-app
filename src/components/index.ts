@@ -1,3 +1,4 @@
+export { CustomText as Text } from './CustomText';
 export { default as Layout } from './Layout';
 export { default as TopBar } from './tabs/TopBar';
 export { default as BottomTab } from './tabs/BottomTab';

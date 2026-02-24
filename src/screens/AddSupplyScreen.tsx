@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet } from 'react-native';
-import { Layout } from '../components';
+import { View, TouchableOpacity, TextInput, ScrollView, StyleSheet } from 'react-native';
+import { Layout, Text } from '../components';
 
 export default function AddSupplyScreen({ navigation }: any) {
   return (

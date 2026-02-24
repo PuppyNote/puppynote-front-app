@@ -1,13 +1,16 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { Layout } from '../components';
+import { View, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { Layout, Text } from '../components';
 
 export default function LoginScreen({ navigation }: any) {
   return (
     <Layout edges={['top', 'bottom', 'left', 'right']} style={styles.center}>
       <View style={styles.headerContainer}>
         <View style={styles.logoBox}>
-          <Text style={styles.logoEmoji}>📖</Text>
+          <Image 
+            source={require('../../assets/puppynote-icon.png')}
+            style={styles.logoImage}
+          />
         </View>
         <Text style={styles.titleText}>PuppyNote</Text>
       </View>
@@ -74,22 +77,13 @@ const styles = StyleSheet.create({
   logoBox: {
     width: 96,
     height: 96,
-    backgroundColor: 'white',
-    borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
   },
-  logoEmoji: {
-    color: '#eebd2b',
-    fontSize: 48,
+  logoImage: {
+    width: 80,
+    height: 80,
   },
   titleText: {
     fontSize: 30,
@@ -205,3 +199,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+

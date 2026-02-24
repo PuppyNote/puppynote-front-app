@@ -1,12 +1,39 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { Text } from '..';
 
 export default function BottomTab({ state, descriptors, navigation }: any) {
   const tabs = [
-    { name: 'Home', icon: '🏠', label: '홈' },
-    { name: 'Supplies', icon: '📦', label: '용품' },
-    { name: 'Health', icon: '🏥', label: '건강' },
-    { name: 'Settings', icon: '⚙️', label: '설정' },
+    { 
+      name: 'Home', 
+      label: '홈',
+      icon: require('../../../assets/bottomTab/home.png'),
+      iconFocused: require('../../../assets/bottomTab/home-click.png'),
+    },
+    { 
+      name: 'Walk', 
+      label: '산책',
+      icon: require('../../../assets/bottomTab/walk.png'),
+      iconFocused: require('../../../assets/bottomTab/walk-click.png'),
+    },
+    { 
+      name: 'Supplies', 
+      label: '용품',
+      icon: require('../../../assets/bottomTab/supply.png'),
+      iconFocused: require('../../../assets/bottomTab/supply-click.png'),
+    },
+    { 
+      name: 'Health', 
+      label: '건강',
+      icon: require('../../../assets/bottomTab/health.png'),
+      iconFocused: require('../../../assets/bottomTab/health-click.png'),
+    },
+    { 
+      name: 'Settings', 
+      label: '설정',
+      icon: require('../../../assets/bottomTab/setting.png'),
+      iconFocused: require('../../../assets/bottomTab/setting-click.png'),
+    },
   ];
 
   return (
@@ -33,12 +60,10 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
             onPress={onPress}
             activeOpacity={0.7}
           >
-            <Text style={[styles.icon, isFocused ? styles.iconActive : styles.iconInactive]}>
-              {tab.icon}
-            </Text>
-            <Text style={[styles.label, isFocused ? styles.labelActive : styles.labelInactive]}>
-              {tab.label}
-            </Text>
+            <Image 
+              source={isFocused ? tab.iconFocused : tab.icon}
+              style={[styles.icon, isFocused && { transform: [{ scale: 1.4 }] }]}
+            />
           </TouchableOpacity>
         );
       })}
@@ -64,16 +89,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
   },
   icon: {
-    fontSize: 20,
-  },
-  iconActive: {
-    color: '#eebd2b',
-  },
-  iconInactive: {
-    color: '#94a3b8',
+    width: 30,
+    height: 30,
   },
   label: {
     fontSize: 10,
