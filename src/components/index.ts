@@ -10,4 +10,5 @@ export { default as FloatingActionButton } from './button/FloatingActionButton';
 export { default as ActivityItem } from './items/ActivityItem';
 export { default as SupplyItem } from './items/SupplyItem';
 export { default as HealthItem } from './items/HealthItem';
+export { default as CustomAlert } from './modal/CustomAlert';
 export { TimePickerCard } from './card/TimePickerCard';

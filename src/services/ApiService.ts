@@ -36,20 +36,29 @@ class ApiService {
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => {
         // Successful responses follow the custom ApiResponse format
+        const data = response.data as ApiResponse<any>;
+        // If server returns a valid ApiResponse but statusCode is not success (e.g., 400 with 200 HTTP)
+        // However, standard use is to return the data and let service handle statusCode
         return response.data;
       },
       (error: AxiosError) => {
         if (error.response) {
           // Server responded with an error status (4xx, 5xx)
-          console.error('API Error Response:', error.response.data);
-          return Promise.reject(error.response.data);
+          const errorData = error.response.data as any;
+          console.log('API Error Response:', errorData);
+          // Always return an object with a message property for the UI to display
+          return Promise.reject({ 
+            message: errorData?.message || '서버 오류가 발생했습니다.',
+            statusCode: errorData?.statusCode || error.response.status,
+            ...errorData
+          });
         } else if (error.request) {
           // Request was made but no response received
-          console.error('API No Response:', error.request);
+          console.log('API No Response:', error.request);
           return Promise.reject({ message: '네트워크 연결을 확인해주세요.' });
         } else {
           // Something else happened
-          console.error('API Request Error:', error.message);
+          console.log('API Request Error:', error.message);
           return Promise.reject({ message: '알 수 없는 오류가 발생했습니다.' });
         }
       }
