@@ -5,11 +5,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
-import HomeScreen from '../screens/HomeScreen';
-import WalkManagementScreen from '../screens/WalkManagement';
-import SuppliesScreen from '../screens/SuppliesScreen';
-import AddSupplyScreen from '../screens/AddSupplyScreen';
-import HealthScreen from '../screens/HealthScreen';
+import HomeScreen from '../screens/home/HomeScreen';
+import WalkManagementScreen from '../screens/walk/WalkManagement';
+import SuppliesScreen from '../screens/supply/SuppliesScreen';
+import AddSupplyScreen from '../screens/supply/AddSupplyScreen';
+import HealthScreen from '../screens//health/HealthScreen';
 import { BottomTab, TopBar } from '../components';
 
 const Stack = createNativeStackNavigator();

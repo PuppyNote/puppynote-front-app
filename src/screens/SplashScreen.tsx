@@ -37,16 +37,7 @@ export default function SplashScreen({ navigation }: any) {
         </View>
       </Animated.View>
 
-      <View style={styles.footer}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.footerText}>
-            Starting your journey with your furry friend...
-          </Text>
-          <View style={styles.progressBarBg}>
-            <View style={styles.progressBarFill} />
-          </View>
-        </View>
-      </View>
+      <View style={styles.footer}/>
     </Layout>
   );
 }

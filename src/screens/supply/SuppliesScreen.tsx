@@ -5,7 +5,7 @@ import {
   SubTabs, 
   SupplyItem, 
   FloatingActionButton 
-} from '../components';
+} from '../../components';
 
 export default function SuppliesScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState('all');

@@ -6,7 +6,7 @@ import {
   Calendar, 
   HealthItem, 
   FloatingActionButton 
-} from '../components';
+} from '../../components';
 
 export default function HealthScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState('calendar');

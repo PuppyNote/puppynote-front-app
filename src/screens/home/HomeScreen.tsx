@@ -5,7 +5,7 @@ import {
   Card,
   ActivityItem,
   Text,
-} from '../components';
+} from '../../components';
 
 export default function HomeScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState('overview');
