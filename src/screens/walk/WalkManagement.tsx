@@ -1,34 +1,34 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, ScrollView, Image, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, ScrollView, Image, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Layout, Text, SubTabs, TimePickerCard, Calendar } from '../../components';
+import { Layout, Text, TimePickerCard, Calendar, FloatingActionButton } from '../../components';
 
 // Mock data for walks
 const walks = [
   {
     id: '1',
-    title: 'Morning Walk',
-    location: 'Central Park',
-    time: 'Today, 08:30 AM',
-    status: 'Now',
+    title: '아침 산책',
+    location: '중앙 공원',
+    time: '오늘, 08:30 AM',
+    status: '지금',
     statusColor: '#ff6b6b',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDQngR7iBTWfN8h-0vz34AlWfv1h-cleScZfne4pEM_pdGvyA4T4am7CBdbyx1b9kn_6zVQE0_JQ_BbnkYhNZRNqvYe4vv342gZdkpSzOzY_VHwJTeUIkf45wwV-O9vHZayYbGUYQXrfqp1PWbFakO6REPrdCizv1iqaeyG-C5UCcpA09nuJHe-vixH7ftyjayhVJNsh3EVExmZPLGhjhU14-4371Xp3ZmpdJI3OGcGdcjI80EVXdk7Zql25uOT40Ef0BEZCAHQ8ko'
   },
   {
     id: '2',
-    title: 'Evening Stroll',
-    location: 'Riverside Path',
-    time: 'Today, 06:00 PM',
-    status: 'In 4h',
+    title: '저녁 산책',
+    location: '강변 산책로',
+    time: '오늘, 06:00 PM',
+    status: '4시간 후',
     statusColor: '#f59e0b',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDnB44Nhvj4H02Wo4ZS72w9ekAz3y6KjryST4Y535suUIXVNASEqLSrCEkrVPslIVoRciP1mbo6sHLeqqWGuWlq07pXs8UAsmFaz3E_xjr_hW8iw6ylyz0J7XgRBnML4Ui89FacStfo4pWXLnNsfkTAoikQgUraUNf4qHDI1i9PhAgtAEOn9gCS7D-q_DhrPQkiiT34JHigV4MqEAQHBXIHwRjIAqn-LZWNlp5xLH6zNWJOw4b7h1i8oGZw5cm8Rd-KAjqK8LxjHGI'
   },
   {
     id: '3',
-    title: 'Afternoon Run',
-    location: 'Dog Park',
-    time: 'Yesterday, 02:15 PM',
-    status: 'Done',
+    title: '오후 달리기',
+    location: '강아지 공원',
+    time: '어제, 02:15 PM',
+    status: '완료',
     statusColor: '#6b7280',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCSw-YVsazmsAxslAoER0np_8AHYGHowWtt1e7VFcv0KfVJsfiSITuNJhBnLqgd1_T8mnrg9kjihGwPyFGhBEDtKI-JLO5y-h5_D_UPRp0ahtJLo0xYJ3BRW1raiiT1K5rGEDfLHUWrwHSd-3t8g69ng1y2QX9Ys2585re9yh91D0keMybigFR382clgRBPkvUTqvJMIv2oCnON1x7zn6krEebjlUTG4vn6oHAuZ9jUYA9k9SB8WS-AsSVyaOBekT6t_aVxSznaYSE'
   },
@@ -98,6 +98,7 @@ const WalkManagementScreen = ({ navigation }: any) => {
           ))}
         </ScrollView>
       </View>
+      <FloatingActionButton onPress={() => console.log('Add Health Record')} />
     </Layout>
   );
 };

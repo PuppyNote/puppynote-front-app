@@ -37,8 +37,8 @@ export default function Calendar({ onDateSelect, events = [5, 15, 24] }: Calenda
   }
 
   const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    "1월", "2월", "3월", "4월", "5월", "6월",
+    "7월", "8월", "9월", "10월", "11월", "12월"
   ];
 
   return (
@@ -58,7 +58,7 @@ export default function Calendar({ onDateSelect, events = [5, 15, 24] }: Calenda
       </View>
       
       <View style={styles.daysRow}>
-        {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(day => (
+        {['일', '월', '화', '수', '목', '금', '토'].map(day => (
           <Text key={day} style={styles.dayLabel}>{day}</Text>
         ))}
       </View>

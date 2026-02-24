@@ -25,7 +25,7 @@ export default function HomeScreen({ navigation }: any) {
               <View style={styles.iconContainer}>
                 <Text style={styles.walkIcon}>🚶</Text>
               </View>
-              <Text style={styles.cardTitle}>Next Walk</Text>
+              <Text style={styles.cardTitle}>산책 일정</Text>
             </View>
             <View style={styles.nextWalkBadge}>
               <Text style={styles.nextWalkBadgeText}>14:30 PM</Text>
@@ -39,29 +39,26 @@ export default function HomeScreen({ navigation }: any) {
               />
             </View>
             <View>
-              <Text style={styles.profileTitle}>Toby is waiting!</Text>
-              <Text style={styles.profileSubtitle}>30 min session planned in the park</Text>
+              <Text style={styles.profileTitle}>Toby가 기다리고 있어요!</Text>
+              <Text style={styles.profileSubtitle}>공원에서 30분 세션이 계획되어 있습니다</Text>
             </View>
-          </View>
-          <View style={styles.buttonYellow}>
-            <Text style={styles.buttonText}>Start Activity</Text>
           </View>
         </Card>
 
         <View style={styles.mb24}>
-          <Text style={styles.sectionTitle}>Activity Feed</Text>
-          <ActivityItem icon="🍖" title="Morning Meal" subtitle="8:00 AM • Finished all" time="2h ago" color="#f0fdf4" iconColor="#22c55e" />
-          <ActivityItem icon="💊" title="Vitamins" subtitle="7:30 AM • Daily supplement" time="2.5h ago" color="#faf5ff" iconColor="#a855f7" />
-          <ActivityItem icon="😴" title="Sleep" subtitle="11:00 PM - 7:00 AM • 8 hours" time="Yesterday" color="#fff7ed" iconColor="#f97316" />
+          <Text style={styles.sectionTitle}>활동 피드</Text>
+          <ActivityItem icon="🍖" title="아침 식사" subtitle="8:00 AM • 모두 완료" time="2시간 전" color="#f0fdf4" iconColor="#22c55e" />
+          <ActivityItem icon="💊" title="비타민" subtitle="7:30 AM • 일일 보충제" time="2.5시간 전" color="#faf5ff" iconColor="#a855f7" />
+          <ActivityItem icon="😴" title="수면" subtitle="11:00 PM - 7:00 AM • 8시간" time="어제" color="#fff7ed" iconColor="#f97316" />
         </View>
 
         <View style={styles.tipCard}>
           <View style={styles.row}>
             <Text style={styles.tipIcon}>💡</Text>
             <View style={styles.flex1}>
-              <Text style={styles.tipTitle}>Daily Tip</Text>
+              <Text style={styles.tipTitle}>오늘의 팁</Text>
               <Text style={styles.tipText}>
-                Toby has been very active today! Ensure he drinks plenty of water and has a quiet rest this evening.
+                Toby는 오늘 매우 활발하게 활동했습니다! 충분한 물을 마시고 저녁에는 조용히 휴식을 취하도록 하세요.
               </Text>
             </View>
           </View>

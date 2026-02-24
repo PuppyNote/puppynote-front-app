@@ -33,26 +33,26 @@ export default function HealthScreen({ navigation }: any) {
         />
 
         <HealthItem 
-          title="Rabies Booster" 
-          location="City Pet Clinic" 
-          time="Tomorrow, 10:30 AM" 
+          title="광견병 예방접종" 
+          location="시티 펫 클리닉" 
+          time="내일, 10:30 AM" 
           status="D-1" 
           statusVariant="error"
           icon="💉"
         />
         <HealthItem 
-          title="Heartworm Pill" 
-          location="Monthly Treatment" 
-          time="Due in 5 days" 
+          title="심장사상충 약" 
+          location="월간 치료" 
+          time="5일 후, 08:00 AM" 
           status="D-5" 
           statusVariant="warning"
           icon="💊"
         />
         <HealthItem 
-          title="Weight Check" 
-          location="Current: 12.4 lbs" 
-          time="Completed: Feb 2" 
-          status="Done" 
+          title="체중 측정" 
+          location="현재: 12.4 lbs" 
+          time="완료: 2월 2일" 
+          status="완료" 
           statusVariant="neutral"
           icon="⚖️"
         />
