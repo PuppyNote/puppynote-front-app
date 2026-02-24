@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, ActivityIndicator, Platform } from 'react-native';
 import { Layout, Text, CustomAlert } from '../../components';
 import { authService } from '../../services/AuthService';
 
@@ -7,7 +7,19 @@ export default function RegisterScreen({ navigation }: any) {
   const [showVerification, setShowVerification] = useState(false);
   const [email, setEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   
+  // Validation states
+  const [errors, setErrors] = useState({
+    email: false,
+    nickname: false,
+    password: false,
+    confirmPassword: false,
+  });
+  const [passwordMismatch, setPasswordMismatch] = useState(false);
+
   // Verification states
   const [timer, setTimer] = useState(180); // 3 minutes in seconds
   const [isTimerActive, setIsTimerActive] = useState(false);
@@ -58,9 +70,11 @@ export default function RegisterScreen({ navigation }: any) {
 
   const handleSendVerification = async () => {
     if (!email) {
+      setErrors(prev => ({ ...prev, email: true }));
       showAlert('알림', '이메일 주소를 입력해주세요.');
       return;
     }
+    setErrors(prev => ({ ...prev, email: false }));
 
     if (isLoading || isCooldown) return;
 
@@ -76,7 +90,6 @@ export default function RegisterScreen({ navigation }: any) {
       setIsVerified(false);
       showAlert('알림', '인증번호가 발송되었습니다.');
     } catch (error: any) {
-      // If error came from ApiService interceptor (error.response.data), use its message
       const errorMessage = error?.message || '인증번호 발송에 실패했습니다.';
       showAlert('오류', errorMessage);
     } finally {
@@ -107,11 +120,56 @@ export default function RegisterScreen({ navigation }: any) {
     }
   };
 
+  const handleRegister = async () => {
+    const newErrors = {
+      email: !isVerified,
+      nickname: !nickname,
+      password: !password,
+      confirmPassword: !confirmPassword,
+    };
+    setErrors(newErrors);
+
+    const isPasswordMismatch = password !== confirmPassword;
+    setPasswordMismatch(isPasswordMismatch);
+
+    if (newErrors.email) {
+      showAlert('알림', '이메일 인증을 완료해주세요.');
+      return;
+    }
+
+    if (newErrors.nickname || newErrors.password || newErrors.confirmPassword) {
+      showAlert('알림', '모든 필드를 입력해주세요.');
+      return;
+    }
+
+    if (isPasswordMismatch) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await authService.register({
+        email,
+        nickName: nickname,
+        password
+      });
+      setIsLoading(false);
+      showAlert('성공', '회원가입이 완료되었습니다.', () => {
+        setAlertConfig(prev => ({ ...prev, visible: false }));
+        navigation.navigate('Login');
+      });
+    } catch (error: any) {
+      setIsLoading(false);
+      showAlert('오류', error.message || '회원가입에 실패했습니다.');
+    }
+  };
+
   return (
     <Layout edges={['top', 'bottom', 'left', 'right']} style={styles.container}>
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.headerContainer}>
           <View style={styles.logoBox}>
@@ -126,26 +184,25 @@ export default function RegisterScreen({ navigation }: any) {
 
         <View style={styles.formContainer}>
           <View style={styles.inputGroup}>
-            <View>
-              <Text style={styles.label}>이름</Text>
-              <TextInput 
-                style={styles.input}
-                placeholder="성함을 입력해주세요"
-                placeholderTextColor="#94a3b8"
-              />
-            </View>
             
             <View>
               <Text style={styles.label}>이메일 주소</Text>
               <View style={styles.rowInputGroup}>
                 <TextInput 
-                  style={[styles.input, { flex: 1 }]}
+                  style={[
+                    styles.input, 
+                    { flex: 1 },
+                    errors.email && !isVerified && styles.errorInput
+                  ]}
                   placeholder="example@email.com"
                   placeholderTextColor="#94a3b8"
                   keyboardType="email-address"
                   autoCapitalize="none"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={(val) => {
+                    setEmail(val);
+                    if (errors.email) setErrors(prev => ({ ...prev, email: false }));
+                  }}
                   editable={!isVerified}
                 />
                 <TouchableOpacity 
@@ -157,7 +214,7 @@ export default function RegisterScreen({ navigation }: any) {
                   activeOpacity={0.7}
                   disabled={isVerified || isCooldown || isLoading}
                 >
-                  {isLoading ? (
+                  {isLoading && (isCooldown || !showVerification) ? (
                     <ActivityIndicator size="small" color="white" />
                   ) : (
                     <Text style={styles.verifyButtonText}>
@@ -202,32 +259,67 @@ export default function RegisterScreen({ navigation }: any) {
             </View>
 
             <View>
+              <Text style={styles.label}>닉네임</Text>
+              <TextInput 
+                style={[styles.input, errors.nickname && styles.errorInput]}
+                placeholder="닉네임을 입력해주세요"
+                placeholderTextColor="#94a3b8"
+                value={nickname}
+                onChangeText={(val) => {
+                  setNickname(val);
+                  if (errors.nickname) setErrors(prev => ({ ...prev, nickname: false }));
+                }}
+              />
+            </View>
+
+            <View>
               <Text style={styles.label}>비밀번호</Text>
               <TextInput 
-                style={styles.input}
+                style={[styles.input, errors.password && styles.errorInput]}
                 placeholder="8자 이상의 비밀번호"
                 placeholderTextColor="#94a3b8"
                 secureTextEntry={true}
+                value={password}
+                onChangeText={(val) => {
+                  setPassword(val);
+                  if (errors.password) setErrors(prev => ({ ...prev, password: false }));
+                }}
               />
             </View>
             <View>
               <Text style={styles.label}>비밀번호 확인</Text>
               <TextInput 
-                style={styles.input}
+                style={[
+                  styles.input, 
+                  (errors.confirmPassword || passwordMismatch) && styles.errorInput
+                ]}
                 placeholder="비밀번호를 다시 입력해주세요"
                 placeholderTextColor="#94a3b8"
                 secureTextEntry={true}
+                value={confirmPassword}
+                onChangeText={(val) => {
+                  setConfirmPassword(val);
+                  if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: false }));
+                  if (passwordMismatch) setPasswordMismatch(false);
+                }}
               />
+              {passwordMismatch && (
+                <Text style={styles.errorMessage}>비밀번호가 일치하지 않습니다.</Text>
+              )}
             </View>
           </View>
 
           <TouchableOpacity 
-            style={[styles.registerButton, !isVerified && styles.disabledRegisterButton]}
-            onPress={() => isVerified && navigation.navigate('Login')}
+            style={styles.registerButton}
+            onPress={handleRegister}
             activeOpacity={0.8}
-            disabled={!isVerified}
+            disabled={isLoading}
           >
-            <Text style={styles.registerButtonText}>가입하기</Text>
+            {isLoading && !isCooldown && showVerification ? (
+              <ActivityIndicator size="small" color="#0f172a" />
+            ) : (
+              <Text style={styles.registerButtonText}>가입하기</Text>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -318,6 +410,18 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
     fontSize: 14,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  errorInput: {
+    borderColor: '#ef4444',
+  },
+  errorMessage: {
+    fontSize: 12,
+    color: '#ef4444',
+    marginTop: 6,
+    marginLeft: 4,
+    fontWeight: '500',
   },
   verifyButton: {
     backgroundColor: '#0f172a',
@@ -327,7 +431,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     minWidth: 80,
-    height: 52, // Fixed height for loading indicator
+    height: 52, 
   },
   confirmCodeButton: {
     backgroundColor: '#64748b',
@@ -385,11 +489,6 @@ const styles = StyleSheet.create({
     elevation: 4,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  disabledRegisterButton: {
-    backgroundColor: '#f1f5f9',
-    shadowOpacity: 0,
-    elevation: 0,
   },
   registerButtonText: {
     color: '#0f172a',

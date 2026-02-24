@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import { View, StyleSheet, ViewStyle, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView, Edge } from 'react-native-safe-area-context';
 
 interface LayoutProps {
@@ -7,19 +7,34 @@ interface LayoutProps {
   style?: ViewStyle;
   edges?: Edge[];
   backgroundColor?: string;
+  disableKeyboardAvoid?: boolean;
 }
 
 export default function Layout({ 
   children, 
   style, 
-  edges = ['left', 'right', 'bottom'], // 기본적으로 좌우만 처리 (상단바/하단바가 있을 경우 대비)
-  backgroundColor = '#fcfaf2'
+  edges = ['left', 'right', 'bottom'],
+  backgroundColor = '#fcfaf2',
+  disableKeyboardAvoid = false
 }: LayoutProps) {
+  const content = (
+    <SafeAreaView style={[styles.flex1, style]} edges={edges}>
+      {children}
+    </SafeAreaView>
+  );
+
   return (
     <View style={[styles.container, { backgroundColor }]}>
-      <SafeAreaView style={[styles.flex1, style]} edges={edges}>
-        {children}
-      </SafeAreaView>
+      {disableKeyboardAvoid ? (
+        content
+      ) : (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.flex1}
+        >
+          {content}
+        </KeyboardAvoidingView>
+      )}
     </View>
   );
 }

@@ -8,7 +8,7 @@ export interface UserData {
 export interface RegisterRequest {
   email: string;
   nickName: string;
-  password?: string;
+  password: string;
 }
 
 class AuthService {
