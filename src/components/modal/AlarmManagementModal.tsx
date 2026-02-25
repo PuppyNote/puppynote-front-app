@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Modal, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { CustomText as Text } from '../CustomText';
 import { TimePickerCard } from '../card/TimePickerCard';
 import { petWalkAlarmService, WalkAlarm } from '../../services/petWalkAlarm/PetWalkAlarmService';
@@ -7,6 +7,7 @@ import { storageService } from '../../services/auth/StorageService';
 import { AlarmStatus } from '../../types/enums';
 import AlarmItem from '../items/AlarmItem';
 import CustomAlert from './CustomAlert';
+import GlobalDetailModal from './GlobalDetailModal';
 import { useAlert } from '../../hooks/useAlert';
 
 interface AlarmManagementModalProps {
@@ -119,76 +120,72 @@ export default function AlarmManagementModal({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide">
-      <View style={styles.modalOverlay}>
-        <View style={styles.container}>
-          <View style={styles.header}>
-            <Text style={styles.title}>알림 관리</Text>
-            <TouchableOpacity onPress={onClose}>
-              <Text style={styles.closeText}>닫기</Text>
-            </TouchableOpacity>
-          </View>
+    <GlobalDetailModal
+      visible={visible}
+      onClose={onClose}
+      title="알림 관리"
+      height="80%"
+      backgroundColor="#f8fafc"
+    >
+      {isAdding ? (
+        <View style={styles.pickerWrapper}>
+          <TimePickerCard 
+            initialData={editingAlarmId ? (() => {
+              const alarm = alarms.find(a => a.alarmId === editingAlarmId);
+              if (alarm) {
+                return {
+                  hour: alarm.alarmTime.split(':')[0],
+                  minute: alarm.alarmTime.split(':')[1],
+                  days: alarm.alarmDays,
+                  enabled: alarm.alarmStatus === AlarmStatus.YES,
+                };
+              }
+              return undefined;
+            })() : undefined}
+            onSave={handleSaveAlarm} 
+            onCancel={() => {
+              setIsAdding(false);
+              setEditingAlarmId(null);
+            }} 
+          />
+        </View>
+      ) : (
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          <TouchableOpacity 
+            style={styles.addButton} 
+            onPress={() => setIsAdding(true)}
+            activeOpacity={0.8}
+            disabled={isLoading}
+          >
+            <Text style={styles.addIcon}>+</Text>
+            <Text style={styles.addButtonText}>새로운 알림 추가</Text>
+          </TouchableOpacity>
 
-          {isAdding ? (
-            <View style={styles.pickerWrapper}>
-              <TimePickerCard 
-                initialData={editingAlarmId ? (() => {
-                  const alarm = alarms.find(a => a.alarmId === editingAlarmId);
-                  if (alarm) {
-                    return {
-                      hour: alarm.alarmTime.split(':')[0],
-                      minute: alarm.alarmTime.split(':')[1],
-                      days: alarm.alarmDays,
-                      enabled: alarm.alarmStatus === AlarmStatus.YES,
-                    };
-                  }
-                  return undefined;
-                })() : undefined}
-                onSave={handleSaveAlarm} 
-                onCancel={() => {
-                  setIsAdding(false);
-                  setEditingAlarmId(null);
-                }} 
-              />
+          {isLoading && alarms.length === 0 ? (
+            <ActivityIndicator color="#eebd2b" size="large" style={{ marginTop: 40 }} />
+          ) : alarms.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>등록된 알림이 없습니다.</Text>
+              <Text style={styles.emptySubText}>위의 버튼을 눌러 추가해보세요!</Text>
             </View>
           ) : (
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-              <TouchableOpacity 
-                style={styles.addButton} 
-                onPress={() => setIsAdding(true)}
-                activeOpacity={0.8}
-                disabled={isLoading}
-              >
-                <Text style={styles.addIcon}>+</Text>
-                <Text style={styles.addButtonText}>새로운 알림 추가</Text>
-              </TouchableOpacity>
-
-              {isLoading && alarms.length === 0 ? (
-                <ActivityIndicator color="#eebd2b" size="large" style={{ marginTop: 40 }} />
-              ) : alarms.length === 0 ? (
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.emptyText}>등록된 알림이 없습니다.</Text>
-                  <Text style={styles.emptySubText}>위의 버튼을 눌러 추가해보세요!</Text>
-                </View>
-              ) : (
-                alarms.map(alarm => (
-                  <AlarmItem 
-                    key={alarm.alarmId}
-                    id={alarm.alarmId.toString()}
-                    hour={alarm.alarmTime.split(':')[0]}
-                    minute={alarm.alarmTime.split(':')[1]}
-                    days={alarm.alarmDays}
-                    enabled={alarm.alarmStatus === AlarmStatus.YES}
-                    onToggle={toggleAlarm}
-                    onDelete={deleteAlarm}
-                    onPress={handleEditPress}
-                  />
-                ))
-              )}
-            </ScrollView>
+            alarms.map(alarm => (
+              <AlarmItem 
+                key={alarm.alarmId}
+                id={alarm.alarmId.toString()}
+                hour={alarm.alarmTime.split(':')[0]}
+                minute={alarm.alarmTime.split(':')[1]}
+                days={alarm.alarmDays}
+                enabled={alarm.alarmStatus === AlarmStatus.YES}
+                onToggle={toggleAlarm}
+                onDelete={deleteAlarm}
+                onPress={handleEditPress}
+              />
+            ))
           )}
-        </View>
-      </View>
+        </ScrollView>
+      )}
+
       {isLoading && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator color="#eebd2b" size="large" />
@@ -201,39 +198,11 @@ export default function AlarmManagementModal({
         message={alertConfig.message}
         onConfirm={alertConfig.onConfirm}
       />
-    </Modal>
+    </GlobalDetailModal>
   );
 }
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  container: {
-    backgroundColor: '#f8fafc',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    height: '80%',
-    padding: 24,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#0f172a',
-  },
-  closeText: {
-    color: '#64748b',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   scrollContent: {
     paddingBottom: 40,
   },

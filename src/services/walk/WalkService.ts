@@ -23,12 +23,35 @@ export interface WalkHistory {
   photoUrl: string;
 }
 
+export interface WalkDetail {
+  walkId: number;
+  petId: number;
+  startTime: string;
+  endTime: string;
+  latitude: number;
+  longitude: number;
+  location: string;
+  memo: string;
+  photoUrls: string[];
+}
+
 export interface CalendarDayStatus {
   date: string;
   hasWalk: boolean;
 }
 
 class WalkService {
+  // 산책 이력 상세 조회 API
+  public async getWalkDetail(walkId: number): Promise<WalkDetail> {
+    const response = await apiService.get<WalkDetail>(`/api/v1/walks/${walkId}`);
+    
+    if (response.statusCode !== 200) {
+      throw new Error(response.message || '산책 상세 정보 조회에 실패했습니다.');
+    }
+    
+    return response.data;
+  }
+
   // 산책 이력 목록 조회 API
   public async getWalkHistory(petId: number, date: string): Promise<WalkHistory[]> {
     const response = await apiService.get<WalkHistory[]>('/api/v1/walks', {

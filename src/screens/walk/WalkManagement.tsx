@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, ScrollView, Image, useWindowDimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Layout, Text, Calendar, FloatingActionButton, AlarmManagementModal } from '../../components';
+import { Layout, Text, Calendar, FloatingActionButton, AlarmManagementModal, WalkDetailModal } from '../../components';
 import { walkService, WalkHistory } from '../../services/walk/WalkService';
 import { storageService } from '../../services/auth/StorageService';
 import { formatToLocalDate, formatToLocalYearMonth } from '../../utils/DateUtil';
 
-const WalkCard = ({ walk }: { walk: WalkHistory }) => {
+const WalkCard = ({ walk, onPress }: { walk: WalkHistory, onPress: (id: number) => void }) => {
   const startTime = new Date(walk.startTime);
   const endTime = new Date(walk.endTime);
   
   const timeStr = `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')} - ${endTime.getHours().toString().padStart(2, '0')}:${endTime.getMinutes().toString().padStart(2, '0')}`;
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={() => onPress(walk.walkId)} activeOpacity={0.7}>
       <View style={styles.cardHeader}>
         <View style={styles.cardHeaderInfo}>
           {walk.photoUrl ? (
@@ -30,12 +30,14 @@ const WalkCard = ({ walk }: { walk: WalkHistory }) => {
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
 const WalkManagementScreen = ({ navigation }: any) => {
   const [isAlarmModalVisible, setIsAlarmModalVisible] = useState(false);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [selectedWalkId, setSelectedWalkId] = useState<number | null>(null);
   const [walkDates, setWalkDates] = useState<number[]>([]);
   const [walkHistory, setWalkHistory] = useState<WalkHistory[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -87,6 +89,11 @@ const WalkManagementScreen = ({ navigation }: any) => {
     fetchWalkHistory(date);
   };
 
+  const handleWalkPress = (id: number) => {
+    setSelectedWalkId(id);
+    setIsDetailModalVisible(true);
+  };
+
   return (
     <Layout>
       <View style={styles.topSection}>
@@ -120,7 +127,7 @@ const WalkManagementScreen = ({ navigation }: any) => {
             </View>
           ) : (
             walkHistory.map((walk) => (
-              <WalkCard key={walk.walkId} walk={walk} />
+              <WalkCard key={walk.walkId} walk={walk} onPress={handleWalkPress} />
             ))
           )}
         </ScrollView>
@@ -131,9 +138,18 @@ const WalkManagementScreen = ({ navigation }: any) => {
         visible={isAlarmModalVisible}
         onClose={() => setIsAlarmModalVisible(false)}
       />
+
+      <WalkDetailModal 
+        visible={isDetailModalVisible}
+        walkId={selectedWalkId}
+        onClose={() => {
+          setIsDetailModalVisible(false);
+          setSelectedWalkId(null);
+        }}
+      />
     </Layout>
   );
-};
+}
 
 const styles = StyleSheet.create({
   topSection: {
