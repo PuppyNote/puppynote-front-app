@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, Modal, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { View, StyleSheet, Modal, TouchableOpacity, Animated, PanResponder, Dimensions } from 'react-native';
 import { CustomText as Text } from '../CustomText';
 
 interface GlobalDetailModalProps {
@@ -11,6 +11,8 @@ interface GlobalDetailModalProps {
   backgroundColor?: string;
 }
 
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 export default function GlobalDetailModal({
   visible,
   onClose,
@@ -19,18 +21,84 @@ export default function GlobalDetailModal({
   height = '85%',
   backgroundColor = '#fcfaf2',
 }: GlobalDetailModalProps) {
+  const panY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+  useEffect(() => {
+    if (visible) {
+      // Slide up
+      Animated.spring(panY, {
+        toValue: 0,
+        useNativeDriver: true,
+        bounciness: 0,
+      }).start();
+    }
+  }, [visible]);
+
+  const handleClose = () => {
+    // Slide down
+    Animated.timing(panY, {
+      toValue: SCREEN_HEIGHT,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      onClose();
+    });
+  };
+
+  const panResponders = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Only respond to downward swipes
+        return gestureState.dy > 5;
+      },
+      onPanResponderMove: (event, gestureState) => {
+        if (gestureState.dy > 0) {
+          panY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (event, gestureState) => {
+        if (gestureState.dy > 150 || gestureState.vy > 0.5) {
+          handleClose();
+        } else {
+          Animated.spring(panY, {
+            toValue: 0,
+            useNativeDriver: true,
+            bounciness: 0,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
   return (
-    <Modal visible={visible} transparent animationType="slide">
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
       <View style={styles.modalOverlay}>
-        <View style={[styles.container, { height, backgroundColor }]}>
+        <TouchableOpacity 
+          style={StyleSheet.absoluteFill} 
+          activeOpacity={1} 
+          onPress={handleClose} 
+        />
+        <Animated.View 
+          style={[
+            styles.container, 
+            { 
+              height, 
+              backgroundColor,
+              transform: [{ translateY: panY }] 
+            }
+          ]}
+          {...panResponders.panHandlers}
+        >
+          <View style={styles.handleBar} />
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
               <Text style={styles.closeText}>닫기</Text>
             </TouchableOpacity>
           </View>
           {children}
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );
@@ -46,8 +114,16 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     width: '100%',
-    paddingTop: 24,
+    paddingTop: 12,
     paddingHorizontal: 24,
+  },
+  handleBar: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#e2e8f0',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 16,
   },
   header: {
     flexDirection: 'row',
