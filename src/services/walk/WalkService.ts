@@ -12,13 +12,15 @@ export interface CreateWalkRequest {
 }
 
 export interface WalkHistory {
-  id: number;
+  walkId: number;
   petId: number;
   startTime: string;
   endTime: string;
+  latitude: number;
+  longitude: number;
   location: string;
   memo: string;
-  photoUrls: string[];
+  photoUrl: string;
 }
 
 export interface CalendarDayStatus {
@@ -27,6 +29,19 @@ export interface CalendarDayStatus {
 }
 
 class WalkService {
+  // 산책 이력 목록 조회 API
+  public async getWalkHistory(petId: number, date: string): Promise<WalkHistory[]> {
+    const response = await apiService.get<WalkHistory[]>('/api/v1/walks', {
+      params: { petId, date }
+    });
+    
+    if (response.statusCode !== 200) {
+      throw new Error(response.message || '산책 이력 조회에 실패했습니다.');
+    }
+    
+    return response.data;
+  }
+
   // 산책 캘린더 조회 API
   public async getWalkCalendar(petId: number, yearMonth: string): Promise<CalendarDayStatus[]> {
     const response = await apiService.get<CalendarDayStatus[]>('/api/v1/walks/calendar', {

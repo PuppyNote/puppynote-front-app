@@ -15,9 +15,11 @@ import { Layout, Text, CustomAlert, TimePickerModal, AddTopBar } from '../../com
 import { walkService } from '../../services/walk/WalkService';
 import { storageService } from '../../services/auth/StorageService';
 import { useAlert } from '../../hooks/useAlert';
+import { formatToLocalDate } from '../../utils/DateUtil';
 
 export default function AddWalkScreen({ navigation }: any) {
-  const today = new Date().toISOString().split('T')[0];
+  const today = formatToLocalDate(new Date());
+  
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('09:30');
   const [location, setLocation] = useState('');
