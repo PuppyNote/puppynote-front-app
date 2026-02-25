@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, ScrollView, Image, useWindowDimensions, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Layout, Text, Calendar, FloatingActionButton, AlarmManagementModal } from '../../components';
+import { walkService } from '../../services/walk/WalkService';
+import { storageService } from '../../services/auth/StorageService';
 
 // Mock data for walks
 const walks = [
@@ -53,6 +56,30 @@ const WalkCard = ({ walk }: any) => (
 
 const WalkManagementScreen = ({ navigation }: any) => {
   const [isAlarmModalVisible, setIsAlarmModalVisible] = useState(false);
+  const [walkDates, setWalkDates] = useState<number[]>([]);
+
+  useEffect(() => {
+    const now = new Date();
+    fetchCalendarData(now.getFullYear(), now.getMonth() + 1);
+  }, []);
+
+  const fetchCalendarData = async (year: number, month: number) => {
+    try {
+      const selectedPet = await storageService.getSelectedPet();
+      if (!selectedPet) return;
+
+      const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
+      const data = await walkService.getWalkCalendar(selectedPet.id, yearMonth);
+      
+      const datesWithWalk = data
+        .filter(item => item.hasWalk)
+        .map(item => parseInt(item.date.split('-')[2], 10));
+      
+      setWalkDates(datesWithWalk);
+    } catch (error) {
+      console.log('Error fetching calendar data:', error);
+    }
+  };
 
   return (
     <Layout>
@@ -73,7 +100,10 @@ const WalkManagementScreen = ({ navigation }: any) => {
 
       <View style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.mainContent}>
-          <Calendar />
+          <Calendar 
+            walkDates={walkDates}
+            onMonthChange={fetchCalendarData}
+          />
           {walks.map((walk) => (
             <WalkCard key={walk.id} walk={walk} />
           ))}

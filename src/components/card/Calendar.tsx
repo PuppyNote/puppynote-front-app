@@ -5,10 +5,11 @@ import { CustomText as Text } from '../CustomText';
 
 interface CalendarProps {
   onDateSelect?: (date: Date) => void;
-  events?: number[]; // 이벤트를 표시할 날짜 배열 (예: [5, 15, 24])
+  onMonthChange?: (year: number, month: number) => void;
+  walkDates?: number[]; // 산책이 있는 날짜 배열 (예: [2, 5, 10])
 }
 
-export default function Calendar({ onDateSelect, events = [5, 15, 24] }: CalendarProps) {
+export default function Calendar({ onDateSelect, onMonthChange, walkDates = [] }: CalendarProps) {
   const [viewDate, setViewDate] = useState(new Date());
   
   const today = new Date();
@@ -21,11 +22,15 @@ export default function Calendar({ onDateSelect, events = [5, 15, 24] }: Calenda
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
   const handlePrevMonth = () => {
-    setViewDate(new Date(currentYear, currentMonth - 1, 1));
+    const newDate = new Date(currentYear, currentMonth - 1, 1);
+    setViewDate(newDate);
+    onMonthChange?.(newDate.getFullYear(), newDate.getMonth() + 1);
   };
 
   const handleNextMonth = () => {
-    setViewDate(new Date(currentYear, currentMonth + 1, 1));
+    const newDate = new Date(currentYear, currentMonth + 1, 1);
+    setViewDate(newDate);
+    onMonthChange?.(newDate.getFullYear(), newDate.getMonth() + 1);
   };
 
   const calendarDays = [];
@@ -75,11 +80,16 @@ export default function Calendar({ onDateSelect, events = [5, 15, 24] }: Calenda
               <>
                 <Text style={[
                   styles.dayText, 
-                  isTodayMonth && day === today.getDate() && styles.activeDay
+                  isTodayMonth && day === today.getDate() && styles.activeDay,
+                  !(isTodayMonth && day === today.getDate()) && walkDates.includes(day) && styles.walkDay
                 ]}>
                   {day}
                 </Text>
-                {events.includes(day) && <View style={styles.eventDot} />}
+                {walkDates.includes(day) && (
+                  <View style={styles.indicatorContainer}>
+                    <Text style={styles.pawIcon}>🐾</Text>
+                  </View>
+                )}
               </>
             )}
           </TouchableOpacity>
@@ -160,12 +170,22 @@ const styles = StyleSheet.create({
     color: 'white',
     overflow: 'hidden',
   },
-  eventDot: {
-    width: 4,
-    height: 4,
-    backgroundColor: '#ef4444',
-    borderRadius: 2,
+  walkDay: {
+    backgroundColor: '#f0fdf4',
+    borderRadius: 14,
+    color: '#16a34a',
+    fontWeight: 'bold',
+    overflow: 'hidden',
+  },
+  indicatorContainer: {
     position: 'absolute',
-    bottom: 4,
+    bottom: -2,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pawIcon: {
+    fontSize: 10,
+    color: '#22c55e',
   },
 });
