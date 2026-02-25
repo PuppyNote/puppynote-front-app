@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { Layout, Text, CustomAlert } from '../../components';
+import { Layout, Text, CustomAlert, PetRegistrationModal } from '../../components';
 import { authService } from '../../services/auth/AuthService';
 import { storageService } from '../../services/auth/StorageService';
+import { petService } from '../../services/PetService';
 
 export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isPetModalVisible, setIsPetModalVisible] = useState(false);
   
   // Custom Alert State
   const [alertConfig, setAlertConfig] = useState({
@@ -40,12 +42,29 @@ export default function LoginScreen({ navigation }: any) {
       await storageService.saveAccessToken(response.accessToken);
       await storageService.saveRefreshToken(response.refreshToken);
 
-      setIsLoading(false);
-      navigation.replace('MainTabs');
+      // 펫 조회
+      const pets = await petService.getPets();
+      
+      if (pets && pets.length > 0) {
+        // 첫번째 펫 정보 저장
+        await storageService.saveSelectedPet(pets[0].petId, pets[0].petName);
+        setIsLoading(false);
+        navigation.replace('MainTabs');
+      } else {
+        // 등록된 펫이 없으면 팝업 띄우기
+        setIsLoading(false);
+        setIsPetModalVisible(true);
+      }
     } catch (error: any) {
       setIsLoading(false);
       showAlert('오류', error.message || '로그인에 실패했습니다.');
     }
+  };
+
+  const handlePetRegistrationSuccess = async (petId: number, petName: string) => {
+    setIsPetModalVisible(false);
+    await storageService.saveSelectedPet(petId, petName);
+    navigation.replace('MainTabs');
   };
 
   return (
@@ -128,6 +147,11 @@ export default function LoginScreen({ navigation }: any) {
         title={alertConfig.title}
         message={alertConfig.message}
         onConfirm={alertConfig.onConfirm}
+      />
+
+      <PetRegistrationModal 
+        visible={isPetModalVisible}
+        onSuccess={handlePetRegistrationSuccess}
       />
     </Layout>
   );

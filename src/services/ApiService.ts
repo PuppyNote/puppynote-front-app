@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios';
 import { storageService } from './auth/StorageService';
 
 const BASE_URL = 'https://sangkihan.co.kr/puppynote';
@@ -17,9 +17,6 @@ class ApiService {
     this.instance = axios.create({
       baseURL: BASE_URL,
       timeout: 10000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     // Request Interceptor
@@ -67,20 +64,20 @@ class ApiService {
     );
   }
 
-  public async get<T>(url: string, params?: any): Promise<ApiResponse<T>> {
-    return this.instance.get<any, ApiResponse<T>>(url, { params });
+  public async get<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    return this.instance.get<any, ApiResponse<T>>(url, config);
   }
 
-  public async post<T>(url: string, data?: any): Promise<ApiResponse<T>> {
-    return this.instance.post<any, ApiResponse<T>>(url, data);
+  public async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    return this.instance.post<any, ApiResponse<T>>(url, data, config);
   }
 
-  public async put<T>(url: string, data?: any): Promise<ApiResponse<T>> {
-    return this.instance.put<any, ApiResponse<T>>(url, data);
+  public async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    return this.instance.put<any, ApiResponse<T>>(url, data, config);
   }
 
-  public async delete<T>(url: string): Promise<ApiResponse<T>> {
-    return this.instance.delete<any, ApiResponse<T>>(url);
+  public async delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    return this.instance.delete<any, ApiResponse<T>>(url, config);
   }
 }
 

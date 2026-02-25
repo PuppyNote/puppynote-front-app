@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { Text } from '..';
 
 export default function BottomTab({ state, descriptors, navigation }: any) {
   const tabs = [

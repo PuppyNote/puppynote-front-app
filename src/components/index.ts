@@ -1,14 +1,35 @@
-export { CustomText as Text } from './CustomText';
-export { default as Layout } from './Layout';
-export { default as TopBar } from './tabs/TopBar';
-export { default as BottomTab } from './tabs/BottomTab';
-export { default as SubTabs } from './tabs/SubTabs';
-export { default as Calendar } from './card/Calendar';
-export { default as Card } from './card/Card';
-export { default as Badge } from './badge/Badge';
-export { default as FloatingActionButton } from './button/FloatingActionButton';
-export { default as ActivityItem } from './items/ActivityItem';
-export { default as SupplyItem } from './items/SupplyItem';
-export { default as HealthItem } from './items/HealthItem';
-export { default as CustomAlert } from './modal/CustomAlert';
-export { TimePickerCard } from './card/TimePickerCard';
+import { CustomText as Text } from './CustomText';
+import Layout from './Layout';
+import TopBar from './tabs/TopBar';
+import BottomTab from './tabs/BottomTab';
+import SubTabs from './tabs/SubTabs';
+import Calendar from './card/Calendar';
+import Card from './card/Card';
+import Badge from './badge/Badge';
+import FloatingActionButton from './button/FloatingActionButton';
+import ActivityItem from './items/ActivityItem';
+import SupplyItem from './items/SupplyItem';
+import HealthItem from './items/HealthItem';
+import CustomAlert from './modal/CustomAlert';
+import PetRegistrationModal from './modal/PetRegistrationModal';
+import DatePickerModal from './modal/DatePickerModal';
+import { TimePickerCard } from './card/TimePickerCard';
+
+export {
+  Text,
+  Layout,
+  TopBar,
+  BottomTab,
+  SubTabs,
+  Calendar,
+  Card,
+  Badge,
+  FloatingActionButton,
+  ActivityItem,
+  SupplyItem,
+  HealthItem,
+  CustomAlert,
+  PetRegistrationModal,
+  DatePickerModal,
+  TimePickerCard,
+};
