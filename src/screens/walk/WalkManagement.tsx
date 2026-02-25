@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, ScrollView, Image, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, ScrollView, Image, useWindowDimensions, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Layout, Text, TimePickerCard, Calendar, FloatingActionButton } from '../../components';
+import { Layout, Text, Calendar, FloatingActionButton, AlarmManagementModal } from '../../components';
 
 // Mock data for walks
 const walks = [
@@ -53,59 +53,86 @@ const WalkCard = ({ walk }: any) => (
 );
 
 const WalkManagementScreen = ({ navigation }: any) => {
-  const [activeTab, setActiveTab] = useState('all');
-  const { width } = useWindowDimensions();
-
-  const tabs = [
-    { id: 'all', label: 'All Walks' },
-    { id: 'scheduled', label: 'Scheduled' },
-    { id: 'history', label: 'History' },
-    { id: 'today', label: 'Today' },
-    { id: 'tomorrow', label: 'Tomorrow' },
-    { id: 'next_week', label: 'Next Week' },
-    { id: 'last_week', label: 'Last Week' },
-    { id: 'missed', label: 'Missed' },
-    { id: 'completed', label: 'Completed' },
-    { id: 'favorites', label: 'Favorites' },
-  ];
-  const insets = useSafeAreaInsets();
+  const [isAlarmModalVisible, setIsAlarmModalVisible] = useState(false);
 
   return (
     <Layout>
-      {/* <SubTabs 
-        tabs={tabs} 
-        activeTabId={activeTab} 
-        onTabPress={setActiveTab} 
-      /> */}
-      <View style={{ flex: 1 }}>
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
+      <View style={styles.topSection}>
+        <TouchableOpacity 
+          style={styles.alarmManageButton}
+          onPress={() => setIsAlarmModalVisible(true)}
         >
-          <View style={{ width, paddingHorizontal: 24, paddingVertical: 24 }}>
-            <TimePickerCard />
+          <View style={styles.alarmIconContainer}>
+            <Text style={styles.alarmIcon}>⏰</Text>
           </View>
-          <View style={{ width, paddingHorizontal: 24, paddingVertical: 24 }}>
-            <Calendar />
+          <View>
+            <Text style={styles.alarmManageTitle}>알림 관리</Text>
+            <Text style={styles.alarmManageSub}>산책 및 일과 알림을 관리하세요</Text>
           </View>
-        </ScrollView>
+        </TouchableOpacity>
       </View>
+
       <View style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.mainContent}>
+          <Calendar />
           {walks.map((walk) => (
             <WalkCard key={walk.id} walk={walk} />
           ))}
         </ScrollView>
       </View>
-      <FloatingActionButton onPress={() => console.log('Add Health Record')} />
+      <FloatingActionButton onPress={() => console.log('Add Walk')} />
+
+      <AlarmManagementModal 
+        visible={isAlarmModalVisible}
+        onClose={() => setIsAlarmModalVisible(false)}
+      />
     </Layout>
   );
 };
 
 const styles = StyleSheet.create({
+  topSection: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  alarmManageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+    gap: 16,
+  },
+  alarmIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#fef3c7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  alarmIcon: {
+    fontSize: 24,
+  },
+  alarmManageTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+  alarmManageSub: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginTop: 2,
+  },
   mainContent: {
     paddingHorizontal: 24,
+    paddingTop: 12,
     paddingBottom: 50,
   },
   card: {

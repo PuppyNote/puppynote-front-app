@@ -10,10 +10,12 @@ import FloatingActionButton from './button/FloatingActionButton';
 import ActivityItem from './items/ActivityItem';
 import SupplyItem from './items/SupplyItem';
 import HealthItem from './items/HealthItem';
+import AlarmItem from './items/AlarmItem';
 import CustomAlert from './modal/CustomAlert';
 import PetRegistrationModal from './modal/PetRegistrationModal';
 import EntryOptionModal from './modal/EntryOptionModal';
 import InviteCodeModal from './modal/InviteCodeModal';
+import AlarmManagementModal from './modal/AlarmManagementModal';
 import DatePickerModal from './modal/DatePickerModal';
 import { TimePickerCard } from './card/TimePickerCard';
 
@@ -30,10 +32,12 @@ export {
   ActivityItem,
   SupplyItem,
   HealthItem,
+  AlarmItem,
   CustomAlert,
   PetRegistrationModal,
   EntryOptionModal,
   InviteCodeModal,
+  AlarmManagementModal,
   DatePickerModal,
   TimePickerCard,
 };

@@ -37,33 +37,93 @@ const TimeScroller = ({ items, selectedValue, onSelect }) => {
   );
 };
 
-export const TimePickerCard = () => {
-  const [isEnabled, setIsEnabled] = useState(false);
+export const TimePickerCard = ({ onSave, onCancel }: { onSave?: (data: any) => void, onCancel?: () => void }) => {
+  const [isEnabled, setIsEnabled] = useState(true);
   const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
   const [selectedHour, setSelectedHour] = useState("09");
   const [selectedMinute, setSelectedMinute] = useState("30");
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+
+  const days = [
+    { id: 'MON', label: '월' },
+    { id: 'TUE', label: '화' },
+    { id: 'WED', label: '수' },
+    { id: 'THU', label: '목' },
+    { id: 'FRI', label: '금' },
+    { id: 'SAT', label: '토' },
+    { id: 'SUN', label: '일' },
+  ];
+
+  const toggleDay = (dayId: string) => {
+    setSelectedDays(prev => 
+      prev.includes(dayId) 
+        ? prev.filter(d => d !== dayId) 
+        : [...prev, dayId]
+    );
+  };
 
   const hours = Array.from({ length: 24 }, (_, i) =>
     String(i).padStart(2, "0")
   );
-  const minutes = Array.from({ length: 12 }, (_, i) =>
-    String(i * 5).padStart(2, "0")
+  const minutes = Array.from({ length: 60 }, (_, i) =>
+    String(i).padStart(2, "0")
   );
+
+  const handleSave = () => {
+    if (onSave) {
+      onSave({
+        hour: selectedHour,
+        minute: selectedMinute,
+        days: selectedDays,
+        enabled: isEnabled,
+      });
+    }
+  };
 
   return (
     <Card className="p-6 bg-white rounded-4xl">
       <View className="flex-row justify-between items-center mb-6">
         <View className="flex-row items-center">
           <Text className="text-xl font-bold text-grey-900 ml-2">
-            산책 시간
+            알림 설정
           </Text>
         </View>
-        <TouchableOpacity
-          onPress={() => console.log("Save button pressed!")}
-          style={styles.saveButton}
-        >
-          <Text style={styles.saveButtonText}>저장</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          {onCancel && (
+            <TouchableOpacity
+              onPress={onCancel}
+              style={[styles.saveButton, { backgroundColor: '#f1f5f9' }]}
+            >
+              <Text style={[styles.saveButtonText, { color: '#475569' }]}>취소</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            onPress={handleSave}
+            style={styles.saveButton}
+          >
+            <Text style={styles.saveButtonText}>저장</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.daysContainer}>
+        {days.map((day) => (
+          <TouchableOpacity
+            key={day.id}
+            onPress={() => toggleDay(day.id)}
+            style={[
+              styles.dayButton,
+              selectedDays.includes(day.id) && styles.selectedDayButton
+            ]}
+          >
+            <Text style={[
+              styles.dayText,
+              selectedDays.includes(day.id) && styles.selectedDayText
+            ]}>
+              {day.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       <View className="flex-row justify-center items-center mb-6">
@@ -92,7 +152,7 @@ export const TimePickerCard = () => {
                 알림 허용
               </Text>
               <Text className="text-sm text-grey-500">
-                산책 10분전 알림이 전송됩니다.
+                설정된 시간에 알림이 전송됩니다.
               </Text>
             </View>
           </View>
@@ -126,15 +186,42 @@ const styles = StyleSheet.create({
     borderRadius: 9999,
   },
   saveButtonText: {
-    color: "white",
+    color: "#0f172a",
     fontWeight: "bold",
+  },
+  daysContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  dayButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f8fafc',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  selectedDayButton: {
+    backgroundColor: '#eebd2b',
+    borderColor: '#eebd2b',
+  },
+  dayText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748b',
+  },
+  selectedDayText: {
+    color: '#0f172a',
   },
   highlightContainer: {
     height: 60,
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
-    top: 120,
+    top: 178,
     left: 0,
     right: 0,
     zIndex: -1,
