@@ -13,9 +13,11 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { CustomText as Text } from '../CustomText';
-import { petService } from '../../services/PetService';
+import { petService } from '../../services/pet/PetService';
 import { storageService } from '../../services/auth/StorageService';
 import { DatePickerModal } from '../index';
+import CustomAlert from './CustomAlert';
+import { useAlert } from '../../hooks/useAlert';
 
 interface PetRegistrationModalProps {
   visible: boolean;
@@ -33,6 +35,7 @@ export default function PetRegistrationModal({
   const [image, setImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const { alertConfig, showAlert } = useAlert();
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -49,7 +52,7 @@ export default function PetRegistrationModal({
 
   const handleRegister = async () => {
     if (!name) {
-      alert('펫 이름을 입력해주세요.');
+      showAlert('알림', '펫 이름을 입력해주세요.');
       return;
     }
 
@@ -75,7 +78,7 @@ export default function PetRegistrationModal({
 
       onSuccess(petData.petId, petData.petName);
     } catch (error: any) {
-      alert(error.message || '펫 등록 중 오류가 발생했습니다.');
+      showAlert('오류', error.message || '펫 등록 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -156,6 +159,13 @@ export default function PetRegistrationModal({
         onClose={() => setIsDatePickerVisible(false)}
         onConfirm={setBirthDate}
         initialDate={birthDate}
+      />
+
+      <CustomAlert 
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onConfirm={alertConfig.onConfirm}
       />
     </Modal>
   );

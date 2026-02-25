@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, ActivityIndicator, Platform } from 'react-native';
 import { Layout, Text, CustomAlert } from '../../components';
 import { authService } from '../../services/auth/AuthService';
+import { useAlert } from '../../hooks/useAlert';
 
 export default function RegisterScreen({ navigation }: any) {
   const [showVerification, setShowVerification] = useState(false);
@@ -28,14 +29,7 @@ export default function RegisterScreen({ navigation }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [isCooldown, setIsCooldown] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Custom Alert State
-  const [alertConfig, setAlertConfig] = useState({
-    visible: false,
-    title: '',
-    message: '',
-    onConfirm: () => {},
-  });
+  const { alertConfig, showAlert } = useAlert();
 
   // Timer logic
   useEffect(() => {
@@ -57,15 +51,6 @@ export default function RegisterScreen({ navigation }: any) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  };
-
-  const showAlert = (title: string, message: string, onConfirm = () => setAlertConfig(prev => ({ ...prev, visible: false }))) => {
-    setAlertConfig({
-      visible: true,
-      title,
-      message,
-      onConfirm,
-    });
   };
 
   const handleSendVerification = async () => {

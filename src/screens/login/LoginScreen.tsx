@@ -3,7 +3,8 @@ import { View, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator
 import { Layout, Text, CustomAlert, PetRegistrationModal, EntryOptionModal, InviteCodeModal } from '../../components';
 import { authService } from '../../services/auth/AuthService';
 import { storageService } from '../../services/auth/StorageService';
-import { petService } from '../../services/PetService';
+import { petService } from '../../services/pet/PetService';
+import { useAlert } from '../../hooks/useAlert';
 
 export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
@@ -12,23 +13,7 @@ export default function LoginScreen({ navigation }: any) {
   const [isEntryOptionVisible, setIsEntryOptionVisible] = useState(false);
   const [isPetModalVisible, setIsPetModalVisible] = useState(false);
   const [isInviteModalVisible, setIsInviteModalVisible] = useState(false);
-  
-  // Custom Alert State
-  const [alertConfig, setAlertConfig] = useState({
-    visible: false,
-    title: '',
-    message: '',
-    onConfirm: () => {},
-  });
-
-  const showAlert = (title: string, message: string, onConfirm = () => setAlertConfig(prev => ({ ...prev, visible: false }))) => {
-    setAlertConfig({
-      visible: true,
-      title,
-      message,
-      onConfirm,
-    });
-  };
+  const { alertConfig, showAlert } = useAlert();
 
   const handleLogin = async () => {
     if (!email || !password) {

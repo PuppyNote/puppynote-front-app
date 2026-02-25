@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, ScrollView, Image, useWindowDimensions, TouchableOpacity } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Layout, Text, Calendar, FloatingActionButton, AlarmManagementModal } from '../../components';
 
 // Mock data for walks

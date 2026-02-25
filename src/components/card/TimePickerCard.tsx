@@ -1,48 +1,33 @@
 import React, { useState } from "react";
-import { View, Switch, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Switch, TouchableOpacity, StyleSheet } from "react-native";
 import Card from "./Card";
 import { CustomText as Text } from '../CustomText';
+import { WheelPicker } from '../picker/WheelPicker';
 
-const TimeScroller = ({ items, selectedValue, onSelect }) => {
-  return (
-    <View style={styles.timeScroller}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        snapToInterval={50}
-        decelerationRate="fast"
-        onMomentumScrollEnd={(event) => {
-          const index = Math.round(event.nativeEvent.contentOffset.y / 50);
-          onSelect(items[index]);
-        }}
-        contentContainerStyle={{ paddingVertical: 50 }}
-      >
-        {items.map((item) => (
-          <View
-            key={item}
-            style={styles.timeScrollerItem}
-          >
-            <Text
-              className={`text-3xl ${
-                selectedValue === item
-                  ? "font-bold text-grey-900"
-                  : "text-grey-300"
-              }`}
-            >
-              {item}
-            </Text>
-          </View>
-        ))}
-      </ScrollView>
-    </View>
-  );
-};
-
-export const TimePickerCard = ({ onSave, onCancel }: { onSave?: (data: any) => void, onCancel?: () => void }) => {
-  const [isEnabled, setIsEnabled] = useState(true);
+export const TimePickerCard = ({ 
+  onSave, 
+  onCancel, 
+  initialData 
+}: { 
+  onSave?: (data: any) => void, 
+  onCancel?: () => void,
+  initialData?: { hour: string, minute: string, days: string[], enabled: boolean }
+}) => {
+  const [isEnabled, setIsEnabled] = useState(initialData?.enabled ?? true);
   const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
-  const [selectedHour, setSelectedHour] = useState("09");
-  const [selectedMinute, setSelectedMinute] = useState("30");
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [selectedHour, setSelectedHour] = useState(initialData?.hour ?? "09");
+  
+  // Round initial minute to nearest 5 for matching with 5-minute interval items
+  const getInitialMinute = () => {
+    if (!initialData?.minute) return "30";
+    const min = parseInt(initialData.minute, 10);
+    const rounded = Math.round(min / 5) * 5;
+    const normalized = rounded >= 60 ? 55 : rounded;
+    return String(normalized).padStart(2, "0");
+  };
+  
+  const [selectedMinute, setSelectedMinute] = useState(getInitialMinute());
+  const [selectedDays, setSelectedDays] = useState<string[]>(initialData?.days ?? []);
 
   const days = [
     { id: 'MON', label: '월' },
@@ -65,8 +50,10 @@ export const TimePickerCard = ({ onSave, onCancel }: { onSave?: (data: any) => v
   const hours = Array.from({ length: 24 }, (_, i) =>
     String(i).padStart(2, "0")
   );
-  const minutes = Array.from({ length: 60 }, (_, i) =>
-    String(i).padStart(2, "0")
+  
+  // 5-minute intervals: 00, 05, 10, ..., 55
+  const minutes = Array.from({ length: 12 }, (_, i) =>
+    String(i * 5).padStart(2, "0")
   );
 
   const handleSave = () => {
@@ -127,16 +114,18 @@ export const TimePickerCard = ({ onSave, onCancel }: { onSave?: (data: any) => v
       </View>
 
       <View className="flex-row justify-center items-center mb-6">
-        <TimeScroller
+        <WheelPicker
           items={hours}
           selectedValue={selectedHour}
           onSelect={setSelectedHour}
+          width={80}
         />
         <Text className="text-3xl font-bold text-grey-900 mx-4">:</Text>
-        <TimeScroller
+        <WheelPicker
           items={minutes}
           selectedValue={selectedMinute}
           onSelect={setSelectedMinute}
+          width={80}
         />
       </View>
       

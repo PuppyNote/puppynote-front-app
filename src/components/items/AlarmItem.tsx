@@ -10,6 +10,7 @@ export interface AlarmItemProps {
   enabled: boolean;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
+  onPress: (id: string) => void;
 }
 
 const daysLabel: { [key: string]: string } = {
@@ -26,10 +27,15 @@ export default function AlarmItem({
   enabled,
   onToggle,
   onDelete,
+  onPress,
 }: AlarmItemProps) {
   return (
     <View style={styles.alarmItem}>
-      <View style={styles.alarmInfo}>
+      <TouchableOpacity 
+        style={styles.alarmInfo} 
+        onPress={() => onPress(id)}
+        activeOpacity={0.7}
+      >
         <Text style={styles.alarmTime}>{hour}:{minute}</Text>
         <View style={styles.daysRow}>
           {dayOrder.map(day => (
@@ -44,7 +50,7 @@ export default function AlarmItem({
             </Text>
           ))}
         </View>
-      </View>
+      </TouchableOpacity>
       <View style={styles.alarmActions}>
         <Switch
           trackColor={{ false: "#E9ECEF", true: "#FEE500" }}

@@ -1,4 +1,4 @@
-import { apiService } from './ApiService';
+import { apiService } from '../ApiService';
 
 export interface PetSummary {
   petId: number;
