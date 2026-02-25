@@ -1,19 +1,14 @@
 import React from 'react';
 import { View, TouchableOpacity, TextInput, ScrollView, StyleSheet } from 'react-native';
-import { Layout, Text } from '../../components';
+import { Layout, Text, AddTopBar } from '../../components';
 
 export default function AddSupplyScreen({ navigation }: any) {
   return (
-    <Layout edges={['left', 'right']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.headerCancelText}>Cancel</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitleText}>Add New Supply</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.headerDoneText}>Done</Text>
-        </TouchableOpacity>
-      </View>
+    <Layout edges={['bottom', 'left', 'right']} backgroundColor="#fcfaf2">
+      <AddTopBar 
+        title="용품 등록하기" 
+        onBack={() => navigation.goBack()} 
+      />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.photoUploadSection}>
@@ -83,37 +78,9 @@ export default function AddSupplyScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-    backgroundColor: 'white',
-  },
-  headerCancelText: {
-    color: '#64748b',
-    fontWeight: '500',
-    fontSize: 18,
-  },
-  headerTitleText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    letterSpacing: -0.5,
-    color: '#0f172a',
-  },
-  headerDoneText: {
-    color: '#eebd2b',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
   scrollView: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingVertical: 24,
   },
   photoUploadSection: {
     alignItems: 'center',

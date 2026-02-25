@@ -79,7 +79,7 @@ const WalkManagementScreen = ({ navigation }: any) => {
           ))}
         </ScrollView>
       </View>
-      <FloatingActionButton onPress={() => console.log('Add Walk')} />
+      <FloatingActionButton onPress={() => navigation.navigate('AddWalk')} />
 
       <AlarmManagementModal 
         visible={isAlarmModalVisible}
