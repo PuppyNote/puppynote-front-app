@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Platform } from 'react-native';
 import { Layout, Text, CustomAlert, PetRegistrationModal, EntryOptionModal, InviteCodeModal } from '../../components';
 import { authService } from '../../services/auth/AuthService';
 import { storageService } from '../../services/auth/StorageService';
@@ -100,6 +100,9 @@ export default function LoginScreen({ navigation }: any) {
             secureTextEntry={true}
             value={password}
             onChangeText={setPassword}
+            autoCapitalize="none"
+            autoCorrect={false}
+            textContentType="password"
           />
         </View>
 
@@ -231,6 +234,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
     fontSize: 14,
+    fontFamily: Platform.OS === 'android' ? 'monospace' : 'sans-serif',
   },
   loginButton: {
     width: '100%',

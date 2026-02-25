@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "puppynote-front-app",
+    "name": "PuppyNote",
     "slug": "puppynote-front-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,6 +16,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.puppynote",
       "adaptiveIcon": {
         "foregroundImage": "./assets/puppynote-icon.png",
         "backgroundColor": "#ffffff"
@@ -29,6 +30,11 @@
     "plugins": [
       "expo-secure-store",
       "expo-notifications"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "15ac1ca0-2636-4f5e-a117-8fd5eaff2c24"
+      }
+    }
   }
 }

@@ -269,6 +269,9 @@ export default function RegisterScreen({ navigation }: any) {
                   setPassword(val);
                   if (errors.password) setErrors(prev => ({ ...prev, password: false }));
                 }}
+                autoCapitalize="none"
+                autoCorrect={false}
+                textContentType="password"
               />
             </View>
             <View>
@@ -287,6 +290,9 @@ export default function RegisterScreen({ navigation }: any) {
                   if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: false }));
                   if (passwordMismatch) setPasswordMismatch(false);
                 }}
+                autoCapitalize="none"
+                autoCorrect={false}
+                textContentType="password"
               />
               {passwordMismatch && (
                 <Text style={styles.errorMessage}>비밀번호가 일치하지 않습니다.</Text>
@@ -397,6 +403,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     borderWidth: 1,
     borderColor: 'transparent',
+    fontFamily: Platform.OS === 'android' ? 'monospace' : 'sans-serif',
   },
   errorInput: {
     borderColor: '#ef4444',

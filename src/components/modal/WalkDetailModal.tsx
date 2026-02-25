@@ -111,34 +111,36 @@ export default function WalkDetailModal({
           </View>
 
           {/* Map Section */}
-          <View style={styles.mapSection}>
-            <Text style={styles.infoLabel}>위치 정보</Text>
-            <View style={styles.mapContainer}>
-              <MapView
-                provider={PROVIDER_GOOGLE}
-                style={styles.map}
-                initialRegion={{
-                  latitude: detail.latitude,
-                  longitude: detail.longitude,
-                  latitudeDelta: 0.005,
-                  longitudeDelta: 0.005,
-                }}
-                scrollEnabled={false}
-                zoomEnabled={false}
-              >
-                <Marker
-                  coordinate={{
+          {detail.latitude && detail.longitude && (
+            <View style={styles.mapSection}>
+              <Text style={styles.infoLabel}>위치 정보</Text>
+              <View style={styles.mapContainer}>
+                <MapView
+                  provider={PROVIDER_GOOGLE}
+                  style={styles.map}
+                  initialRegion={{
                     latitude: detail.latitude,
                     longitude: detail.longitude,
+                    latitudeDelta: 0.005,
+                    longitudeDelta: 0.005,
                   }}
+                  scrollEnabled={false}
+                  zoomEnabled={false}
                 >
-                  <View style={styles.markerContainer}>
-                    <Text style={styles.markerPaw}>🐾</Text>
-                  </View>
-                </Marker>
-              </MapView>
+                  <Marker
+                    coordinate={{
+                      latitude: detail.latitude,
+                      longitude: detail.longitude,
+                    }}
+                  >
+                    <View style={styles.markerContainer}>
+                      <Text style={styles.markerPaw}>🐾</Text>
+                    </View>
+                  </Marker>
+                </MapView>
+              </View>
             </View>
-          </View>
+          )}
         </ScrollView>
       ) : (
         <View style={styles.errorContainer}>
