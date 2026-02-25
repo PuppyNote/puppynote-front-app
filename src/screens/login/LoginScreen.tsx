@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { Layout, Text, CustomAlert, PetRegistrationModal } from '../../components';
+import { Layout, Text, CustomAlert, PetRegistrationModal, EntryOptionModal, InviteCodeModal } from '../../components';
 import { authService } from '../../services/auth/AuthService';
 import { storageService } from '../../services/auth/StorageService';
 import { petService } from '../../services/PetService';
@@ -9,7 +9,9 @@ export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isEntryOptionVisible, setIsEntryOptionVisible] = useState(false);
   const [isPetModalVisible, setIsPetModalVisible] = useState(false);
+  const [isInviteModalVisible, setIsInviteModalVisible] = useState(false);
   
   // Custom Alert State
   const [alertConfig, setAlertConfig] = useState({
@@ -51,9 +53,9 @@ export default function LoginScreen({ navigation }: any) {
         setIsLoading(false);
         navigation.replace('MainTabs');
       } else {
-        // 등록된 펫이 없으면 팝업 띄우기
+        // 등록된 펫이 없으면 선택 팝업 띄우기
         setIsLoading(false);
-        setIsPetModalVisible(true);
+        setIsEntryOptionVisible(true);
       }
     } catch (error: any) {
       setIsLoading(false);
@@ -61,8 +63,24 @@ export default function LoginScreen({ navigation }: any) {
     }
   };
 
+  const handleSelectRegisterPet = () => {
+    setIsEntryOptionVisible(false);
+    setIsPetModalVisible(true);
+  };
+
+  const handleSelectInviteCode = () => {
+    setIsEntryOptionVisible(false);
+    setIsInviteModalVisible(true);
+  };
+
   const handlePetRegistrationSuccess = async (petId: number, petName: string) => {
     setIsPetModalVisible(false);
+    await storageService.saveSelectedPet(petId, petName);
+    navigation.replace('MainTabs');
+  };
+
+  const handleInviteCodeSuccess = async (petId: number, petName: string) => {
+    setIsInviteModalVisible(false);
     await storageService.saveSelectedPet(petId, petName);
     navigation.replace('MainTabs');
   };
@@ -149,9 +167,28 @@ export default function LoginScreen({ navigation }: any) {
         onConfirm={alertConfig.onConfirm}
       />
 
+      <EntryOptionModal 
+        visible={isEntryOptionVisible}
+        onRegisterPet={handleSelectRegisterPet}
+        onEnterInviteCode={handleSelectInviteCode}
+      />
+
       <PetRegistrationModal 
         visible={isPetModalVisible}
         onSuccess={handlePetRegistrationSuccess}
+        onClose={() => {
+          setIsPetModalVisible(false);
+          setIsEntryOptionVisible(true);
+        }}
+      />
+
+      <InviteCodeModal 
+        visible={isInviteModalVisible}
+        onSuccess={handleInviteCodeSuccess}
+        onBack={() => {
+          setIsInviteModalVisible(false);
+          setIsEntryOptionVisible(true);
+        }}
       />
     </Layout>
   );

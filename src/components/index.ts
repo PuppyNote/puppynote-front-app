@@ -12,6 +12,8 @@ import SupplyItem from './items/SupplyItem';
 import HealthItem from './items/HealthItem';
 import CustomAlert from './modal/CustomAlert';
 import PetRegistrationModal from './modal/PetRegistrationModal';
+import EntryOptionModal from './modal/EntryOptionModal';
+import InviteCodeModal from './modal/InviteCodeModal';
 import DatePickerModal from './modal/DatePickerModal';
 import { TimePickerCard } from './card/TimePickerCard';
 
@@ -30,6 +32,8 @@ export {
   HealthItem,
   CustomAlert,
   PetRegistrationModal,
+  EntryOptionModal,
+  InviteCodeModal,
   DatePickerModal,
   TimePickerCard,
 };
