@@ -56,7 +56,7 @@ class AuthService {
 
     console.log('Login Request Data:', { email, deviceId, pushKey });
 
-    const response = await apiService.post<LoginData>('/api/v1/user/login', {
+    const response = await apiService.post<LoginData>('/api/v1/auth/login', {
       email,
       password,
       deviceId,
