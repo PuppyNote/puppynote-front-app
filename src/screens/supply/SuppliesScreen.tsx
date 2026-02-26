@@ -1,15 +1,66 @@
-import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, ScrollView, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { 
   Layout, 
   CategoryTab, 
   SupplyItem, 
-  FloatingActionButton 
+  FloatingActionButton,
+  Text
 } from '../../components';
+import { petItemService } from '../../services/petItem/PetItemService';
+import { storageService } from '../../services/auth/StorageService';
+import { PetItem } from '../../types/PetItem';
+import { calculateDaysDifference } from '../../utils/DateUtil';
 
 export default function SuppliesScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState('all');
   const [tabs, setTabs] = useState([{ id: 'all', label: '전체' }]);
+  const [items, setItems] = useState<PetItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchItems = useCallback(async (category?: string) => {
+    try {
+      setLoading(true);
+      const selectedPet = await storageService.getSelectedPet();
+      if (!selectedPet) return;
+
+      const data = await petItemService.getPetItems(selectedPet.id, category === 'all' ? undefined : category);
+      setItems(data);
+    } catch (error) {
+      console.error('Failed to fetch pet items:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchItems(activeTab);
+  }, [activeTab, fetchItems]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchItems(activeTab);
+    setRefreshing(false);
+  }, [activeTab, fetchItems]);
+
+  const getStatusInfo = (nextPurchaseAt: string) => {
+    if (!nextPurchaseAt) return { label: '미구매 항목', variant: 'neutral' as const };
+
+    const daysLeft = calculateDaysDifference(nextPurchaseAt);
+
+    if (daysLeft < 0) {
+      return { label: `소진됨 (${Math.abs(daysLeft)}일 경과)`, variant: 'error' as const };
+    } else if (daysLeft === 0) {
+      return { label: '오늘 소진 예정', variant: 'error' as const };
+    } else if (daysLeft <= 3) {
+      return { label: `${daysLeft}일 후 소진 예정`, variant: 'error' as const };
+    } else if (daysLeft <= 7) {
+      return { label: `${daysLeft}일 후 소진 예정`, variant: 'warning' as const };
+    } else {
+      return { label: '재고 충분', variant: 'success' as const };
+    }
+  };
 
   return (
     <Layout>
@@ -23,28 +74,34 @@ export default function SuppliesScreen({ navigation }: any) {
         })}
       />
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <SupplyItem 
-          title="프리미엄 강아지 사료" 
-          category="음식" 
-          status="3일 후 소진 예정" 
-          statusVariant="error" 
-          image="https://lh3.googleusercontent.com/aida-public/AB6AXuDQngR7iBTWfN8h-0vz34AlWfv1h-cleScZfne4pEM_pdGvyA4T4am7CBdbyx1b9kn_6zVQE0_JQ_BbnkYhNZRNqvYe4vv342gZdkpSzOzY_VHwJTeUIkf45wwV-O9vHZayYbGUYQXrfqp1PWbFakO6REPrdCizv1iqaeyG-C5UCcpA09nuJHe-vixH7ftyjayhVJNsh3EVExmZPLGhjhU14-4371Xp3ZmpdJI3OGcGdcjI80EVXdk7Zql25uOT40Ef0BEZCAHQ8ko"
-        />
-        <SupplyItem 
-          title="위생 패드" 
-          category="위생" 
-          status="12일 후 소진 예정" 
-          statusVariant="warning" 
-          image="https://lh3.googleusercontent.com/aida-public/AB6AXuDnB44Nhvj4H02Wo4ZS72w9ekAz3y6KjryST4Y535suUIXVNASEqLSrCEkrVPslIVoRciP1mbo6sHLeqqWGuWlq07pXs8UAsmFaz3E_xjr_hW8iw6ylyz0J7XgRBnML4Ui89FacStfo4pWXLnNsfkTAoikQgUraUNf4qHDI1i9PhAgtAEOn9gCS7D-q_DhrPQkiiT34JHigV4MqEAQHBXIHwRjIAqn-LZWNlp5xLH6zNWJOw4b7h1i8oGZw5cm8Rd-KAjqK8LxjHGI"
-        />
-        <SupplyItem 
-          title="치아 간식" 
-          category="간식" 
-          status="재고 충분" 
-          statusVariant="success" 
-          image="https://lh3.googleusercontent.com/aida-public/AB6AXuCSw-YVsazmsAxslAoER0np_8AHYGHowWtt1e7VFcv0KfVJsfiSITuNJhBnLqgd1_T8mnrg9kjihGwPyFGhBEDtKI-JLO5y-h5_D_UPRp0ahtJLo0xYJ3BRW1raiiT1K5rGEDfLHUWrwHSd-3t8g69ng1y2QX9Ys2585re9yh91D0keMybigFR382clgRBPkvUTqvJMIv2oCnON1x7zn6krEebjlUTG4vn6oHAuZ9jUYA9k9SB8WS-AsSVyaOBekT6t_aVxSznaYSE"
-        />
+      <ScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} color="#eebd2b" />
+        }
+      >
+        {loading && !refreshing ? (
+          <ActivityIndicator color="#eebd2b" size="large" style={styles.loader} />
+        ) : items.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>등록된 용품이 없어요 🦴</Text>
+          </View>
+        ) : (
+          items.map((item) => {
+            const statusInfo = getStatusInfo(item.nextPurchaseAt);
+            return (
+              <SupplyItem 
+                key={item.petItemId}
+                title={item.name} 
+                category={item.categoryName} 
+                status={statusInfo.label} 
+                statusVariant={statusInfo.variant} 
+                image={item.imageUrl}
+              />
+            );
+          })
+        )}
         <View style={styles.spacer} />
       </ScrollView>
 
@@ -58,6 +115,17 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
     paddingVertical: 24,
+  },
+  loader: {
+    marginTop: 40,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    marginTop: 60,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#94a3b8',
   },
   spacer: {
     height: 128,
