@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { 
   Layout, 
-  SubTabs, 
+  CategoryTab, 
   Calendar, 
   HealthItem, 
   FloatingActionButton 
@@ -19,7 +19,7 @@ export default function HealthScreen({ navigation }: any) {
 
   return (
     <Layout>
-      <SubTabs 
+      <CategoryTab 
         tabs={tabs} 
         activeTabId={activeTab} 
         onTabPress={setActiveTab} 

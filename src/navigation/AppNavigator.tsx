@@ -10,6 +10,7 @@ import HomeScreen from '../screens/home/HomeScreen';
 import WalkManagementScreen from '../screens/walk/WalkManagement';
 import SuppliesScreen from '../screens/supply/SuppliesScreen';
 import AddSupplyScreen from '../screens/supply/AddSupplyScreen';
+import CategoryManagementScreen from '../screens/supply/CategoryManagementScreen';
 import HealthScreen from '../screens/health/HealthScreen';
 import AddWalkScreen from '../screens/walk/AddWalkScreen';
 import { BottomTab, TopBar } from '../components';
@@ -71,6 +72,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Walks" component={WalkManagementScreen} />
         <Stack.Screen name="AddWalk" component={AddWalkScreen} />
         <Stack.Screen name="AddSupply" component={AddSupplyScreen} />
+        <Stack.Screen name="CategoryManagement" component={CategoryManagementScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -2,26 +2,26 @@ import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { 
   Layout, 
-  SubTabs, 
+  CategoryTab, 
   SupplyItem, 
   FloatingActionButton 
 } from '../../components';
 
 export default function SuppliesScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState('all');
-
-  const tabs = [
-    { id: 'all', label: 'All Items' },
-    { id: 'low_stock', label: 'Low Stock' },
-    { id: 'history', label: 'History' },
-  ];
+  const [tabs, setTabs] = useState([{ id: 'all', label: '전체' }]);
 
   return (
     <Layout>
-      <SubTabs 
-        tabs={tabs} 
+      <CategoryTab 
         activeTabId={activeTab} 
         onTabPress={setActiveTab} 
+        categoryType="ITEM"
+        onTabsChange={setTabs}
+        onAddPress={() => navigation.navigate('CategoryManagement', { 
+          setTabs, 
+          categoryType: 'ITEM' 
+        })}
       />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
