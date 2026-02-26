@@ -25,6 +25,23 @@ class PetItemService {
       throw error;
     }
   }
+
+  public async createPetItem(data: {
+    petId: number;
+    name: string;
+    category: string;
+    purchaseCycleDays: number;
+    purchaseUrl?: string;
+    imageKey?: string;
+  }): Promise<PetItem> {
+    try {
+      const response = await apiService.post<PetItem>('/api/v1/pet-items', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create pet item:', error);
+      throw error;
+    }
+  }
 }
 
 export const petItemService = new PetItemService();
