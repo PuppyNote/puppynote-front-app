@@ -39,7 +39,6 @@ export default {
     plugins: [
       "expo-secure-store",
       "expo-notifications",
-      "./plugins/withKakaoRepository",
       [
         "@react-native-seoul/kakao-login",
         {
