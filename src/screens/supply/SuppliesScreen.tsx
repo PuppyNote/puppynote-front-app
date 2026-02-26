@@ -19,7 +19,6 @@ export default function SuppliesScreen({ navigation }: any) {
         categoryType="ITEM"
         onTabsChange={setTabs}
         onAddPress={() => navigation.navigate('CategoryManagement', { 
-          setTabs, 
           categoryType: 'ITEM' 
         })}
       />

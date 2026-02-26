@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 import { CustomText as Text } from '../CustomText';
 import { userCategoryService } from '../../services/userCategory/UserCategoryService';
 
@@ -26,21 +27,9 @@ export default function CategoryTab({
   onTabsChange
 }: CategoryTabProps) {
   const [internalTabs, setInternalTabs] = useState<TabItem[]>(propsTabs || []);
+  const isFocused = useIsFocused();
 
-  useEffect(() => {
-    if (categoryType) {
-      fetchUserCategories();
-    }
-  }, [categoryType]);
-
-  // Sync with propsTabs if provided, regardless of categoryType
-  useEffect(() => {
-    if (propsTabs && propsTabs.length > 0) {
-      setInternalTabs(propsTabs);
-    }
-  }, [propsTabs]);
-
-  const fetchUserCategories = async () => {
+  const fetchUserCategories = useCallback(async () => {
     if (!categoryType) return;
     try {
       const data = await userCategoryService.getUserCategories(categoryType);
@@ -58,7 +47,20 @@ export default function CategoryTab({
     } catch (error) {
       console.error(`Failed to fetch ${categoryType} categories in CategoryTab:`, error);
     }
-  };
+  }, [categoryType, onTabsChange]);
+
+  useEffect(() => {
+    if (categoryType && isFocused) {
+      fetchUserCategories();
+    }
+  }, [categoryType, isFocused, fetchUserCategories]);
+
+  // Sync with propsTabs if provided, regardless of categoryType
+  useEffect(() => {
+    if (propsTabs && propsTabs.length > 0) {
+      setInternalTabs(propsTabs);
+    }
+  }, [propsTabs]);
 
   const displayTabs = internalTabs || [];
 
