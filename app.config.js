@@ -4,18 +4,20 @@ export default {
   expo: {
     name: "PuppyNote",
     slug: "puppynote-front-app",
+    scheme: "puppynote",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/puppynote-icon.png",
     userInterfaceStyle: "light",
     newArchEnabled: true,
     splash: {
-      "image": "./assets/puppynote-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      image: "./assets/puppynote-icon.png",
+      resizeMode: "contain",
+      backgroundColor: "#ffffff"
     },
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
+      bundleIdentifier: "com.puppynote"
     },
     android: {
       package: "com.puppynote",
@@ -36,7 +38,14 @@ export default {
     },
     plugins: [
       "expo-secure-store",
-      "expo-notifications"
+      "expo-notifications",
+      "./plugins/withKakaoRepository",
+      [
+        "@react-native-seoul/kakao-login",
+        {
+          kakaoAppKey: process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY
+        }
+      ]
     ],
     extra: {
       eas: {
