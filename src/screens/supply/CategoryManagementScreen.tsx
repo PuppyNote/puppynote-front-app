@@ -21,7 +21,7 @@ const ITEM_HEIGHT = 60; // Approximate height of each category item
 
 export default function CategoryManagementScreen({ navigation, route }: any) {
   const { currentTabs, setTabs, categoryType } = route.params;
-  const [selectedCategories, setSelectedCategories] = useState<any[]>(currentTabs);
+  const [selectedCategories, setSelectedCategories] = useState<any[]>(currentTabs || []);
   const [allCategories, setAllCategories] = useState<MajorCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -36,16 +36,30 @@ export default function CategoryManagementScreen({ navigation, route }: any) {
   const containerY = useRef(0);
 
   useEffect(() => {
-    fetchCategories();
+    fetchData();
   }, []);
 
-  const fetchCategories = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const data = await petItemService.getCategories();
-      setAllCategories(data);
+      const [allCats, userCats] = await Promise.all([
+        petItemService.getCategories(),
+        userCategoryService.getUserCategories(categoryType)
+      ]);
+      
+      setAllCategories(Array.isArray(allCats) ? allCats : []);
+      
+      if (Array.isArray(userCats)) {
+        const userTabs = userCats.map(cat => ({
+          id: cat.category,
+          label: `${cat.categoryEmoji} ${cat.categoryName}`
+        }));
+        setSelectedCategories([{ id: 'all', label: '전체' }, ...userTabs]);
+      } else {
+        setSelectedCategories([{ id: 'all', label: '전체' }]);
+      }
     } catch (error) {
-      Alert.alert('오류', '카테고리를 불러오는데 실패했습니다.');
+      Alert.alert('오류', '데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -58,7 +72,7 @@ export default function CategoryManagementScreen({ navigation, route }: any) {
       onPanResponderMove: (e, gestureState) => {
         Animated.event([null, { dy: pan.y }], { useNativeDriver: false })(e, gestureState);
         
-        if (draggingIndex !== null) {
+        if (draggingIndex !== null && selectedCategories) {
           const currentPos = gestureState.moveY - containerY.current + scrollY.current;
           const newIndex = Math.max(0, Math.min(selectedCategories.length - 1, Math.floor(currentPos / ITEM_HEIGHT)));
           
@@ -93,7 +107,7 @@ export default function CategoryManagementScreen({ navigation, route }: any) {
   };
 
   const handleAddCategory = (category: Category) => {
-    if (selectedCategories.find(c => c.id === category.category)) {
+    if (!selectedCategories || selectedCategories.find(c => c.id === category.category)) {
       Alert.alert('알림', '이미 추가된 카테고리입니다.');
       return;
     }
@@ -109,11 +123,14 @@ export default function CategoryManagementScreen({ navigation, route }: any) {
       Alert.alert('알림', '"전체" 카테고리는 삭제할 수 없습니다.');
       return;
     }
-    setSelectedCategories(selectedCategories.filter(c => c.id !== id));
+    if (selectedCategories) {
+      setSelectedCategories(selectedCategories.filter(c => c.id !== id));
+    }
   };
 
   const handleSave = async () => {
     try {
+      if (!selectedCategories) return;
       setSaving(true);
       const categoryCodes = selectedCategories
         .filter(c => c.id !== 'all')
@@ -158,7 +175,7 @@ export default function CategoryManagementScreen({ navigation, route }: any) {
           </View>
 
           <View style={styles.selectedContainer}>
-            {selectedCategories.map((tab, index) => {
+            {selectedCategories?.map((tab, index) => {
               const isDragging = draggingIndex === index;
               return (
                 <Animated.View 
@@ -205,19 +222,19 @@ export default function CategoryManagementScreen({ navigation, route }: any) {
           {loading ? (
             <Text style={styles.loadingText}>불러오는 중...</Text>
           ) : (
-            allCategories.map((major) => (
+            allCategories?.map((major) => (
               <View key={major.majorCategory} style={styles.majorCategoryGroup}>
                 <View style={styles.majorHeader}>
                   <Text style={styles.majorEmoji}>{major.majorCategoryEmoji}</Text>
                   <Text style={styles.majorName}>{major.majorCategoryName}</Text>
                 </View>
                 <View style={styles.categoryGrid}>
-                  {major.categories.map((cat) => (
+                  {major.categories?.map((cat) => (
                     <TouchableOpacity 
                       key={cat.category} 
                       style={[
                         styles.categoryChip,
-                        selectedCategories.find(c => c.id === cat.category) && styles.categoryChipDisabled
+                        selectedCategories?.find(c => c.id === cat.category) && styles.categoryChipDisabled
                       ]}
                       onPress={() => handleAddCategory(cat)}
                     >

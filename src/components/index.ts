@@ -3,7 +3,7 @@ import Layout from './Layout';
 import TopBar from './tabs/TopBar';
 import AddTopBar from './tabs/AddTopBar';
 import BottomTab from './tabs/BottomTab';
-import SubTabs from './tabs/SubTabs';
+import CategoryTab from './tabs/CategoryTab';
 import Calendar from './card/Calendar';
 import Card from './card/Card';
 import Badge from './badge/Badge';
@@ -29,7 +29,7 @@ export {
   TopBar,
   AddTopBar,
   BottomTab,
-  SubTabs,
+  CategoryTab,
   Calendar,
   Card,
   Badge,

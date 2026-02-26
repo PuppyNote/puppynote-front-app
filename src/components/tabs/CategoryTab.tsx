@@ -44,6 +44,10 @@ export default function CategoryTab({
     if (!categoryType) return;
     try {
       const data = await userCategoryService.getUserCategories(categoryType);
+      if (!Array.isArray(data)) {
+        console.error(`Invalid data format for ${categoryType} categories:`, data);
+        return;
+      }
       const userTabs = data.map(cat => ({
         id: cat.category,
         label: `${cat.categoryEmoji} ${cat.categoryName}`
@@ -56,7 +60,7 @@ export default function CategoryTab({
     }
   };
 
-  const displayTabs = internalTabs;
+  const displayTabs = internalTabs || [];
 
   return (
     <View style={styles.categoryTab}>
