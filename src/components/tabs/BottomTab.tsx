@@ -21,12 +21,12 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
       icon: require('../../../assets/bottomTab/supply.png'),
       iconFocused: require('../../../assets/bottomTab/supply-click.png'),
     },
-    { 
-      name: 'Health', 
-      label: '건강',
-      icon: require('../../../assets/bottomTab/health.png'),
-      iconFocused: require('../../../assets/bottomTab/health-click.png'),
-    },
+    // { 
+    //   name: 'Health', 
+    //   label: '건강',
+    //   icon: require('../../../assets/bottomTab/health.png'),
+    //   iconFocused: require('../../../assets/bottomTab/health-click.png'),
+    // },
     { 
       name: 'Settings', 
       label: '설정',
