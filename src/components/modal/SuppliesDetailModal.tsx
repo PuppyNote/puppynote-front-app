@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, ActivityIndicator } from 'react-native';
 import { CustomText } from '../CustomText';
 import GlobalDetailModal from './GlobalDetailModal';
 import Badge from '../badge/Badge';
 import { petItemService } from '../../services/petItem/PetItemService';
 import { PetItem } from '../../types/PetItem';
 import { calculateDaysDifference } from '../../utils/DateUtil';
+import CustomAlert from './CustomAlert';
+import { useAlert } from '../../hooks/useAlert';
 
 interface SuppliesDetailModalProps {
   visible: boolean;
@@ -18,6 +20,7 @@ export default function SuppliesDetailModal({
   onClose,
   petItemId,
 }: SuppliesDetailModalProps) {
+  const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
   const [item, setItem] = useState<PetItem | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -36,8 +39,7 @@ export default function SuppliesDetailModal({
       const data = await petItemService.getPetItemDetail(petItemId);
       setItem(data);
     } catch (error) {
-      Alert.alert('오류', '상세 정보를 불러오는데 실패했습니다.');
-      onClose();
+      showSimpleAlert('오류', '상세 정보를 불러오는데 실패했습니다.', onClose);
     } finally {
       setLoading(false);
     }
@@ -49,7 +51,7 @@ export default function SuppliesDetailModal({
     if (supported) {
       await Linking.openURL(url);
     } else {
-      Alert.alert('알림', '구매 링크를 열 수 없습니다.');
+      showSimpleAlert('알림', '구매 링크를 열 수 없습니다.');
     }
   };
 
@@ -72,60 +74,69 @@ export default function SuppliesDetailModal({
   };
 
   return (
-    <GlobalDetailModal
-      visible={visible}
-      onClose={onClose}
-      title="용품 상세 정보"
-    >
-      {loading ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#eebd2b" />
-        </View>
-      ) : item ? (
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.detailContainer}>
-            <Image source={{ uri: item.imageUrl }} style={styles.detailImage} />
-            
-            <View style={styles.detailHeader}>
-              <View style={{ flex: 1, marginRight: 12 }}>
-                <CustomText style={styles.detailTitle}>{item.name}</CustomText>
-                <CustomText style={styles.detailCategory}>{item.majorCategoryName} › {item.categoryName}</CustomText>
-              </View>
-              <Badge 
-                label={getStatusInfo(item.nextPurchaseAt).label} 
-                variant={getStatusInfo(item.nextPurchaseAt).variant} 
-              />
-            </View>
-
-            <View style={styles.infoSection}>
-              <View style={styles.infoRow}>
-                <CustomText style={styles.infoLabel}>구매 주기</CustomText>
-                <CustomText style={styles.infoValue}>{item.purchaseCycleDays}일 마다</CustomText>
-              </View>
-              <View style={styles.infoRow}>
-                <CustomText style={styles.infoLabel}>최근 구매일</CustomText>
-                <CustomText style={styles.infoValue}>{item.lastPurchasedAt || '기록 없음'}</CustomText>
-              </View>
-              <View style={styles.infoRow}>
-                <CustomText style={styles.infoLabel}>다음 구매 예정</CustomText>
-                <CustomText style={styles.infoValue}>{item.nextPurchaseAt || '기록 없음'}</CustomText>
-              </View>
-            </View>
-
-            {item.purchaseUrl && (
-              <TouchableOpacity 
-                style={styles.linkButton} 
-                onPress={() => handleOpenLink(item.purchaseUrl)}
-              >
-                <CustomText style={styles.linkButtonText}>🛒 구매하러 가기</CustomText>
-              </TouchableOpacity>
-            )}
-            
-            <View style={styles.modalSpacer} />
+    <>
+      <GlobalDetailModal
+        visible={visible}
+        onClose={onClose}
+        title="용품 상세 정보"
+      >
+        {loading ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color="#eebd2b" />
           </View>
-        </ScrollView>
-      ) : null}
-    </GlobalDetailModal>
+        ) : item ? (
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={styles.detailContainer}>
+              <Image source={{ uri: item.imageUrl }} style={styles.detailImage} />
+              
+              <View style={styles.detailHeader}>
+                <View style={{ flex: 1, marginRight: 12 }}>
+                  <CustomText style={styles.detailTitle}>{item.name}</CustomText>
+                  <CustomText style={styles.detailCategory}>{item.majorCategoryName} › {item.categoryName}</CustomText>
+                </View>
+                <Badge 
+                  label={getStatusInfo(item.nextPurchaseAt).label} 
+                  variant={getStatusInfo(item.nextPurchaseAt).variant} 
+                />
+              </View>
+
+              <View style={styles.infoSection}>
+                <View style={styles.infoRow}>
+                  <CustomText style={styles.infoLabel}>구매 주기</CustomText>
+                  <CustomText style={styles.infoValue}>{item.purchaseCycleDays}일 마다</CustomText>
+                </View>
+                <View style={styles.infoRow}>
+                  <CustomText style={styles.infoLabel}>최근 구매일</CustomText>
+                  <CustomText style={styles.infoValue}>{item.lastPurchasedAt || '기록 없음'}</CustomText>
+                </View>
+                <View style={styles.infoRow}>
+                  <CustomText style={styles.infoLabel}>다음 구매 예정</CustomText>
+                  <CustomText style={styles.infoValue}>{item.nextPurchaseAt || '기록 없음'}</CustomText>
+                </View>
+              </View>
+
+              {item.purchaseUrl && (
+                <TouchableOpacity 
+                  style={styles.linkButton} 
+                  onPress={() => handleOpenLink(item.purchaseUrl)}
+                >
+                  <CustomText style={styles.linkButtonText}>🛒 구매하러 가기</CustomText>
+                </TouchableOpacity>
+              )}
+              
+              <View style={styles.modalSpacer} />
+            </View>
+          </ScrollView>
+        ) : null}
+      </GlobalDetailModal>
+      
+      <CustomAlert 
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onConfirm={hideAlert}
+      />
+    </>
   );
 }
 

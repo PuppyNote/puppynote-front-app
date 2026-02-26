@@ -35,7 +35,7 @@ export default function PetRegistrationModal({
   const [image, setImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
-  const { alertConfig, showAlert } = useAlert();
+  const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -52,7 +52,7 @@ export default function PetRegistrationModal({
 
   const handleRegister = async () => {
     if (!name) {
-      showAlert('알림', '펫 이름을 입력해주세요.');
+      showSimpleAlert('알림', '펫 이름을 입력해주세요.');
       return;
     }
 
@@ -78,7 +78,7 @@ export default function PetRegistrationModal({
 
       onSuccess(petData.petId, petData.petName);
     } catch (error: any) {
-      showAlert('오류', error.message || '펫 등록 중 오류가 발생했습니다.');
+      showSimpleAlert('오류', error.message || '펫 등록 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -165,7 +165,11 @@ export default function PetRegistrationModal({
         visible={alertConfig.visible}
         title={alertConfig.title}
         message={alertConfig.message}
+        confirmText={alertConfig.confirmText}
+        cancelText={alertConfig.cancelText}
         onConfirm={alertConfig.onConfirm}
+        onCancel={hideAlert}
+        type={alertConfig.type}
       />
     </Modal>
   );

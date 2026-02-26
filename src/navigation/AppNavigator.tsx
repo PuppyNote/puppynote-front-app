@@ -44,11 +44,11 @@ function TabNavigator() {
         component={SuppliesScreen} 
         options={{ headerTitle: 'PuppyNote' }}
       />
-      <Tab.Screen 
+      {/* <Tab.Screen 
         name="Health" 
         component={HealthScreen} 
         options={{ headerTitle: 'PuppyNote' }}
-      />
+      /> */}
       <Tab.Screen 
         name="Settings" 
         component={SettingScreen} 

@@ -17,11 +17,11 @@ export default function InviteCodeModal({
 }: InviteCodeModalProps) {
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { alertConfig, showAlert } = useAlert();
+  const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
 
   const handleSubmit = async () => {
     if (!code) {
-      showAlert('알림', '초대코드를 입력해주세요.');
+      showSimpleAlert('알림', '초대코드를 입력해주세요.');
       return;
     }
 
@@ -35,9 +35,9 @@ export default function InviteCodeModal({
       // Temporary success mock
       // onSuccess(1, '초대된 펫');
       
-      showAlert('알림', '초대코드 기능은 현재 준비 중입니다.');
+      showSimpleAlert('알림', '초대코드 기능은 현재 준비 중입니다.');
     } catch (error: any) {
-      showAlert('오류', error.message || '초대코드 확인에 실패했습니다.');
+      showSimpleAlert('오류', error.message || '초대코드 확인에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -89,7 +89,11 @@ export default function InviteCodeModal({
         visible={alertConfig.visible}
         title={alertConfig.title}
         message={alertConfig.message}
+        confirmText={alertConfig.confirmText}
+        cancelText={alertConfig.cancelText}
         onConfirm={alertConfig.onConfirm}
+        onCancel={hideAlert}
+        type={alertConfig.type}
       />
     </Modal>
   );

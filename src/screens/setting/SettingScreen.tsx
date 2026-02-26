@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
-import { Layout, CustomText as Text } from '../../components';
+import { View, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { Layout, Text, CustomAlert } from '../../components';
 import { storageService } from '../../services/auth/StorageService';
+import { useAlert } from '../../hooks/useAlert';
 
 export default function SettingScreen({ navigation }: any) {
+  const { alertConfig, showAlert, showSimpleAlert, hideAlert } = useAlert();
   const [userInfo, setUserInfo] = useState({
     nickName: '사용자',
     email: '',
@@ -11,13 +13,11 @@ export default function SettingScreen({ navigation }: any) {
   });
 
   useEffect(() => {
-    // For now, we can try to get some info from storage or just use placeholders
     loadUserInfo();
   }, []);
 
   const loadUserInfo = async () => {
-    // Placeholder: In a real app, you'd fetch this from an API
-    // const info = await authService.getUserProfile();
+    // TODO: Fetch user info from API
   };
 
   const menuItems = [
@@ -25,75 +25,95 @@ export default function SettingScreen({ navigation }: any) {
       id: 'family',
       title: '가족 관리',
       icon: '👨‍👩‍👧‍👦',
-      onPress: () => Alert.alert('알림', '가족 관리 기능 준비 중입니다.')
+      onPress: () => showSimpleAlert('알림', '가족 관리 기능 준비 중입니다.')
     },
-    // More items can be added here later
   ];
 
   const handleLogout = async () => {
-    Alert.alert('로그아웃', '정말 로그아웃 하시겠습니까?', [
-      { text: '취소', style: 'cancel' },
-      { 
-        text: '로그아웃', 
-        style: 'destructive',
-        onPress: async () => {
-          await storageService.clearTokens();
-          await storageService.clearSelectedPet();
-          navigation.replace('Login');
-        }
-      }
-    ]);
+    showAlert({
+      title: '로그아웃',
+      message: '정말 로그아웃 하시겠습니까?',
+      confirmText: '로그아웃',
+      cancelText: '취소',
+      onConfirm: async () => {
+        hideAlert();
+        await storageService.clearTokens();
+        await storageService.clearSelectedPet();
+        navigation.replace('Login');
+      },
+      onCancel: hideAlert,
+      type: 'info'
+    });
   };
 
   return (
     <Layout edges={['top', 'left', 'right']} backgroundColor="#fcfaf2">
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Profile Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.imageContainer}>
-            {userInfo.profileImage ? (
-              <Image source={{ uri: userInfo.profileImage }} style={styles.profileImage} />
-            ) : (
-              <View style={styles.placeholderImage}>
-                <Text style={styles.placeholderIcon}>👤</Text>
-              </View>
-            )}
-            <TouchableOpacity style={styles.editBadge}>
-              <Text style={styles.editIcon}>⚙️</Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.nickname}>{userInfo.nickName}</Text>
-          <Text style={styles.email}>{userInfo.email || 'puppynote@example.com'}</Text>
-        </View>
-
-        {/* Menu Section */}
-        <View style={styles.menuSection}>
-          {menuItems.map((item) => (
-            <TouchableOpacity 
-              key={item.id} 
-              style={styles.menuItem}
-              onPress={item.onPress}
-              activeOpacity={0.7}
-            >
-              <View style={styles.menuLeft}>
-                <View style={styles.menuIconContainer}>
-                  <Text style={styles.menuIcon}>{item.icon}</Text>
+      <ScrollView 
+        style={styles.container} 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.topSection}>
+          {/* Profile Section */}
+          <View style={styles.profileSection}>
+            <View style={styles.imageContainer}>
+              {userInfo.profileImage ? (
+                <Image source={{ uri: userInfo.profileImage }} style={styles.profileImage} />
+              ) : (
+                <View style={styles.placeholderImage}>
+                  <Text style={styles.placeholderIcon}>👤</Text>
                 </View>
-                <Text style={styles.menuTitle}>{item.title}</Text>
-              </View>
-              <Text style={styles.arrowIcon}>›</Text>
-            </TouchableOpacity>
-          ))}
+              )}
+              <TouchableOpacity style={styles.editBadge}>
+                <Text style={styles.editIcon}>⚙️</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.nickname}>{userInfo.nickName}</Text>
+            <Text style={styles.email}>{userInfo.email || 'puppynote@example.com'}</Text>
+          </View>
+
+          {/* Menu Section */}
+          <View style={styles.menuSection}>
+            {menuItems.map((item) => (
+              <TouchableOpacity 
+                key={item.id} 
+                style={styles.menuItem}
+                onPress={item.onPress}
+                activeOpacity={0.7}
+              >
+                <View style={styles.menuLeft}>
+                  <View style={styles.menuIconContainer}>
+                    <Text style={styles.menuIcon}>{item.icon}</Text>
+                  </View>
+                  <Text style={styles.menuTitle}>{item.title}</Text>
+                </View>
+                <Text style={styles.arrowIcon}>›</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>로그아웃</Text>
-        </TouchableOpacity>
+        <View style={styles.bottomSection}>
+          <TouchableOpacity style={styles.prettyLogoutButton} onPress={handleLogout} activeOpacity={0.8}>
+            <Text style={styles.prettyLogoutText}>로그아웃</Text>
+          </TouchableOpacity>
 
-        <View style={styles.versionContainer}>
-          <Text style={styles.versionText}>버전 1.0.0</Text>
+          <View style={styles.versionContainer}>
+            <Text style={styles.versionText}>버전 1.0.0</Text>
+          </View>
         </View>
       </ScrollView>
+
+      <CustomAlert 
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        confirmText={alertConfig.confirmText}
+        cancelText={alertConfig.cancelText}
+        onConfirm={alertConfig.onConfirm}
+        onCancel={alertConfig.onCancel}
+        type={alertConfig.type}
+      />
     </Layout>
   );
 }
@@ -101,11 +121,22 @@ export default function SettingScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 24,
+    paddingBottom: 40,
+    justifyContent: 'space-between',
+  },
+  topSection: {
+    paddingTop: 40,
+  },
+  bottomSection: {
+    marginTop: 40,
+    gap: 16,
   },
   profileSection: {
     alignItems: 'center',
-    marginTop: 40,
     marginBottom: 40,
   },
   imageContainer: {
@@ -199,20 +230,22 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#cbd5e1',
   },
-  logoutButton: {
-    marginTop: 32,
-    alignItems: 'center',
+  prettyLogoutButton: {
+    backgroundColor: '#fee2e2',
     paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#fecaca',
   },
-  logoutText: {
-    fontSize: 15,
+  prettyLogoutText: {
+    fontSize: 16,
     color: '#ef4444',
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   versionContainer: {
-    marginTop: 16,
     alignItems: 'center',
-    paddingBottom: 40,
   },
   versionText: {
     fontSize: 12,

@@ -4,7 +4,11 @@ export interface AlertConfig {
   visible: boolean;
   title: string;
   message: string;
+  confirmText?: string;
+  cancelText?: string;
   onConfirm: () => void;
+  onCancel?: () => void;
+  type?: 'success' | 'error' | 'info';
 }
 
 export const useAlert = () => {
@@ -15,16 +19,22 @@ export const useAlert = () => {
     onConfirm: () => {},
   });
 
-  const showAlert = (
-    title: string, 
-    message: string, 
-    onConfirm = () => setAlertConfig(prev => ({ ...prev, visible: false }))
-  ) => {
+  const showAlert = (config: Omit<AlertConfig, 'visible'>) => {
+    setAlertConfig({
+      ...config,
+      visible: true,
+    });
+  };
+
+  const showSimpleAlert = (title: string, message: string, onConfirm?: () => void) => {
     setAlertConfig({
       visible: true,
       title,
       message,
-      onConfirm,
+      onConfirm: () => {
+        if (onConfirm) onConfirm();
+        hideAlert();
+      },
     });
   };
 
@@ -35,6 +45,7 @@ export const useAlert = () => {
   return {
     alertConfig,
     showAlert,
+    showSimpleAlert,
     hideAlert,
   };
 };

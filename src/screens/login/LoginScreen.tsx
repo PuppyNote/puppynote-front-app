@@ -14,7 +14,7 @@ export default function LoginScreen({ navigation }: any) {
   const [isEntryOptionVisible, setIsEntryOptionVisible] = useState(false);
   const [isPetModalVisible, setIsPetModalVisible] = useState(false);
   const [isInviteModalVisible, setIsInviteModalVisible] = useState(false);
-  const { alertConfig, showAlert } = useAlert();
+  const { alertConfig, showAlert, showSimpleAlert, hideAlert } = useAlert();
 
   const handleLoginSuccess = async (settingStatus?: string) => {
     // 펫 조회
@@ -33,7 +33,7 @@ export default function LoginScreen({ navigation }: any) {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      showAlert('알림', '이메일과 비밀번호를 모두 입력해주세요.');
+      showSimpleAlert('알림', '이메일과 비밀번호를 모두 입력해주세요.');
       return;
     }
 
@@ -42,7 +42,7 @@ export default function LoginScreen({ navigation }: any) {
       const response = await authService.login(email, password);
       await handleLoginSuccess(response.settingStatus);
     } catch (error: any) {
-      showAlert('오류', error.message || '로그인에 실패했습니다.');
+      showSimpleAlert('오류', error.message || '로그인에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +62,7 @@ export default function LoginScreen({ navigation }: any) {
     } catch (error: any) {
       console.log('Kakao Login Error:', error);
       if (error.message !== 'Logged out') {
-        showAlert('오류', '카카오 로그인 중 오류가 발생했습니다.');
+        showSimpleAlert('오류', '카카오 로그인 중 오류가 발생했습니다.');
       }
     } finally {
       setIsLoading(false);
@@ -173,7 +173,11 @@ export default function LoginScreen({ navigation }: any) {
         visible={alertConfig.visible}
         title={alertConfig.title}
         message={alertConfig.message}
+        confirmText={alertConfig.confirmText}
+        cancelText={alertConfig.cancelText}
         onConfirm={alertConfig.onConfirm}
+        onCancel={alertConfig.onCancel || hideAlert}
+        type={alertConfig.type}
       />
 
       <EntryOptionModal

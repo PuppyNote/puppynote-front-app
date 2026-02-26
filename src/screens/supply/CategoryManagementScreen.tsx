@@ -4,7 +4,6 @@ import {
   ScrollView, 
   StyleSheet, 
   TouchableOpacity, 
-  Alert,
   PanResponder,
   Animated,
   LayoutAnimation,
@@ -17,6 +16,8 @@ import { petItemService } from '../../services/petItem/PetItemService';
 import { userCategoryService } from '../../services/userCategory/UserCategoryService';
 import { MajorCategory, Category } from '../../types/PetItem';
 import AddTopBar from '../../components/tabs/AddTopBar';
+import CustomAlert from '../../components/modal/CustomAlert';
+import { useAlert } from '../../hooks/useAlert';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -26,6 +27,7 @@ const ITEM_HEIGHT = 64;
 
 export default function CategoryManagementScreen({ navigation, route }: any) {
   const { categoryType } = route.params;
+  const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
   const [selectedCategories, setSelectedCategories] = useState<any[]>([]);
   const [allCategories, setAllCategories] = useState<MajorCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +79,7 @@ export default function CategoryManagementScreen({ navigation, route }: any) {
       })) : [];
       setSelectedCategories([{ id: 'all', label: '전체' }, ...userTabs]);
     } catch (error) {
-      Alert.alert('오류', '데이터를 불러오는데 실패했습니다.');
+      showSimpleAlert('오류', '데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -160,7 +162,7 @@ export default function CategoryManagementScreen({ navigation, route }: any) {
 
   const handleAddCategory = (category: Category) => {
     if (selectedCategories.find(c => c.id === category.category)) {
-      Alert.alert('알림', '이미 추가된 카테고리입니다.');
+      showSimpleAlert('알림', '이미 추가된 카테고리입니다.');
       return;
     }
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -180,7 +182,7 @@ export default function CategoryManagementScreen({ navigation, route }: any) {
       await userCategoryService.saveUserCategories(categoryType, codes);
       navigation.goBack();
     } catch (error) {
-      Alert.alert('오류', '저장에 실패했습니다.');
+      showSimpleAlert('오류', '저장에 실패했습니다.');
     } finally {
       setSaving(false);
     }
@@ -261,6 +263,13 @@ export default function CategoryManagementScreen({ navigation, route }: any) {
         </View>
         <View style={styles.spacer} />
       </ScrollView>
+
+      <CustomAlert 
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onConfirm={hideAlert}
+      />
     </SafeAreaView>
   );
 }
