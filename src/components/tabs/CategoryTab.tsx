@@ -1,25 +1,68 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { CustomText as Text } from '../CustomText';
+import { userCategoryService } from '../../services/userCategory/UserCategoryService';
 
 interface TabItem {
   id: string;
   label: string;
 }
 
-interface SubTabsProps {
-  tabs: TabItem[];
+interface CategoryTabProps {
+  tabs?: TabItem[];
   activeTabId: string;
   onTabPress: (id: string) => void;
   onAddPress?: () => void;
+  categoryType?: 'ITEM' | 'ACTIVITY';
+  onTabsChange?: (tabs: TabItem[]) => void;
 }
 
-export default function SubTabs({ tabs, activeTabId, onTabPress, onAddPress }: SubTabsProps) {
+export default function CategoryTab({ 
+  tabs: propsTabs, 
+  activeTabId, 
+  onTabPress, 
+  onAddPress,
+  categoryType,
+  onTabsChange
+}: CategoryTabProps) {
+  const [internalTabs, setInternalTabs] = useState<TabItem[]>(propsTabs || []);
+
+  useEffect(() => {
+    if (categoryType) {
+      fetchUserCategories();
+    }
+  }, [categoryType]);
+
+  // Sync with propsTabs if provided, regardless of categoryType
+  useEffect(() => {
+    if (propsTabs && propsTabs.length > 0) {
+      setInternalTabs(propsTabs);
+    }
+  }, [propsTabs]);
+
+  const fetchUserCategories = async () => {
+    if (!categoryType) return;
+    try {
+      const data = await userCategoryService.getUserCategories(categoryType);
+      const userTabs = data.map(cat => ({
+        id: cat.category,
+        label: `${cat.categoryEmoji} ${cat.categoryName}`
+      }));
+      const finalTabs = [{ id: 'all', label: '전체' }, ...userTabs];
+      setInternalTabs(finalTabs);
+      onTabsChange?.(finalTabs);
+    } catch (error) {
+      console.error(`Failed to fetch ${categoryType} categories in CategoryTab:`, error);
+    }
+  };
+
+  const displayTabs = internalTabs;
+
   return (
-    <View style={styles.subTabs}>
+    <View style={styles.categoryTab}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.tabRow}>
-          {tabs.map((tab) => {
+          {displayTabs.map((tab) => {
             const isActive = tab.id === activeTabId;
             return (
               <TouchableOpacity 
@@ -50,7 +93,7 @@ export default function SubTabs({ tabs, activeTabId, onTabPress, onAddPress }: S
 }
 
 const styles = StyleSheet.create({
-  subTabs: {
+  categoryTab: {
     backgroundColor: '#fcfaf2',
     paddingHorizontal: 24,
     paddingBottom: 4,

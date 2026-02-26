@@ -1,44 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { 
   Layout, 
-  SubTabs, 
+  CategoryTab, 
   SupplyItem, 
   FloatingActionButton 
 } from '../../components';
-import { userCategoryService } from '../../services/userCategory/UserCategoryService';
 
 export default function SuppliesScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState('all');
-  const [tabs, setTabs] = useState([
-    { id: 'all', label: '전체' }
-  ]);
-
-  useEffect(() => {
-    fetchUserCategories();
-  }, []);
-
-  const fetchUserCategories = async () => {
-    try {
-      const data = await userCategoryService.getUserCategories('ITEM');
-      const userTabs = data.map(cat => ({
-        id: cat.category,
-        label: `${cat.categoryEmoji} ${cat.categoryName}`
-      }));
-      setTabs([{ id: 'all', label: '전체' }, ...userTabs]);
-    } catch (error) {
-      console.error('Failed to fetch user categories:', error);
-    }
-  };
+  const [tabs, setTabs] = useState([{ id: 'all', label: '전체' }]);
 
   return (
     <Layout>
-      <SubTabs 
-        tabs={tabs} 
+      <CategoryTab 
         activeTabId={activeTab} 
         onTabPress={setActiveTab} 
+        categoryType="ITEM"
+        onTabsChange={setTabs}
         onAddPress={() => navigation.navigate('CategoryManagement', { 
-          currentTabs: tabs, 
           setTabs, 
           categoryType: 'ITEM' 
         })}
