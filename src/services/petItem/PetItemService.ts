@@ -42,6 +42,16 @@ class PetItemService {
       throw error;
     }
   }
+
+  public async getPetItemDetail(petItemId: number): Promise<PetItem> {
+    try {
+      const response = await apiService.get<PetItem>(`/api/v1/pet-items/${petItemId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch pet item detail:', error);
+      throw error;
+    }
+  }
 }
 
 export const petItemService = new PetItemService();

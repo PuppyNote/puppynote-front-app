@@ -1,18 +1,18 @@
 import React from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import Badge from '../badge/Badge';
 import { CustomText as Text } from '../CustomText';
 
-export default function SupplyItem({ title, category, status, statusVariant, image }: any) {
+export default function SupplyItem({ title, category, status, statusVariant, image, onPress }: any) {
   return (
-    <View style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <Image source={{ uri: image }} style={styles.image} />
       <View style={styles.content}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>{category}</Text>
       </View>
       <Badge label={status} variant={statusVariant} />
-    </View>
+    </TouchableOpacity>
   );
 }
 

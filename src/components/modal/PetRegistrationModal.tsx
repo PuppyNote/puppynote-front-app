@@ -15,7 +15,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { CustomText as Text } from '../CustomText';
 import { petService } from '../../services/pet/PetService';
 import { storageService } from '../../services/auth/StorageService';
-import { DatePickerModal } from '../index';
+import DatePickerModal from './DatePickerModal';
 import CustomAlert from './CustomAlert';
 import { useAlert } from '../../hooks/useAlert';
 

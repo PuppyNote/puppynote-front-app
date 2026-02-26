@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, Modal, TouchableOpacity, Animated, PanResponder, Dimensions } from 'react-native';
-import { CustomText as Text } from '../CustomText';
+import { CustomText } from '../CustomText';
 
 interface GlobalDetailModalProps {
   visible: boolean;
@@ -92,9 +92,9 @@ export default function GlobalDetailModal({
           <View style={styles.dragZone} {...panResponders.panHandlers}>
             <View style={styles.handleBar} />
             <View style={styles.header}>
-              <Text style={styles.title}>{title}</Text>
+              <CustomText style={styles.title}>{title}</CustomText>
               <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-                <Text style={styles.closeText}>닫기</Text>
+                <CustomText style={styles.closeText}>닫기</CustomText>
               </TouchableOpacity>
             </View>
           </View>

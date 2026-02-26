@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, ScrollView, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
-import { 
-  Layout, 
-  CategoryTab, 
-  SupplyItem, 
-  FloatingActionButton,
-  Text
-} from '../../components';
+import { View, ScrollView, StyleSheet, ActivityIndicator, RefreshControl, Image, TouchableOpacity, Linking, Alert } from 'react-native';
+import Layout from '../../components/Layout';
+import CategoryTab from '../../components/tabs/CategoryTab';
+import SupplyItem from '../../components/items/SupplyItem';
+import FloatingActionButton from '../../components/button/FloatingActionButton';
+import { CustomText } from '../../components/CustomText';
+import SuppliesDetailModal from '../../components/modal/SuppliesDetailModal';
 import { petItemService } from '../../services/petItem/PetItemService';
 import { storageService } from '../../services/auth/StorageService';
 import { PetItem } from '../../types/PetItem';
@@ -19,6 +18,10 @@ export default function SuppliesScreen({ navigation }: any) {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Detail modal state
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+
   const fetchItems = useCallback(async (category?: string) => {
     try {
       setLoading(true);
@@ -26,9 +29,10 @@ export default function SuppliesScreen({ navigation }: any) {
       if (!selectedPet) return;
 
       const data = await petItemService.getPetItems(selectedPet.id, category === 'all' ? undefined : category);
-      setItems(data);
+      setItems(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Failed to fetch pet items:', error);
+      setItems([]);
     } finally {
       setLoading(false);
     }
@@ -43,6 +47,11 @@ export default function SuppliesScreen({ navigation }: any) {
     await fetchItems(activeTab);
     setRefreshing(false);
   }, [activeTab, fetchItems]);
+
+  const handleItemPress = (itemId: number) => {
+    setSelectedItemId(itemId);
+    setIsDetailModalVisible(true);
+  };
 
   const getStatusInfo = (nextPurchaseAt: string) => {
     if (!nextPurchaseAt) return { label: '미구매 항목', variant: 'neutral' as const };
@@ -85,7 +94,7 @@ export default function SuppliesScreen({ navigation }: any) {
           <ActivityIndicator color="#eebd2b" size="large" style={styles.loader} />
         ) : items.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>등록된 용품이 없어요 🦴</Text>
+            <CustomText style={styles.emptyText}>등록된 용품이 없어요 🦴</CustomText>
           </View>
         ) : (
           items.map((item) => {
@@ -98,6 +107,7 @@ export default function SuppliesScreen({ navigation }: any) {
                 status={statusInfo.label} 
                 statusVariant={statusInfo.variant} 
                 image={item.imageUrl}
+                onPress={() => handleItemPress(item.petItemId)}
               />
             );
           })
@@ -106,6 +116,15 @@ export default function SuppliesScreen({ navigation }: any) {
       </ScrollView>
 
       <FloatingActionButton onPress={() => navigation.navigate('AddSupply')} />
+
+      <SuppliesDetailModal 
+        visible={isDetailModalVisible}
+        onClose={() => {
+          setIsDetailModalVisible(false);
+          setSelectedItemId(null);
+        }}
+        petItemId={selectedItemId}
+      />
     </Layout>
   );
 }
