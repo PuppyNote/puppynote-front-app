@@ -13,17 +13,20 @@ import {
 } from 'react-native';
 import { CustomText as Text } from '../../components/CustomText';
 import { petItemService } from '../../services/petItem/PetItemService';
+import { userCategoryService } from '../../services/userCategory/UserCategoryService';
 import { MajorCategory, Category } from '../../types/PetItem';
 import AddTopBar from '../../components/tabs/AddTopBar';
 
 const ITEM_HEIGHT = 60; // Approximate height of each category item
 
 export default function CategoryManagementScreen({ navigation, route }: any) {
-  const { currentTabs, setTabs } = route.params;
+  const { currentTabs, setTabs, categoryType } = route.params;
   const [selectedCategories, setSelectedCategories] = useState<any[]>(currentTabs);
   const [allCategories, setAllCategories] = useState<MajorCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const title = categoryType === 'ITEM' ? '용품 카테고리 설정' : '활동 카테고리 설정';
   
   // Drag and drop states
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
@@ -116,7 +119,7 @@ export default function CategoryManagementScreen({ navigation, route }: any) {
         .filter(c => c.id !== 'all')
         .map(c => c.id);
       
-      await petItemService.saveUserCategories(categoryCodes);
+      await userCategoryService.saveUserCategories(categoryType, categoryCodes);
       
       setTabs(selectedCategories);
       navigation.goBack();
@@ -129,7 +132,7 @@ export default function CategoryManagementScreen({ navigation, route }: any) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <AddTopBar title="카테고리 설정" onBack={() => navigation.goBack()} />
+      <AddTopBar title={title} onBack={() => navigation.goBack()} />
       
       <ScrollView 
         style={styles.content} 

@@ -6,7 +6,7 @@ import {
   SupplyItem, 
   FloatingActionButton 
 } from '../../components';
-import { petItemService } from '../../services/petItem/PetItemService';
+import { userCategoryService } from '../../services/userCategory/UserCategoryService';
 
 export default function SuppliesScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState('all');
@@ -20,7 +20,7 @@ export default function SuppliesScreen({ navigation }: any) {
 
   const fetchUserCategories = async () => {
     try {
-      const data = await petItemService.getUserCategories();
+      const data = await userCategoryService.getUserCategories('ITEM');
       const userTabs = data.map(cat => ({
         id: cat.category,
         label: `${cat.categoryEmoji} ${cat.categoryName}`
@@ -37,7 +37,11 @@ export default function SuppliesScreen({ navigation }: any) {
         tabs={tabs} 
         activeTabId={activeTab} 
         onTabPress={setActiveTab} 
-        onAddPress={() => navigation.navigate('CategoryManagement', { currentTabs: tabs, setTabs })}
+        onAddPress={() => navigation.navigate('CategoryManagement', { 
+          currentTabs: tabs, 
+          setTabs, 
+          categoryType: 'ITEM' 
+        })}
       />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
