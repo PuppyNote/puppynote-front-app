@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, Modal, TouchableOpacity, Animated, PanResponder, Dimensions } from 'react-native';
-import { CustomText as Text } from '../CustomText';
+import { CustomText } from '../CustomText';
 
 interface GlobalDetailModalProps {
   visible: boolean;
@@ -88,14 +88,15 @@ export default function GlobalDetailModal({
               transform: [{ translateY: panY }] 
             }
           ]}
-          {...panResponders.panHandlers}
         >
-          <View style={styles.handleBar} />
-          <View style={styles.header}>
-            <Text style={styles.title}>{title}</Text>
-            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <Text style={styles.closeText}>닫기</Text>
-            </TouchableOpacity>
+          <View style={styles.dragZone} {...panResponders.panHandlers}>
+            <View style={styles.handleBar} />
+            <View style={styles.header}>
+              <CustomText style={styles.title}>{title}</CustomText>
+              <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+                <CustomText style={styles.closeText}>닫기</CustomText>
+              </TouchableOpacity>
+            </View>
           </View>
           {children}
         </Animated.View>
@@ -114,8 +115,13 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     width: '100%',
-    paddingTop: 12,
+    paddingTop: 0, // Removed top padding here to handle it in dragZone
     paddingHorizontal: 24,
+  },
+  dragZone: {
+    width: '100%',
+    paddingTop: 12,
+    paddingBottom: 4,
   },
   handleBar: {
     width: 40,

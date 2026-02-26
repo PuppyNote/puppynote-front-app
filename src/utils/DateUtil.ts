@@ -19,3 +19,19 @@ export const formatToLocalDate = (date: Date): string => {
 export const formatToLocalYearMonth = (year: number, month: number): string => {
   return `${year}-${String(month).padStart(2, '0')}`;
 };
+
+/**
+ * 두 날짜 사이의 일수 차이를 계산합니다. (targetDate - baseDate)
+ * targetDate가 baseDate보다 미래면 양수, 과거면 음수를 반환합니다.
+ */
+export const calculateDaysDifference = (targetDateStr: string, baseDate: Date = new Date()): number => {
+  const target = new Date(targetDateStr);
+  // 시간을 00:00:00으로 설정하여 날짜 차이만 계산
+  target.setHours(0, 0, 0, 0);
+  
+  const base = new Date(baseDate);
+  base.setHours(0, 0, 0, 0);
+  
+  const diffTime = target.getTime() - base.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};

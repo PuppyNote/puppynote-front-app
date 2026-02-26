@@ -13,7 +13,8 @@ import AddSupplyScreen from '../screens/supply/AddSupplyScreen';
 import CategoryManagementScreen from '../screens/supply/CategoryManagementScreen';
 import HealthScreen from '../screens/health/HealthScreen';
 import AddWalkScreen from '../screens/walk/AddWalkScreen';
-import { BottomTab, TopBar } from '../components';
+import BottomTab from '../components/tabs/BottomTab';
+import TopBar from '../components/tabs/TopBar';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
