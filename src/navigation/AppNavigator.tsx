@@ -13,6 +13,7 @@ import AddSupplyScreen from '../screens/supply/AddSupplyScreen';
 import CategoryManagementScreen from '../screens/supply/CategoryManagementScreen';
 import HealthScreen from '../screens/health/HealthScreen';
 import AddWalkScreen from '../screens/walk/AddWalkScreen';
+import SettingScreen from '../screens/setting/SettingScreen';
 import BottomTab from '../components/tabs/BottomTab';
 import TopBar from '../components/tabs/TopBar';
 
@@ -50,7 +51,7 @@ function TabNavigator() {
       />
       <Tab.Screen 
         name="Settings" 
-        component={HomeScreen} 
+        component={SettingScreen} 
         options={{ headerTitle: 'PuppyNote' }}
       />
     </Tab.Navigator>
