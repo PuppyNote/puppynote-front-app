@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { 
   Layout, 
@@ -6,15 +6,30 @@ import {
   SupplyItem, 
   FloatingActionButton 
 } from '../../components';
+import { petItemService } from '../../services/petItem/PetItemService';
 
 export default function SuppliesScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState('all');
+  const [tabs, setTabs] = useState([
+    { id: 'all', label: '전체' }
+  ]);
 
-  const tabs = [
-    { id: 'all', label: 'All Items' },
-    { id: 'low_stock', label: 'Low Stock' },
-    { id: 'history', label: 'History' },
-  ];
+  useEffect(() => {
+    fetchUserCategories();
+  }, []);
+
+  const fetchUserCategories = async () => {
+    try {
+      const data = await petItemService.getUserCategories();
+      const userTabs = data.map(cat => ({
+        id: cat.category,
+        label: `${cat.categoryEmoji} ${cat.categoryName}`
+      }));
+      setTabs([{ id: 'all', label: '전체' }, ...userTabs]);
+    } catch (error) {
+      console.error('Failed to fetch user categories:', error);
+    }
+  };
 
   return (
     <Layout>
@@ -22,6 +37,7 @@ export default function SuppliesScreen({ navigation }: any) {
         tabs={tabs} 
         activeTabId={activeTab} 
         onTabPress={setActiveTab} 
+        onAddPress={() => navigation.navigate('CategoryManagement', { currentTabs: tabs, setTabs })}
       />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>

@@ -11,9 +11,10 @@ interface SubTabsProps {
   tabs: TabItem[];
   activeTabId: string;
   onTabPress: (id: string) => void;
+  onAddPress?: () => void;
 }
 
-export default function SubTabs({ tabs, activeTabId, onTabPress }: SubTabsProps) {
+export default function SubTabs({ tabs, activeTabId, onTabPress, onAddPress }: SubTabsProps) {
   return (
     <View style={styles.subTabs}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -33,6 +34,15 @@ export default function SubTabs({ tabs, activeTabId, onTabPress }: SubTabsProps)
               </TouchableOpacity>
             );
           })}
+          {onAddPress && (
+            <TouchableOpacity 
+              style={styles.addButton}
+              onPress={onAddPress}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.addText}>+</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -54,6 +64,23 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 9999,
     backgroundColor: 'white',
+  },
+  addButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 9999,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addText: {
+    fontSize: 18,
+    color: '#64748b',
+    fontWeight: 'bold',
+    lineHeight: 18,
   },
   activeTab: {
     backgroundColor: '#eebd2b',
