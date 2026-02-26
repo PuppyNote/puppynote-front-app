@@ -1,5 +1,6 @@
 import { apiService } from '../ApiService';
 import { deviceService } from './DeviceService';
+import { storageService } from './StorageService';
 
 export interface UserData {
   email: string;
@@ -16,7 +17,8 @@ export interface LoginData {
   accessToken: string;
   refreshToken: string;
   email: string;
-  nickName: string;
+  nickName?: string;
+  settingStatus?: 'INCOMPLETE' | 'COMPLETE';
 }
 
 export interface LoginRequest {
@@ -49,12 +51,10 @@ class AuthService {
     return response.data;
   }
 
-  // 로그인 API (기기 정보 자동 수집)
+  // 일반 로그인 API
   public async login(email: string, password?: string): Promise<LoginData> {
     const deviceId = await deviceService.getDeviceId();
     const pushKey = await deviceService.getPushKey();
-
-    console.log('Login Request Data:', { email, deviceId, pushKey });
 
     const response = await apiService.post<LoginData>('/api/v1/auth/login', {
       email,
@@ -66,6 +66,31 @@ class AuthService {
     if (response.statusCode !== 200) {
       throw new Error(response.message || '로그인에 실패했습니다.');
     }
+
+    await storageService.saveAccessToken(response.data.accessToken);
+    await storageService.saveRefreshToken(response.data.refreshToken);
+    
+    return response.data;
+  }
+
+  // OAuth 로그인 API (KAKAO, GOOGLE 등)
+  public async oauthLogin(token: string, snsType: 'KAKAO' | 'GOOGLE'): Promise<LoginData> {
+    const deviceId = await deviceService.getDeviceId();
+    const pushKey = await deviceService.getPushKey();
+
+    const response = await apiService.post<LoginData>('/api/v1/auth/oauth/login', {
+      token,
+      snsType,
+      deviceId,
+      pushKey,
+    });
+    
+    if (response.statusCode !== 200) {
+      throw new Error(response.message || 'OAuth 로그인에 실패했습니다.');
+    }
+
+    await storageService.saveAccessToken(response.data.accessToken);
+    await storageService.saveRefreshToken(response.data.refreshToken);
     
     return response.data;
   }

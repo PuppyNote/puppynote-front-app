@@ -53,7 +53,7 @@ Ensure you have the Expo CLI and necessary mobile emulators/physical devices set
 
 ### 2. API Interaction
 - All API calls should go through `apiService` located in `src/services/ApiService.ts`.
-- The base URL is `https://sangkihan.co.kr/puppynote`.
+- The base URL is configured via environment variables.
 - Authentication tokens are automatically handled by request interceptors using `StorageService`.
 - Expected response format: `ApiResponse<T>` which includes `statusCode`, `message`, and `data`.
 

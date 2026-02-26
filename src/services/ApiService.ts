@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios';
 import { storageService } from './auth/StorageService';
 
-const BASE_URL = 'https://sangkihan.co.kr/puppynote';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export interface ApiResponse<T> {
   statusCode: number;

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Platform } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Platform, Alert } from 'react-native';
+import { login as kakaoLogin } from '@react-native-seoul/kakao-login';
 import { Layout, Text, CustomAlert, PetRegistrationModal, EntryOptionModal, InviteCodeModal } from '../../components';
 import { authService } from '../../services/auth/AuthService';
 import { storageService } from '../../services/auth/StorageService';
@@ -15,6 +16,21 @@ export default function LoginScreen({ navigation }: any) {
   const [isInviteModalVisible, setIsInviteModalVisible] = useState(false);
   const { alertConfig, showAlert } = useAlert();
 
+  const handleLoginSuccess = async (settingStatus?: string) => {
+    // 펫 조회
+    const pets = await petService.getPets();
+
+    if (pets && pets.length > 0) {
+      await storageService.saveSelectedPet(pets[0].petId, pets[0].petName);
+      navigation.replace('MainTabs');
+    } else if (settingStatus === 'INCOMPLETE') {
+      setIsEntryOptionVisible(true);
+    } else {
+      // 혹시 데이터가 꼬였을 경우를 대비한 기본값
+      setIsEntryOptionVisible(true);
+    }
+  };
+
   const handleLogin = async () => {
     if (!email || !password) {
       showAlert('알림', '이메일과 비밀번호를 모두 입력해주세요.');
@@ -24,27 +40,32 @@ export default function LoginScreen({ navigation }: any) {
     setIsLoading(true);
     try {
       const response = await authService.login(email, password);
-
-      // Save tokens
-      await storageService.saveAccessToken(response.accessToken);
-      await storageService.saveRefreshToken(response.refreshToken);
-
-      // 펫 조회
-      const pets = await petService.getPets();
-      
-      if (pets && pets.length > 0) {
-        // 첫번째 펫 정보 저장
-        await storageService.saveSelectedPet(pets[0].petId, pets[0].petName);
-        setIsLoading(false);
-        navigation.replace('MainTabs');
-      } else {
-        // 등록된 펫이 없으면 선택 팝업 띄우기
-        setIsLoading(false);
-        setIsEntryOptionVisible(true);
-      }
+      await handleLoginSuccess(response.settingStatus);
     } catch (error: any) {
-      setIsLoading(false);
       showAlert('오류', error.message || '로그인에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKakaoLogin = async () => {
+    setIsLoading(true);
+    try {
+      // 1. 카카오 SDK 로그인 호출
+      const token = await kakaoLogin();
+
+      // 2. 받은 accessToken을 우리 백엔드로 전달
+      const response = await authService.oauthLogin(token.accessToken, 'KAKAO');
+
+      // 3. 설정 상태에 따라 화면 이동
+      await handleLoginSuccess(response.settingStatus);
+    } catch (error: any) {
+      console.log('Kakao Login Error:', error);
+      if (error.message !== 'Logged out') {
+        showAlert('오류', '카카오 로그인 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -74,7 +95,7 @@ export default function LoginScreen({ navigation }: any) {
     <Layout edges={['top', 'bottom', 'left', 'right']} style={styles.center}>
       <View style={styles.headerContainer}>
         <View style={styles.logoBox}>
-          <Image 
+          <Image
             source={require('../../../assets/puppynote-icon.png')}
             style={styles.logoImage}
           />
@@ -84,7 +105,7 @@ export default function LoginScreen({ navigation }: any) {
 
       <View style={styles.formContainer}>
         <View style={styles.inputGroup}>
-          <TextInput 
+          <TextInput
             style={styles.input}
             placeholder="이메일 주소"
             placeholderTextColor="#94a3b8"
@@ -93,7 +114,7 @@ export default function LoginScreen({ navigation }: any) {
             autoCapitalize="none"
             keyboardType="email-address"
           />
-          <TextInput 
+          <TextInput
             style={styles.input}
             placeholder="비밀번호"
             placeholderTextColor="#94a3b8"
@@ -106,7 +127,7 @@ export default function LoginScreen({ navigation }: any) {
           />
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.loginButton}
           onPress={handleLogin}
           activeOpacity={0.8}
@@ -126,18 +147,18 @@ export default function LoginScreen({ navigation }: any) {
         </View>
 
         <View style={styles.socialButtonGroup}>
-          <TouchableOpacity activeOpacity={0.8}>
-            <Image 
+          <TouchableOpacity activeOpacity={0.8} onPress={handleKakaoLogin} disabled={isLoading}>
+            <Image
               source={require('../../../assets/loginButton/kakao.png')}
               style={styles.socialButtonImage}
             />
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.8}>
-            <Image 
+          {/* <TouchableOpacity activeOpacity={0.8} disabled={isLoading}>
+            <Image
               source={require('../../../assets/loginButton/google.png')}
               style={styles.socialButtonImage}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
 
@@ -148,20 +169,20 @@ export default function LoginScreen({ navigation }: any) {
         </TouchableOpacity>
       </View>
 
-      <CustomAlert 
+      <CustomAlert
         visible={alertConfig.visible}
         title={alertConfig.title}
         message={alertConfig.message}
         onConfirm={alertConfig.onConfirm}
       />
 
-      <EntryOptionModal 
+      <EntryOptionModal
         visible={isEntryOptionVisible}
         onRegisterPet={handleSelectRegisterPet}
         onEnterInviteCode={handleSelectInviteCode}
       />
 
-      <PetRegistrationModal 
+      <PetRegistrationModal
         visible={isPetModalVisible}
         onSuccess={handlePetRegistrationSuccess}
         onClose={() => {
@@ -170,7 +191,7 @@ export default function LoginScreen({ navigation }: any) {
         }}
       />
 
-      <InviteCodeModal 
+      <InviteCodeModal
         visible={isInviteModalVisible}
         onSuccess={handleInviteCodeSuccess}
         onBack={() => {
