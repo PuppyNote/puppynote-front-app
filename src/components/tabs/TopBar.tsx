@@ -3,36 +3,51 @@ import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CustomText as Text } from '../CustomText';
 
-export default function TopBar({ options, route }: any) {
+export default function TopBar({ navigation, options, route }: any) {
   const [hasNotification, setHasNotification] = useState(true);
   const insets = useSafeAreaInsets();
   const title = options?.headerTitle || route?.name || 'PuppyNote';
   const iconSource = options?.headerIcon || require('../../../assets/puppynote-icon.png');
+  
+  // 메인 탭 화면인지 확인
+  const mainTabs = ['Home', 'Walk', 'Supplies', 'Settings'];
+  const isMainTab = mainTabs.includes(route.name);
+  
+  // 메인 탭이 아니고 뒤로가기가 가능할 때만 뒤로가기 버튼 표시
+  const canGoBack = navigation?.canGoBack() && !isMainTab;
+  const isAlertHistory = route.name === 'AlertHistory';
 
   const handleNotificationPress = () => {
-    console.log('Notification button pressed!');
-    // TODO: Implement navigation to notification screen
+    navigation.navigate('AlertHistory');
   };
 
   return (
     <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
       <View style={styles.content}>
         <View style={styles.leftContent}>
-          <View style={styles.iconContainer}>
-            {typeof iconSource === 'string' ? (
-              <Text style={styles.icon}>{iconSource}</Text>
-            ) : (
-              <Image source={iconSource} style={{ width: 32, height: 32 }} />
-            )}
-          </View>
+          {canGoBack ? (
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+              <Text style={styles.backIcon}>←</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.iconContainer}>
+              {typeof iconSource === 'string' ? (
+                <Text style={styles.icon}>{iconSource}</Text>
+              ) : (
+                <Image source={iconSource} style={{ width: 32, height: 32 }} />
+              )}
+            </View>
+          )}
           <Text style={styles.title}>{title}</Text>
         </View>
-        <TouchableOpacity onPress={handleNotificationPress} style={styles.notificationButton}>
-          <Image 
-            source={hasNotification ? require('../../../assets/alarm/alarm-on.png') : require('../../../assets/alarm/alarm.png')}
-            style={styles.notificationIcon}
-          />
-        </TouchableOpacity>
+        {!isAlertHistory && (
+          <TouchableOpacity onPress={handleNotificationPress} style={styles.notificationButton}>
+            <Image 
+              source={hasNotification ? require('../../../assets/alarm/alarm-on.png') : require('../../../assets/alarm/alarm.png')}
+              style={styles.notificationIcon}
+            />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -54,6 +69,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 4,
+  },
+  backIcon: {
+    fontSize: 24,
+    color: '#0f172a',
+    fontWeight: 'bold',
   },
   iconContainer: {
     padding: 8,
