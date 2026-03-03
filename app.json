@@ -14,10 +14,12 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.puppynote"
+      "bundleIdentifier": "com.puppynote",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "package": "com.puppynote",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/puppynote-icon.png",
         "backgroundColor": "#ffffff"
