@@ -39,8 +39,14 @@ export default {
       favicon: "./assets/puppynote-icon.png"
     },
     plugins: [
-      "expo-secure-store",
-      "expo-notifications",
+      [
+        "expo-build-properties",
+        {
+          android: {
+            "extraMavenRepos": ["https://devrepo.kakao.com/nexus/content/groups/public/"]
+          }
+        }
+      ],
       [
         "expo-build-properties",
         {
@@ -52,7 +58,8 @@ export default {
       [
         "@react-native-seoul/kakao-login",
         {
-          kakaoAppKey: process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY
+          kakaoAppKey: process.env.KAKAO_NATIVE_APP_KEY,
+          kotlinVersion: "2.0.21"
         }
       ]
     ],

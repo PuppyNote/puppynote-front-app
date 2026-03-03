@@ -2,65 +2,72 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Image } from 'react-native';
 
 export default function BottomTab({ state, descriptors, navigation }: any) {
-  const tabs = [
-    { 
-      name: 'Home', 
-      label: '홈',
-      icon: require('../../../assets/bottomTab/home.png'),
-      iconFocused: require('../../../assets/bottomTab/home-click.png'),
-    },
-    { 
-      name: 'Walk', 
-      label: '산책',
-      icon: require('../../../assets/bottomTab/walk.png'),
-      iconFocused: require('../../../assets/bottomTab/walk-click.png'),
-    },
-    { 
-      name: 'Supplies', 
-      label: '용품',
-      icon: require('../../../assets/bottomTab/supply.png'),
-      iconFocused: require('../../../assets/bottomTab/supply-click.png'),
-    },
-    // { 
-    //   name: 'Health', 
-    //   label: '건강',
-    //   icon: require('../../../assets/bottomTab/health.png'),
-    //   iconFocused: require('../../../assets/bottomTab/health-click.png'),
-    // },
-    { 
-      name: 'Settings', 
-      label: '설정',
-      icon: require('../../../assets/bottomTab/setting.png'),
-      iconFocused: require('../../../assets/bottomTab/setting-click.png'),
-    },
-  ];
+  const getTabIcon = (routeName: string, isFocused: boolean) => {
+    switch (routeName) {
+      case 'Home':
+        return isFocused 
+          ? require('../../../assets/bottomTab/home-click.png') 
+          : require('../../../assets/bottomTab/home.png');
+      case 'Walk':
+        return isFocused 
+          ? require('../../../assets/bottomTab/walk-click.png') 
+          : require('../../../assets/bottomTab/walk.png');
+      case 'Supplies':
+        return isFocused 
+          ? require('../../../assets/bottomTab/supply-click.png') 
+          : require('../../../assets/bottomTab/supply.png');
+      case 'Health':
+        return isFocused 
+          ? require('../../../assets/bottomTab/health-click.png') 
+          : require('../../../assets/bottomTab/health.png');
+      case 'Settings':
+        return isFocused 
+          ? require('../../../assets/bottomTab/setting-click.png') 
+          : require('../../../assets/bottomTab/setting.png');
+      default:
+        return require('../../../assets/bottomTab/home.png');
+    }
+  };
 
   return (
     <View style={styles.tabBar}>
-      {tabs.map((tab, index) => {
+      {state.routes.map((route: any, index: number) => {
+        const { options } = descriptors[route.key];
         const isFocused = state.index === index;
 
         const onPress = () => {
           const event = navigation.emit({
             type: 'tabPress',
-            target: state.routes[index].key,
+            target: route.key,
             canPreventDefault: true,
           });
 
           if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(tab.name);
+            navigation.navigate(route.name, route.params);
           }
         };
 
+        const onLongPress = () => {
+          navigation.emit({
+            type: 'tabLongPress',
+            target: route.key,
+          });
+        };
+
         return (
-          <TouchableOpacity 
-            key={tab.name}
-            style={styles.tabItem} 
+          <TouchableOpacity
+            key={route.key}
+            accessibilityRole="button"
+            accessibilityState={isFocused ? { selected: true } : {}}
+            accessibilityLabel={options.tabBarAccessibilityLabel}
+            testID={options.tabBarTestID}
             onPress={onPress}
+            onLongPress={onLongPress}
+            style={styles.tabItem}
             activeOpacity={0.7}
           >
             <Image 
-              source={isFocused ? tab.iconFocused : tab.icon}
+              source={getTabIcon(route.name, isFocused)}
               style={[styles.icon, isFocused && { transform: [{ scale: 1.4 }] }]}
             />
           </TouchableOpacity>
@@ -92,16 +99,5 @@ const styles = StyleSheet.create({
   icon: {
     width: 30,
     height: 30,
-  },
-  label: {
-    fontSize: 10,
-  },
-  labelActive: {
-    fontWeight: 'bold',
-    color: '#eebd2b',
-  },
-  labelInactive: {
-    fontWeight: '500',
-    color: '#94a3b8',
   },
 });

@@ -5,7 +5,6 @@ import {
   TextInput, 
   ScrollView, 
   StyleSheet, 
-  Alert, 
   Image,
   ActivityIndicator
 } from 'react-native';
@@ -15,14 +14,17 @@ import {
   Text, 
   AddTopBar, 
   CyclePickerModal, 
-  UserCategoryPickerModal 
+  UserCategoryPickerModal,
+  CustomAlert
 } from '../../components';
 import { petItemService } from '../../services/petItem/PetItemService';
 import { userCategoryService } from '../../services/userCategory/UserCategoryService';
 import { storageService } from '../../services/auth/StorageService';
 import { UserCategoryResponse } from '../../types/PetItem';
+import { useAlert } from '../../hooks/useAlert';
 
 export default function AddSupplyScreen({ navigation }: any) {
+  const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
   const [name, setName] = useState('');
   const [purchaseUrl, setPurchaseUrl] = useState('');
   const [purchaseCycleDays, setPurchaseCycleDays] = useState(30);
@@ -66,11 +68,11 @@ export default function AddSupplyScreen({ navigation }: any) {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert('알림', '용품 이름을 입력해주세요.');
+      showSimpleAlert('알림', '용품 이름을 입력해주세요.');
       return;
     }
     if (!selectedCategory) {
-      Alert.alert('알림', '카테고리를 선택해주세요.');
+      showSimpleAlert('알림', '카테고리를 선택해주세요.');
       return;
     }
 
@@ -78,7 +80,7 @@ export default function AddSupplyScreen({ navigation }: any) {
       setLoading(true);
       const selectedPet = await storageService.getSelectedPet();
       if (!selectedPet) {
-        Alert.alert('오류', '선택된 반려동물이 없습니다.');
+        showSimpleAlert('오류', '선택된 반려동물이 없습니다.');
         return;
       }
 
@@ -98,11 +100,9 @@ export default function AddSupplyScreen({ navigation }: any) {
         imageKey,
       });
 
-      Alert.alert('성공', '용품이 등록되었습니다.', [
-        { text: '확인', onPress: () => navigation.goBack() }
-      ]);
+      showSimpleAlert('성공', '용품이 등록되었습니다.', () => navigation.goBack());
     } catch (error: any) {
-      Alert.alert('오류', error.message || '용품 등록 중 오류가 발생했습니다.');
+      showSimpleAlert('오류', error.message || '용품 등록 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -216,6 +216,14 @@ export default function AddSupplyScreen({ navigation }: any) {
         onConfirm={setSelectedCategory}
         userCategories={userCategories}
         initialCategoryId={selectedCategory?.category}
+      />
+
+      <CustomAlert 
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onConfirm={alertConfig.onConfirm}
+        onCancel={hideAlert}
       />
     </Layout>
   );

@@ -29,7 +29,7 @@ export default function RegisterScreen({ navigation }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [isCooldown, setIsCooldown] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const { alertConfig, showAlert } = useAlert();
+  const { alertConfig, showAlert, showSimpleAlert, hideAlert } = useAlert();
 
   // Timer logic
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function RegisterScreen({ navigation }: any) {
   const handleSendVerification = async () => {
     if (!email) {
       setErrors(prev => ({ ...prev, email: true }));
-      showAlert('알림', '이메일 주소를 입력해주세요.');
+      showSimpleAlert('알림', '이메일 주소를 입력해주세요.');
       return;
     }
     setErrors(prev => ({ ...prev, email: false }));
@@ -73,10 +73,10 @@ export default function RegisterScreen({ navigation }: any) {
       setTimer(180);
       setIsTimerActive(true);
       setIsVerified(false);
-      showAlert('알림', '인증번호가 발송되었습니다.');
+      showSimpleAlert('알림', '인증번호가 발송되었습니다.');
     } catch (error: any) {
       const errorMessage = error?.message || '인증번호 발송에 실패했습니다.';
-      showAlert('오류', errorMessage);
+      showSimpleAlert('오류', errorMessage);
     } finally {
       setIsLoading(false);
       setTimeout(() => {
@@ -87,12 +87,12 @@ export default function RegisterScreen({ navigation }: any) {
 
   const handleVerifyCode = () => {
     if (timer === 0) {
-      showAlert('오류', '인증 시간이 만료되었습니다. 다시 시도해주세요.');
+      showSimpleAlert('오류', '인증 시간이 만료되었습니다. 다시 시도해주세요.');
       return;
     }
 
     if (!verificationCode) {
-      showAlert('알림', '인증번호를 입력해주세요.');
+      showSimpleAlert('알림', '인증번호를 입력해주세요.');
       return;
     }
 
@@ -101,7 +101,7 @@ export default function RegisterScreen({ navigation }: any) {
       setIsTimerActive(false);
       if (timerRef.current) clearInterval(timerRef.current);
     } else {
-      showAlert('오류', '인증번호가 일치하지 않습니다.');
+      showSimpleAlert('오류', '인증번호가 일치하지 않습니다.');
     }
   };
 
@@ -118,12 +118,12 @@ export default function RegisterScreen({ navigation }: any) {
     setPasswordMismatch(isPasswordMismatch);
 
     if (newErrors.email) {
-      showAlert('알림', '이메일 인증을 완료해주세요.');
+      showSimpleAlert('알림', '이메일 인증을 완료해주세요.');
       return;
     }
 
     if (newErrors.nickname || newErrors.password || newErrors.confirmPassword) {
-      showAlert('알림', '모든 필드를 입력해주세요.');
+      showSimpleAlert('알림', '모든 필드를 입력해주세요.');
       return;
     }
 
@@ -139,13 +139,12 @@ export default function RegisterScreen({ navigation }: any) {
         password
       });
       setIsLoading(false);
-      showAlert('성공', '회원가입이 완료되었습니다.', () => {
-        setAlertConfig(prev => ({ ...prev, visible: false }));
+      showSimpleAlert('성공', '회원가입이 완료되었습니다.', () => {
         navigation.navigate('Login');
       });
     } catch (error: any) {
       setIsLoading(false);
-      showAlert('오류', error.message || '회원가입에 실패했습니다.');
+      showSimpleAlert('오류', error.message || '회원가입에 실패했습니다.');
     }
   };
 
@@ -326,7 +325,11 @@ export default function RegisterScreen({ navigation }: any) {
         visible={alertConfig.visible}
         title={alertConfig.title}
         message={alertConfig.message}
+        confirmText={alertConfig.confirmText}
+        cancelText={alertConfig.cancelText}
         onConfirm={alertConfig.onConfirm}
+        onCancel={alertConfig.onCancel || hideAlert}
+        type={alertConfig.type}
       />
     </Layout>
   );
