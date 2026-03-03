@@ -61,6 +61,39 @@ class DeviceService {
       return 'error-push-key';
     }
   }
+
+  // Firebase(FCM) 직접 발송용 토큰 가져오기
+  public async getFcmToken(): Promise<string> {
+    if (!Device.isDevice) {
+      return 'emulator-fcm-token';
+    }
+
+    try {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus !== 'granted') {
+        return 'permission-denied';
+      }
+
+      // getDevicePushTokenAsync는 Android는 FCM 토큰, iOS는 APNs 토큰을 반환합니다.
+      // Expo SDK 50+ 에서는 FCM 토큰을 얻기 위해 이 메서드를 권장합니다.
+      const tokenData = await Notifications.getDevicePushTokenAsync();
+      return tokenData.data;
+    } catch (error: any) {
+      console.error('--- FCM 토큰 발급 에러 상세 ---');
+      console.error('메시지:', error.message);
+      console.error('코드:', error.code);
+      console.error('전체 에러:', error);
+      console.error('------------------------------');
+      return 'error-fcm-token';
+    }
+  }
 }
 
 export const deviceService = new DeviceService();
