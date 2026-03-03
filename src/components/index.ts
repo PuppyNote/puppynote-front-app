@@ -18,6 +18,7 @@ export { default as PetRegistrationModal } from './modal/PetRegistrationModal';
 export { default as EntryOptionModal } from './modal/EntryOptionModal';
 export { default as InviteCodeModal } from './modal/InviteCodeModal';
 export { default as AlarmManagementModal } from './modal/AlarmManagementModal';
+export { default as AlertSettingModal } from './modal/AlertSettingModal';
 export { default as SuppliesDetailModal } from './modal/SuppliesDetailModal';
 export { default as DatePickerModal } from './modal/DatePickerModal';
 export { default as CyclePickerModal } from './modal/CyclePickerModal';

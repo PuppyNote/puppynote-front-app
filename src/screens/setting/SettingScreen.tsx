@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { Layout, Text, CustomAlert } from '../../components';
+import { Layout, Text, CustomAlert, AlertSettingModal } from '../../components';
 import { storageService } from '../../services/auth/StorageService';
 import { useAlert } from '../../hooks/useAlert';
 
 export default function SettingScreen({ navigation }: any) {
   const { alertConfig, showAlert, showSimpleAlert, hideAlert } = useAlert();
+  const [isAlertSettingModalVisible, setIsAlertSettingModalVisible] = useState(false);
   const [userInfo, setUserInfo] = useState({
     nickName: '사용자',
     email: '',
@@ -26,6 +27,12 @@ export default function SettingScreen({ navigation }: any) {
       title: '가족 관리',
       icon: '👨‍👩‍👧‍👦',
       onPress: () => showSimpleAlert('알림', '가족 관리 기능 준비 중입니다.')
+    },
+    {
+      id: 'notification',
+      title: '알림 설정',
+      icon: '🔔',
+      onPress: () => setIsAlertSettingModalVisible(true)
     },
   ];
 
@@ -103,6 +110,11 @@ export default function SettingScreen({ navigation }: any) {
           </View>
         </View>
       </ScrollView>
+
+      <AlertSettingModal 
+        visible={isAlertSettingModalVisible}
+        onClose={() => setIsAlertSettingModalVisible(false)}
+      />
 
       <CustomAlert 
         visible={alertConfig.visible}
