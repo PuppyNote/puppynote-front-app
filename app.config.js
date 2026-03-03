@@ -17,10 +17,12 @@ export default {
     },
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.puppynote"
+      bundleIdentifier: "com.puppynote",
+      googleServicesFile: "./GoogleService-Info.plist"
     },
     android: {
       package: "com.puppynote",
+      googleServicesFile: "./google-services.json",
       config: {
         googleMaps: {
           apiKey: process.env.GOOGLE_MAPS_API_KEY
@@ -39,6 +41,14 @@ export default {
     plugins: [
       "expo-secure-store",
       "expo-notifications",
+      [
+        "expo-build-properties",
+        {
+          android: {
+            "extraMavenRepos": ["https://devrepo.kakao.com/nexus/content/groups/public/"]
+          }
+        }
+      ],
       [
         "@react-native-seoul/kakao-login",
         {

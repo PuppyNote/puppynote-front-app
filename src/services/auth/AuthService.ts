@@ -54,7 +54,7 @@ class AuthService {
   // 일반 로그인 API
   public async login(email: string, password?: string): Promise<LoginData> {
     const deviceId = await deviceService.getDeviceId();
-    const pushKey = await deviceService.getPushKey();
+    const pushKey = await deviceService.getFcmToken();
 
     const response = await apiService.post<LoginData>('/api/v1/auth/login', {
       email,
@@ -76,7 +76,7 @@ class AuthService {
   // OAuth 로그인 API (KAKAO, GOOGLE 등)
   public async oauthLogin(token: string, snsType: 'KAKAO' | 'GOOGLE'): Promise<LoginData> {
     const deviceId = await deviceService.getDeviceId();
-    const pushKey = await deviceService.getPushKey();
+    const pushKey = await deviceService.getFcmToken();
 
     const response = await apiService.post<LoginData>('/api/v1/auth/oauth/login', {
       token,
