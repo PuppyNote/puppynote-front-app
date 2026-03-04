@@ -1,15 +1,18 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
-import { Layout, Text } from '../../components';
+import { StyleSheet, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Layout, Text, CustomAlert } from '../../components';
 import { PagedFlatList } from '../../components/items/PagedFlatList';
 import { alertHistoryService, AlertHistory } from '../../services/alertHistory/AlertHistoryService';
+import { familyService } from '../../services/family/FamilyService';
 import { useAlert } from '../../hooks/useAlert';
 
 export default function AlertHistoryScreen({ navigation }: any) {
   const [histories, setHistories] = useState<AlertHistory[]>([]);
-  const { showSimpleAlert } = useAlert();
+  const { alertConfig, showAlert, showSimpleAlert, hideAlert } = useAlert();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleItemClick = async (item: AlertHistory) => {
+    // 1. 읽음 처리 (아직 안 읽었을 경우)
     if (item.alertHistoryStatus === 'UNCHECKED') {
       try {
         await alertHistoryService.checkAlert(item.id);
@@ -17,8 +20,41 @@ export default function AlertHistoryScreen({ navigation }: any) {
           h.id === item.id ? { ...h, alertHistoryStatus: 'CHECKED' } : h
         ));
       } catch (error: any) {
-        showSimpleAlert('오류', error.message || '알림 확인 처리에 실패했습니다.');
+        console.error('Failed to check alert:', error);
       }
+    }
+
+    // 2. 가족 초대 처리
+    if (item.alertDestinationType === 'FAMILY_INVITE') {
+      const inviterUserId = parseInt(item.alertDestinationInfo);
+      
+      if (isNaN(inviterUserId)) {
+        showSimpleAlert('오류', '잘못된 초대 정보입니다.');
+        return;
+      }
+
+      showAlert({
+        title: '가족 초대 수락',
+        message: '가족 초대를 수락하시겠습니까?\n수락하면 상대방의 반려동물을 함께 관리할 수 있습니다.',
+        confirmText: '수락하기',
+        cancelText: '취소',
+        onConfirm: async () => {
+          hideAlert();
+          try {
+            setIsProcessing(true);
+            await familyService.registerFamily(inviterUserId);
+            showSimpleAlert('성공', '가족 등록이 완료되었습니다! 🐾', () => {
+              // 등록 성공 후 메인으로 이동
+              navigation.navigate('MainTabs', { screen: 'Home' });
+            });
+          } catch (error: any) {
+            showSimpleAlert('오류', error.message || '가족 등록에 실패했습니다.');
+          } finally {
+            setIsProcessing(false);
+          }
+        },
+        onCancel: hideAlert,
+      });
     }
   };
 
@@ -64,6 +100,23 @@ export default function AlertHistoryScreen({ navigation }: any) {
         noItemsText="알림 내역이 없습니다."
         removeClippedSubviews={true} // 메모리 관리 최적화
       />
+
+      {isProcessing && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#eebd2b" />
+        </View>
+      )}
+
+      <CustomAlert 
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        confirmText={alertConfig.confirmText}
+        cancelText={alertConfig.cancelText}
+        onConfirm={alertConfig.onConfirm}
+        onCancel={alertConfig.onCancel}
+        type={alertConfig.type}
+      />
     </Layout>
   );
 }
@@ -105,5 +158,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#334155',
     lineHeight: 20,
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
   },
 });

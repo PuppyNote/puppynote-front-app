@@ -3,6 +3,7 @@ import { apiService } from '../ApiService';
 export interface HomeInfo {
   petName: string;
   petProfileImageUrl: string | null;
+  birthDate: string | null;
   petAge: string | null;
   birthdayDday: number | null;
   walkedToday: boolean;

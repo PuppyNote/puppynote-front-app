@@ -23,11 +23,17 @@ export default function LoginScreen({ navigation }: any) {
     if (pets && pets.length > 0) {
       await storageService.saveSelectedPet(pets[0].petId, pets[0].petName);
       navigation.replace('MainTabs');
-    } else if (settingStatus === 'INCOMPLETE') {
-      setIsEntryOptionVisible(true);
     } else {
-      // 혹시 데이터가 꼬였을 경우를 대비한 기본값
-      setIsEntryOptionVisible(true);
+      // 잠시 주석 처리: 펫이 없어도 바로 메인으로 이동하도록 변경
+      navigation.replace('MainTabs');
+      /*
+      if (settingStatus === 'INCOMPLETE') {
+        setIsEntryOptionVisible(true);
+      } else {
+        // 혹시 데이터가 꼬였을 경우를 대비한 기본값
+        setIsEntryOptionVisible(true);
+      }
+      */
     }
   };
 

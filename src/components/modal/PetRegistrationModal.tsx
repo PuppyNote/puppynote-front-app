@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -23,12 +23,20 @@ interface PetRegistrationModalProps {
   visible: boolean;
   onSuccess: (petId: number, petName: string) => void;
   onClose?: () => void;
+  petId?: number | null;
+  initialData?: {
+    name: string;
+    birthDate?: string | null;
+    imageUrl?: string | null;
+  } | null;
 }
 
 export default function PetRegistrationModal({
   visible,
   onSuccess,
   onClose,
+  petId,
+  initialData,
 }: PetRegistrationModalProps) {
   const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState('');
@@ -36,6 +44,20 @@ export default function PetRegistrationModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
+
+  const isEditMode = !!petId;
+
+  useEffect(() => {
+    if (visible && initialData) {
+      setName(initialData.name || '');
+      setBirthDate(initialData.birthDate || '');
+      setImage(initialData.imageUrl || null);
+    } else if (visible && !isEditMode) {
+      setName('');
+      setBirthDate('');
+      setImage(null);
+    }
+  }, [visible, initialData, isEditMode]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -58,27 +80,42 @@ export default function PetRegistrationModal({
 
     setIsLoading(true);
     try {
-      let profileImageUrl = '';
+      let uploadedImageUrl = '';
+      let imageKey = '';
 
-      // 1. 이미지 업로드 (이미지가 선택된 경우)
-      if (image) {
+      // 1. 이미지 업로드 (이미지가 새로 선택되었거나 변경된 경우)
+      // Note: initialData.imageUrl과 image가 다르면 새로 업로드한 것으로 간주 (단순 비교)
+      if (image && image !== initialData?.imageUrl) {
         const filename = image.split('/').pop() || 'pet_profile.jpg';
         const match = /\.(\w+)$/.exec(filename);
         const type = match ? `image/${match[1]}` : `image/jpeg`;
         
-        profileImageUrl = await storageService.uploadImage('PUPPY_PROFILE', image, filename, type);
+        uploadedImageUrl = await storageService.uploadImage('PUPPY_PROFILE', image, filename, type);
+        // S3 Key 추출 (보통 URL의 마지막 부분이나 서버 응답에 따라 다름)
+        // 여기서는 API 명세에 맞춰 uploadedImageUrl이 Key라고 가정하거나 변환 필요
+        // 실제 운영 환경에서는 uploadImage가 Key를 반환하는 것이 좋음
+        imageKey = uploadedImageUrl.split('/').pop() || '';
       }
 
-      // 2. 펫 등록
-      const petData = await petService.registerPet({
-        name,
-        birthDate: birthDate || undefined,
-        profileImageUrl: profileImageUrl || undefined,
-      });
-
-      onSuccess(petData.petId, petData.petName);
+      if (isEditMode && petId) {
+        // 2. 펫 수정
+        await petService.updatePet(petId, {
+          name,
+          birthDate: birthDate || null,
+          profileImage: imageKey || null, // Key를 보냄
+        });
+        onSuccess(petId, name);
+      } else {
+        // 2. 펫 등록
+        const petData = await petService.registerPet({
+          name,
+          birthDate: birthDate || undefined,
+          profileImageUrl: uploadedImageUrl || undefined,
+        });
+        onSuccess(petData.petId, petData.petName);
+      }
     } catch (error: any) {
-      showSimpleAlert('오류', error.message || '펫 등록 중 오류가 발생했습니다.');
+      showSimpleAlert('오류', error.message || `${isEditMode ? '수정' : '등록'} 중 오류가 발생했습니다.`);
     } finally {
       setIsLoading(false);
     }
@@ -93,8 +130,10 @@ export default function PetRegistrationModal({
         >
           <View style={styles.modalContent}>
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.modalTitle}>우리 아이 등록하기</Text>
-              <Text style={styles.modalSubtitle}>함께할 반려동물의 정보를 입력해주세요.</Text>
+              <Text style={styles.modalTitle}>{isEditMode ? '우리 아이 정보 수정' : '우리 아이 등록하기'}</Text>
+              <Text style={styles.modalSubtitle}>
+                {isEditMode ? '수정할 반려동물의 정보를 입력해주세요.' : '함께할 반려동물의 정보를 입력해주세요.'}
+              </Text>
 
               <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
                 {image ? (
@@ -146,7 +185,7 @@ export default function PetRegistrationModal({
                   {isLoading ? (
                     <ActivityIndicator color="#0f172a" />
                   ) : (
-                    <Text style={styles.submitButtonText}>등록하기</Text>
+                    <Text style={styles.submitButtonText}>{isEditMode ? '수정하기' : '등록하기'}</Text>
                   )}
                 </TouchableOpacity>
               </View>

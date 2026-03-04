@@ -26,7 +26,7 @@ export default function SettingScreen({ navigation }: any) {
       id: 'family',
       title: '가족 관리',
       icon: '👨‍👩‍👧‍👦',
-      onPress: () => showSimpleAlert('알림', '가족 관리 기능 준비 중입니다.')
+      onPress: () => navigation.navigate('FamilyManagement')
     },
     {
       id: 'notification',

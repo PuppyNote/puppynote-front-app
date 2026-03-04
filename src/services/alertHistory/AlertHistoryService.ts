@@ -1,7 +1,7 @@
 import { apiService } from '../ApiService';
 
 export type AlertHistoryStatus = 'CHECKED' | 'UNCHECKED';
-export type AlertDestinationType = 'DAILY_REPORT' | 'FRIEND' | 'FRIEND_CODE';
+export type AlertDestinationType = 'DAILY_REPORT' | 'FRIEND' | 'FRIEND_CODE' | 'FAMILY_INVITE';
 
 export interface AlertHistory {
   id: number;
