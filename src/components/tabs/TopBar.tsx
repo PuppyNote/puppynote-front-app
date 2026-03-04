@@ -1,14 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CustomText as Text } from '../CustomText';
+import { alertHistoryService } from '../../services/alertHistory/AlertHistoryService';
 
 export default function TopBar({ navigation, options, route }: any) {
-  const [hasNotification, setHasNotification] = useState(true);
+  const [hasNotification, setHasNotification] = useState(false);
   const insets = useSafeAreaInsets();
   const title = options?.headerTitle || route?.name || 'PuppyNote';
   const iconSource = options?.headerIcon || require('../../../assets/puppynote-icon.png');
   
+  // 알림 상태 조회
+  const checkNotifications = useCallback(async () => {
+    try {
+      const exists = await alertHistoryService.getUncheckedAlertExists();
+      setHasNotification(exists);
+    } catch (error) {
+      console.error('Failed to check notifications:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkNotifications();
+
+    // 화면 포커스가 변경될 때마다 알림 상태를 다시 확인하기 위해 이벤트 리스너 등록
+    const unsubscribe = navigation.addListener('focus', () => {
+      checkNotifications();
+    });
+
+    return unsubscribe;
+  }, [navigation, checkNotifications]);
+
+  const handleNotificationPress = () => {
+    navigation.navigate('AlertHistory');
+  };
+
   // 메인 탭 화면인지 확인
   const mainTabs = ['Home', 'Walk', 'Supplies', 'Settings'];
   const isMainTab = mainTabs.includes(route.name);
@@ -16,10 +42,6 @@ export default function TopBar({ navigation, options, route }: any) {
   // 메인 탭이 아니고 뒤로가기가 가능할 때만 뒤로가기 버튼 표시
   const canGoBack = navigation?.canGoBack() && !isMainTab;
   const isAlertHistory = route.name === 'AlertHistory';
-
-  const handleNotificationPress = () => {
-    navigation.navigate('AlertHistory');
-  };
 
   return (
     <View style={[styles.header, { paddingTop: insets.top + 8 }]}>

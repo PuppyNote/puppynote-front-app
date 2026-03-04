@@ -3,13 +3,10 @@ import { View, ScrollView, Image, StyleSheet, TouchableOpacity, RefreshControl, 
 import {
   Layout,
   Card,
-  ActivityItem,
   Text,
   Badge,
 } from '../../components';
 import { storageService } from '../../services/auth/StorageService';
-import { petService } from '../../services/pet/PetService';
-import { walkService } from '../../services/walk/WalkService';
 import { petItemService } from '../../services/petItem/PetItemService';
 import { homeService, HomeInfo } from '../../services/home/HomeService';
 import { petTipService } from '../../services/petTip/PetTipService';
@@ -42,8 +39,6 @@ export default function HomeScreen({ navigation }: any) {
       setCurrentTip(tipData.content);
 
       // 3. 소진 임박 용품 가져오기 (7일 이내)
-      // 이 부분은 기존처럼 전체 목록을 가져와 필터링하거나, 백엔드에 전용 API가 필요하지만
-      // 지금은 일단 기존 로직을 유지하면서 홈 카드의 카운트만 API 값으로 대체합니다.
       const itemData = await petItemService.getPetItems(pet.id);
       if (Array.isArray(itemData)) {
         const urgent = itemData.filter(item => {
@@ -90,9 +85,13 @@ export default function HomeScreen({ navigation }: any) {
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
           <Text style={styles.welcomeTitle}>안녕하세요, 집사님! 👋</Text>
-          <Text style={styles.welcomeSubtitle}>
-            {selectedPet ? `${selectedPet.name}와(과) 함께하는 즐거운 하루 되세요.` : '반려동물을 등록하고 관리를 시작해보세요.'}
-          </Text>
+          {/* <Text style={styles.welcomeSubtitle}>
+            {homeInfo?.walkedToday 
+              ? '오늘 산책을 완료했어요! 정말 멋져요. ✨' 
+              : homeInfo?.daysSinceLastWalk !== null 
+                ? `마지막 산책으로부터 ${homeInfo?.daysSinceLastWalk}일이 지났어요.`
+                : '오늘도 즐거운 하루 되세요!'}
+          </Text> */}
         </View>
 
         {/* Status Overview Card */}
@@ -111,8 +110,22 @@ export default function HomeScreen({ navigation }: any) {
               </View>
             </View>
             <View style={styles.petStatusInfo}>
-              <Text style={styles.petNameText}>{homeInfo?.petName || selectedPet?.name || '우리 강아지'}</Text>
-              <Text style={styles.petSubtitleText}>오늘도 즐거운 하루 되세요! ✨</Text>
+              <View style={styles.petNameRow}>
+                <Text style={styles.petNameText}>{homeInfo?.petName || selectedPet?.name}</Text>
+                {homeInfo?.petAge && <Text style={styles.petAgeText}>{homeInfo.petAge}</Text>}
+              </View>
+              <View style={styles.badgeRow}>
+                {homeInfo?.birthdayDday !== null && (
+                  <Badge 
+                    label={homeInfo?.birthdayDday === 0 ? '🎂 오늘 생일!' : `🎂 D-${homeInfo?.birthdayDday}`} 
+                    variant="warning" 
+                  />
+                )}
+                <Badge 
+                  label={homeInfo?.walkedToday ? '오늘 산책 완료' : '산책 대기 중'} 
+                  variant={homeInfo?.walkedToday ? 'success' : 'neutral'} 
+                />
+              </View>
             </View>
           </View>
           
@@ -125,7 +138,16 @@ export default function HomeScreen({ navigation }: any) {
               activeOpacity={0.7}
             >
               <Text style={styles.statValue}>{homeInfo?.recentWalkCount ?? 0}</Text>
-              <Text style={styles.statLabel}>최근 7일 산책</Text>
+              <Text style={styles.statLabel}>최근 7일</Text>
+            </TouchableOpacity>
+            <View style={styles.verticalDivider} />
+            <TouchableOpacity 
+              style={styles.statItem} 
+              onPress={() => navigation.navigate('Walk')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.statValue}>{homeInfo?.monthlyWalkMinutes ?? 0}</Text>
+              <Text style={styles.statLabel}>이달의 산책(분)</Text>
             </TouchableOpacity>
             <View style={styles.verticalDivider} />
             <TouchableOpacity 
@@ -138,6 +160,54 @@ export default function HomeScreen({ navigation }: any) {
             </TouchableOpacity>
           </View>
         </Card>
+
+        {/* Walk Status Card */}
+        {homeInfo?.daysSinceLastWalk !== null && (
+          <Card 
+            style={[
+              styles.walkSummaryCard, 
+              homeInfo.daysSinceLastWalk <= 1 ? styles.borderSuccess : 
+              homeInfo.daysSinceLastWalk === 2 ? styles.borderWarning : 
+              styles.borderError
+            ]}
+          >
+            <View style={styles.walkSummaryContent}>
+              <View>
+                <Text style={styles.walkSummaryLabel}>마지막 산책으로부터</Text>
+                <Text style={styles.walkSummaryValue}>
+                  {homeInfo.daysSinceLastWalk === 0 ? '오늘 산책했어요! ✨' : `${homeInfo.daysSinceLastWalk}일 지났어요`}
+                </Text>
+              </View>
+              <View style={[
+                styles.walkStatusIndicator,
+                homeInfo.daysSinceLastWalk <= 1 ? styles.bgSuccess : 
+                homeInfo.daysSinceLastWalk === 2 ? styles.bgWarning : 
+                styles.bgError
+              ]}>
+                <Text style={styles.walkStatusIcon}>
+                  {homeInfo.daysSinceLastWalk <= 1 ? '🐾' : 
+                   homeInfo.daysSinceLastWalk === 2 ? '⚠️' : '🚨'}
+                </Text>
+              </View>
+            </View>
+          </Card>
+        )}
+
+        {/* Today's Alarms Section */}
+        {homeInfo?.todayWalkAlarmTimes && homeInfo.todayWalkAlarmTimes.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>오늘의 산책</Text>
+            </View>
+            <View style={styles.alarmListRow}>
+              {homeInfo.todayWalkAlarmTimes.map((time, index) => (
+                <View key={index} style={styles.alarmChip}>
+                  <Text style={styles.alarmChipText}>{time.substring(0, 5)}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* Urgent Supplies Section */}
         {urgentSupplies.length > 0 && (
@@ -175,7 +245,7 @@ export default function HomeScreen({ navigation }: any) {
         {/* Dog Tip Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>오늘의 팁 💡</Text>
+            <Text style={styles.sectionTitle}>팁 💡</Text>
           </View>
           <View style={styles.tipCard}>
             <View style={styles.tipIconContainer}>
@@ -215,9 +285,10 @@ const styles = StyleSheet.create({
   welcomeSubtitle: {
     fontSize: 14,
     color: '#64748b',
+    fontWeight: '500',
   },
   mainCard: {
-    padding: 24,
+    padding: 20,
     backgroundColor: 'white',
     borderRadius: 32,
     marginBottom: 32,
@@ -234,7 +305,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   petImageContainer: {
-    width: 64,
+    width: 72,
     height: 64,
     borderRadius: 32,
     borderWidth: 3,
@@ -260,16 +331,26 @@ const styles = StyleSheet.create({
   petStatusInfo: {
     flex: 1,
   },
+  petNameRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
+    marginBottom: 6,
+  },
   petNameText: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#0f172a',
-    marginBottom: 4,
   },
-  petSubtitleText: {
+  petAgeText: {
     fontSize: 14,
     color: '#64748b',
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    gap: 6,
+    flexWrap: 'wrap',
   },
   divider: {
     height: 1,
@@ -278,26 +359,28 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 4,
   },
   statItem: {
+    flex: 1,
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#0f172a',
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#94a3b8',
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   verticalDivider: {
     width: 1,
-    height: 30,
+    height: 24,
     backgroundColor: '#e2e8f0',
   },
   section: {
@@ -314,6 +397,29 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#0f172a',
+  },
+  alarmListRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  alarmChip: {
+    backgroundColor: 'white',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  alarmChipText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#334155',
   },
   seeAll: {
     fontSize: 14,
@@ -383,4 +489,49 @@ const styles = StyleSheet.create({
   footerSpacer: {
     height: 100,
   },
+  walkSummaryCard: {
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    backgroundColor: 'white',
+    borderRadius: 28,
+    marginBottom: 32,
+    borderWidth: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  walkSummaryContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  walkSummaryLabel: {
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  walkSummaryValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+  walkStatusIndicator: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  walkStatusIcon: {
+    fontSize: 22,
+  },
+  borderSuccess: { borderColor: '#22c55e' },
+  borderWarning: { borderColor: '#f97316' },
+  borderError: { borderColor: '#ef4444' },
+  bgSuccess: { backgroundColor: '#f0fdf4' },
+  bgWarning: { backgroundColor: '#fff7ed' },
+  bgError: { backgroundColor: '#fef2f2' },
 });

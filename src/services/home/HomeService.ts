@@ -3,8 +3,14 @@ import { apiService } from '../ApiService';
 export interface HomeInfo {
   petName: string;
   petProfileImageUrl: string | null;
+  petAge: string | null;
+  birthdayDday: number | null;
+  walkedToday: boolean;
+  daysSinceLastWalk: number | null;
+  monthlyWalkMinutes: number;
   recentWalkCount: number;
   petItemCount: number;
+  todayWalkAlarmTimes: string[];
 }
 
 class HomeService {

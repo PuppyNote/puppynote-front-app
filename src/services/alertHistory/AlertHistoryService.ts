@@ -40,6 +40,19 @@ class AlertHistoryService {
   }
 
   /**
+   * 읽지 않은 알림 존재 여부 조회 API
+   */
+  public async getUncheckedAlertExists(): Promise<boolean> {
+    const response = await apiService.get<boolean>('/api/v1/alertHistories/unchecked');
+    
+    if (response.statusCode !== 200) {
+      throw new Error(response.message || '알림 존재 여부 조회에 실패했습니다.');
+    }
+    
+    return response.data;
+  }
+
+  /**
    * 알림 확인 처리 API
    */
   public async checkAlert(id: number): Promise<{ alertHistoryStatus: AlertHistoryStatus }> {
