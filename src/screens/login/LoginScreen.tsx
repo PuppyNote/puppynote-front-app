@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Platform, Alert } from 'react-native';
 import { login as kakaoLogin } from '@react-native-seoul/kakao-login';
+import { useRecoilValue } from 'recoil';
 import { Layout, Text, CustomAlert, PetRegistrationModal, EntryOptionModal, InviteCodeModal } from '../../components';
 import { authService } from '../../services/auth/AuthService';
 import { storageService } from '../../services/auth/StorageService';
 import { petService } from '../../services/pet/PetService';
 import { useAlert } from '../../hooks/useAlert';
+import { useDevice } from '../../context/DeviceContext';
 
 export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
@@ -15,6 +17,9 @@ export default function LoginScreen({ navigation }: any) {
   const [isPetModalVisible, setIsPetModalVisible] = useState(false);
   const [isInviteModalVisible, setIsInviteModalVisible] = useState(false);
   const { alertConfig, showAlert, showSimpleAlert, hideAlert } = useAlert();
+  
+  // Context에서 기기 정보 가져오기
+  const { deviceId, fcmToken } = useDevice();
 
   const handleLoginSuccess = async (settingStatus?: string) => {
     // 펫 조회
@@ -45,7 +50,7 @@ export default function LoginScreen({ navigation }: any) {
 
     setIsLoading(true);
     try {
-      const response = await authService.login(email, password);
+      const response = await authService.login(email, deviceId, fcmToken, password);
       await handleLoginSuccess(response.settingStatus);
     } catch (error: any) {
       showSimpleAlert('오류', error.message || '로그인에 실패했습니다.');
@@ -61,7 +66,7 @@ export default function LoginScreen({ navigation }: any) {
       const token = await kakaoLogin();
 
       // 2. 받은 accessToken을 우리 백엔드로 전달
-      const response = await authService.oauthLogin(token.accessToken, 'KAKAO');
+      const response = await authService.oauthLogin(token.accessToken, 'KAKAO', deviceId, fcmToken);
 
       // 3. 설정 상태에 따라 화면 이동
       await handleLoginSuccess(response.settingStatus);

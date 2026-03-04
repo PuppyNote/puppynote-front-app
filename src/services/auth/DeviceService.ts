@@ -1,68 +1,63 @@
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import * as Application from 'expo-application';
+import * as SecureStore from 'expo-secure-store';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
+const FALLBACK_DEVICE_ID_KEY = 'fallback_device_id';
+
 class DeviceService {
-  // 고유 기기 ID 가져오기
+  private cachedDeviceId: string | null = null;
+
+  /**
+   * 고유 기기 ID 가져오기
+   * - 캐시된 값이 있으면 즉시 반환
+   * - 없으면 네이티브 ID -> 저장된 대체 ID -> 새 대체 ID 생성 순으로 진행
+   */
   public async getDeviceId(): Promise<string> {
+    if (this.cachedDeviceId) {
+      return this.cachedDeviceId;
+    }
+
     try {
       let id: string | null = null;
+      
+      // 1. 네이티브 ID 시도
       if (Platform.OS === 'android') {
-        id = Application.androidId;
+        id = Application.getAndroidId();
       } else if (Platform.OS === 'ios') {
         id = await Application.getIosIdForVendorAsync();
+      } else if (Platform.OS === 'web') {
+        // 웹의 경우 브라우저 로컬 스토리지를 활용하거나 세션 ID 사용
+        id = Constants.sessionId;
       }
       
-      // 기기 ID가 없을 경우를 대비한 확실한 대체값 (서버 필수값 대응)
-      return id || `temp-id-${Platform.OS}-${Device.modelName || 'unknown'}`;
+      if (id) {
+        this.cachedDeviceId = id;
+        return id;
+      }
+
+      // 2. SecureStore에서 기존에 생성된 대체 ID 확인
+      const savedId = await SecureStore.getItemAsync(FALLBACK_DEVICE_ID_KEY);
+      if (savedId) {
+        this.cachedDeviceId = savedId;
+        return savedId;
+      }
+
+      // 3. 새 대체 ID 생성 및 저장
+      const newId = `fallback-${Platform.OS}-${Math.random().toString(36).substring(2, 15)}`;
+      await SecureStore.setItemAsync(FALLBACK_DEVICE_ID_KEY, newId);
+      
+      this.cachedDeviceId = newId;
+      return newId;
     } catch (error) {
-      console.log('Error getting device ID:', error);
+      console.error('Error getting device ID:', error);
       return `error-id-${Date.now()}`;
     }
   }
 
-  // 푸시 토큰(Push Key) 가져오기
-  public async getPushKey(): Promise<string> {
-    // 시뮬레이터거나 Expo Go의 제약 사항 대응
-    if (!Device.isDevice) {
-      return 'emulator-push-key';
-    }
-
-    try {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-
-      if (finalStatus !== 'granted') {
-        return 'permission-denied';
-      }
-
-      // projectId가 없는 경우(EAS 미설정)에 대한 예외 처리
-      const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
-      
-      if (!projectId) {
-        console.log('EAS Project ID not found. Using fallback for development.');
-        return 'development-push-key-no-eas';
-      }
-
-      const token = (await Notifications.getExpoPushTokenAsync({
-        projectId: projectId,
-      })).data;
-      
-      return token;
-    } catch (error) {
-      console.log('Error getting push key:', error);
-      return 'error-push-key';
-    }
-  }
-
-  // Firebase(FCM) 직접 발송용 토큰 가져오기
+  // 푸시 토큰(FCM) 가져오기
   public async getFcmToken(): Promise<string> {
     if (!Device.isDevice) {
       return 'emulator-fcm-token';
@@ -81,16 +76,10 @@ class DeviceService {
         return 'permission-denied';
       }
 
-      // getDevicePushTokenAsync는 Android는 FCM 토큰, iOS는 APNs 토큰을 반환합니다.
-      // Expo SDK 50+ 에서는 FCM 토큰을 얻기 위해 이 메서드를 권장합니다.
       const tokenData = await Notifications.getDevicePushTokenAsync();
       return tokenData.data;
     } catch (error: any) {
-      console.error('--- FCM 토큰 발급 에러 상세 ---');
-      console.error('메시지:', error.message);
-      console.error('코드:', error.code);
-      console.error('전체 에러:', error);
-      console.error('------------------------------');
+      console.error('FCM Token Error:', error.message);
       return 'error-fcm-token';
     }
   }
