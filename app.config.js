@@ -25,7 +25,8 @@ export default {
       googleServicesFile: "./google-services.json",
       config: {
         googleMaps: {
-          apiKey: process.env.GOOGLE_MAPS_API_KEY
+          // 환경 변수가 없을 경우 빈 문자열을 제공하여 에러 방지
+          apiKey: process.env.GOOGLE_MAPS_API_KEY || ""
         }
       },
       adaptiveIcon: {
@@ -48,17 +49,10 @@ export default {
         }
       ],
       [
-        "expo-build-properties",
-        {
-          android: {
-            "extraMavenRepos": ["https://devrepo.kakao.com/nexus/content/groups/public/"]
-          }
-        }
-      ],
-      [
         "@react-native-seoul/kakao-login",
         {
-          kakaoAppKey: process.env.KAKAO_NATIVE_APP_KEY,
+          // 환경 변수가 없을 경우 빈 문자열을 제공하여 XML 변환 에러 방지
+          kakaoAppKey: process.env.KAKAO_NATIVE_APP_KEY || "",
           kotlinVersion: "2.0.21"
         }
       ]
