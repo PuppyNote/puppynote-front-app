@@ -41,6 +41,21 @@ class PetService {
     
     return response.data;
   }
+
+  /**
+   * 펫 프로필 수정 API
+   */
+  public async updatePet(petId: number, data: {
+    name: string;
+    birthDate?: string | null;
+    profileImage?: string | null;
+  }): Promise<void> {
+    const response = await apiService.patch(`/api/v1/pets/${petId}`, data);
+    
+    if (response.statusCode !== 200) {
+      throw new Error(response.message || '펫 프로필 수정에 실패했습니다.');
+    }
+  }
 }
 
 export const petService = new PetService();

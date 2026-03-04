@@ -5,6 +5,7 @@ import {
   Card,
   Text,
   Badge,
+  PetRegistrationModal,
 } from '../../components';
 import { storageService } from '../../services/auth/StorageService';
 import { petItemService } from '../../services/petItem/PetItemService';
@@ -20,23 +21,33 @@ export default function HomeScreen({ navigation }: any) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentTip, setCurrentTip] = useState<string>('');
+  const [isPetModalVisible, setIsPetModalVisible] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
+      setIsLoading(true);
+
+      // 1. 랜덤 팁 API 연동 (펫 여부와 상관없이 항상 가져옴)
+      try {
+        const tipData = await petTipService.getRandomPetTip();
+        setCurrentTip(tipData.content);
+      } catch (error) {
+        console.warn('Failed to fetch pet tip:', error);
+      }
+
       const pet = await storageService.getSelectedPet();
       if (!pet) {
+        setSelectedPet(null);
+        setHomeInfo(null);
+        setUrgentSupplies([]);
         setIsLoading(false);
         return;
       }
       setSelectedPet(pet);
 
-      // 1. 홈 기본 정보 API 연동
+      // 2. 홈 기본 정보 API 연동
       const info = await homeService.getHomeInfo(pet.id);
       setHomeInfo(info);
-
-      // 2. 랜덤 팁 API 연동
-      const tipData = await petTipService.getRandomPetTip();
-      setCurrentTip(tipData.content);
 
       // 3. 소진 임박 용품 가져오기 (7일 이내)
       const itemData = await petItemService.getPetItems(pet.id);
@@ -65,6 +76,12 @@ export default function HomeScreen({ navigation }: any) {
     loadData();
   };
 
+  const handlePetRegistrationSuccess = async (petId: number, petName: string) => {
+    setIsPetModalVisible(false);
+    await storageService.saveSelectedPet(petId, petName);
+    loadData();
+  };
+
   if (isLoading && !isRefreshing) {
     return (
       <Layout style={styles.center}>
@@ -85,112 +102,145 @@ export default function HomeScreen({ navigation }: any) {
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
           <Text style={styles.welcomeTitle}>안녕하세요, 집사님! 👋</Text>
-          {/* <Text style={styles.welcomeSubtitle}>
-            {homeInfo?.walkedToday 
-              ? '오늘 산책을 완료했어요! 정말 멋져요. ✨' 
-              : homeInfo?.daysSinceLastWalk !== null 
-                ? `마지막 산책으로부터 ${homeInfo?.daysSinceLastWalk}일이 지났어요.`
+          <Text style={styles.welcomeSubtitle}>
+            {!selectedPet 
+              ? '반려동물을 등록하고 PuppyNote를 시작해보세요!' 
+              : homeInfo 
+                ? (homeInfo.walkedToday 
+                  ? '오늘 산책을 완료했어요! 정말 멋져요. ✨' 
+                  : homeInfo.daysSinceLastWalk !== null 
+                    ? `마지막 산책으로부터 ${homeInfo.daysSinceLastWalk}일이 지났어요.`
+                    : '오늘도 즐거운 하루 되세요!')
                 : '오늘도 즐거운 하루 되세요!'}
-          </Text> */}
+          </Text>
         </View>
 
-        {/* Status Overview Card */}
-        <Card style={styles.mainCard}>
-          <View style={styles.petInfoRow}>
-            <View style={styles.petImageContainer}>
-              <View style={styles.petImagePlaceholder}>
-                {homeInfo?.petProfileImageUrl ? (
-                  <Image 
-                    source={{ uri: homeInfo.petProfileImageUrl }} 
-                    style={styles.petImage} 
-                  />
-                ) : (
-                  <Text style={styles.petEmoji}>🐶</Text>
-                )}
-              </View>
-            </View>
-            <View style={styles.petStatusInfo}>
-              <View style={styles.petNameRow}>
-                <Text style={styles.petNameText}>{homeInfo?.petName || selectedPet?.name}</Text>
-                {homeInfo?.petAge && <Text style={styles.petAgeText}>{homeInfo.petAge}</Text>}
-              </View>
-              <View style={styles.badgeRow}>
-                {homeInfo?.birthdayDday !== null && (
-                  <Badge 
-                    label={homeInfo?.birthdayDday === 0 ? '🎂 오늘 생일!' : `🎂 D-${homeInfo?.birthdayDday}`} 
-                    variant="warning" 
-                  />
-                )}
-                <Badge 
-                  label={homeInfo?.walkedToday ? '오늘 산책 완료' : '산책 대기 중'} 
-                  variant={homeInfo?.walkedToday ? 'success' : 'neutral'} 
-                />
-              </View>
-            </View>
-          </View>
-          
-          <View style={styles.divider} />
-          
-          <View style={styles.statsRow}>
-            <TouchableOpacity 
-              style={styles.statItem} 
-              onPress={() => navigation.navigate('Walk')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.statValue}>{homeInfo?.recentWalkCount ?? 0}</Text>
-              <Text style={styles.statLabel}>최근 7일</Text>
-            </TouchableOpacity>
-            <View style={styles.verticalDivider} />
-            <TouchableOpacity 
-              style={styles.statItem} 
-              onPress={() => navigation.navigate('Walk')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.statValue}>{homeInfo?.monthlyWalkMinutes ?? 0}</Text>
-              <Text style={styles.statLabel}>이달의 산책(분)</Text>
-            </TouchableOpacity>
-            <View style={styles.verticalDivider} />
-            <TouchableOpacity 
-              style={styles.statItem} 
-              onPress={() => navigation.navigate('Supplies')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.statValue}>{homeInfo?.petItemCount ?? 0}</Text>
-              <Text style={styles.statLabel}>관리 용품</Text>
-            </TouchableOpacity>
-          </View>
-        </Card>
-
-        {/* Walk Status Card */}
-        {homeInfo?.daysSinceLastWalk !== null && (
-          <Card 
-            style={[
-              styles.walkSummaryCard, 
-              homeInfo.daysSinceLastWalk <= 1 ? styles.borderSuccess : 
-              homeInfo.daysSinceLastWalk === 2 ? styles.borderWarning : 
-              styles.borderError
-            ]}
+        {!selectedPet ? (
+          /* Empty Pet State Card */
+          <TouchableOpacity 
+            style={styles.emptyPetCard} 
+            onPress={() => setIsPetModalVisible(true)}
+            activeOpacity={0.9}
           >
-            <View style={styles.walkSummaryContent}>
-              <View>
-                <Text style={styles.walkSummaryLabel}>마지막 산책으로부터</Text>
-                <Text style={styles.walkSummaryValue}>
-                  {homeInfo.daysSinceLastWalk === 0 ? '오늘 산책했어요! ✨' : `${homeInfo.daysSinceLastWalk}일 지났어요`}
-                </Text>
+            <View style={styles.emptyPetContent}>
+              <View style={styles.emptyPetIconContainer}>
+                <Text style={styles.emptyPetIcon}>🐶</Text>
               </View>
-              <View style={[
-                styles.walkStatusIndicator,
-                homeInfo.daysSinceLastWalk <= 1 ? styles.bgSuccess : 
-                homeInfo.daysSinceLastWalk === 2 ? styles.bgWarning : 
-                styles.bgError
-              ]}>
-                <Text style={styles.walkStatusIcon}>
-                  {homeInfo.daysSinceLastWalk <= 1 ? '🐾' : 
-                   homeInfo.daysSinceLastWalk === 2 ? '⚠️' : '🚨'}
-                </Text>
+              <View style={styles.emptyPetInfo}>
+                <Text style={styles.emptyPetTitle}>아직 등록된 아이가 없어요</Text>
+                <Text style={styles.emptyPetSubtitle}>이곳을 눌러 우리 아이를 등록해주세요!</Text>
+              </View>
+              <View style={styles.plusBadge}>
+                <Text style={styles.plusIcon}>+</Text>
               </View>
             </View>
-          </Card>
+          </TouchableOpacity>
+        ) : (
+          <>
+            {/* Status Overview Card */}
+            <Card style={styles.mainCard}>
+              <TouchableOpacity 
+                style={styles.petInfoRow} 
+                onPress={() => setIsPetModalVisible(true)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.petImageContainer}>
+                  <View style={styles.petImagePlaceholder}>
+                    {homeInfo?.petProfileImageUrl ? (
+                      <Image 
+                        source={{ uri: homeInfo.petProfileImageUrl }} 
+                        style={styles.petImage} 
+                      />
+                    ) : (
+                      <Text style={styles.petEmoji}>🐶</Text>
+                    )}
+                  </View>
+                </View>
+                <View style={styles.petStatusInfo}>
+                  <View style={styles.petNameRow}>
+                    <Text style={styles.petNameText}>{homeInfo?.petName || selectedPet?.name}</Text>
+                    {homeInfo?.petAge && <Text style={styles.petAgeText}>{homeInfo.petAge}</Text>}
+                    <Text style={styles.editIcon}>✏️</Text>
+                  </View>
+                  <View style={styles.badgeRow}>
+                    {homeInfo?.birthdayDday !== null && (
+                      <Badge 
+                        label={homeInfo?.birthdayDday === 0 ? '🎂 오늘 생일!' : `🎂 D-${homeInfo?.birthdayDday}`} 
+                        variant="warning" 
+                      />
+                    )}
+                    <Badge 
+                      label={homeInfo?.walkedToday ? '오늘 산책 완료' : '산책 대기 중'} 
+                      variant={homeInfo?.walkedToday ? 'success' : 'neutral'} 
+                    />
+                  </View>
+                </View>
+              </TouchableOpacity>
+              
+              <View style={styles.divider} />
+              
+              <View style={styles.statsRow}>
+                <TouchableOpacity 
+                  style={styles.statItem} 
+                  onPress={() => navigation.navigate('Walk')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.statValue}>{homeInfo?.recentWalkCount ?? 0}</Text>
+                  <Text style={styles.statLabel}>최근 7일</Text>
+                </TouchableOpacity>
+                <View style={styles.verticalDivider} />
+                <TouchableOpacity 
+                  style={styles.statItem} 
+                  onPress={() => navigation.navigate('Walk')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.statValue}>{homeInfo?.monthlyWalkMinutes ?? 0}</Text>
+                  <Text style={styles.statLabel}>이달의 산책(분)</Text>
+                </TouchableOpacity>
+                <View style={styles.verticalDivider} />
+                <TouchableOpacity 
+                  style={styles.statItem} 
+                  onPress={() => navigation.navigate('Supplies')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.statValue}>{homeInfo?.petItemCount ?? 0}</Text>
+                  <Text style={styles.statLabel}>관리 용품</Text>
+                </TouchableOpacity>
+              </View>
+            </Card>
+
+            {/* Walk Status Card */}
+            {homeInfo && homeInfo.daysSinceLastWalk !== null && (
+              <Card 
+                style={[
+                  styles.walkSummaryCard, 
+                  homeInfo.daysSinceLastWalk <= 1 ? styles.borderSuccess : 
+                  homeInfo.daysSinceLastWalk === 2 ? styles.borderWarning : 
+                  styles.borderError
+                ]}
+              >
+                <View style={styles.walkSummaryContent}>
+                  <View>
+                    <Text style={styles.walkSummaryLabel}>마지막 산책으로부터</Text>
+                    <Text style={styles.walkSummaryValue}>
+                      {homeInfo.daysSinceLastWalk === 0 ? '오늘 산책했어요! ✨' : `${homeInfo.daysSinceLastWalk}일 지났어요`}
+                    </Text>
+                  </View>
+                  <View style={[
+                    styles.walkStatusIndicator,
+                    homeInfo.daysSinceLastWalk <= 1 ? styles.bgSuccess : 
+                    homeInfo.daysSinceLastWalk === 2 ? styles.bgWarning : 
+                    styles.bgError
+                  ]}>
+                    <Text style={styles.walkStatusIcon}>
+                      {homeInfo.daysSinceLastWalk <= 1 ? '🐾' : 
+                       homeInfo.daysSinceLastWalk === 2 ? '⚠️' : '🚨'}
+                    </Text>
+                  </View>
+                </View>
+              </Card>
+            )}
+          </>
         )}
 
         {/* Today's Alarms Section */}
@@ -259,6 +309,18 @@ export default function HomeScreen({ navigation }: any) {
 
         <View style={styles.footerSpacer} />
       </ScrollView>
+
+      <PetRegistrationModal
+        visible={isPetModalVisible}
+        onSuccess={handlePetRegistrationSuccess}
+        onClose={() => setIsPetModalVisible(false)}
+        petId={selectedPet?.id}
+        initialData={selectedPet ? {
+          name: homeInfo?.petName || selectedPet.name,
+          imageUrl: homeInfo?.petProfileImageUrl || null,
+          birthDate: homeInfo?.birthDate || null,
+        } : null}
+      />
     </Layout>
   );
 }
@@ -346,6 +408,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748b',
     fontWeight: '600',
+  },
+  editIcon: {
+    fontSize: 12,
+    marginLeft: 4,
+    opacity: 0.5,
   },
   badgeRow: {
     flexDirection: 'row',
@@ -534,4 +601,61 @@ const styles = StyleSheet.create({
   bgSuccess: { backgroundColor: '#f0fdf4' },
   bgWarning: { backgroundColor: '#fff7ed' },
   bgError: { backgroundColor: '#fef2f2' },
+  emptyPetCard: {
+    backgroundColor: 'white',
+    borderRadius: 32,
+    padding: 24,
+    marginBottom: 32,
+    borderWidth: 2,
+    borderColor: '#eebd2b',
+    borderStyle: 'dashed',
+    shadowColor: '#eebd2b',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  emptyPetContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  emptyPetIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#fffbeb',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyPetIcon: {
+    fontSize: 32,
+  },
+  emptyPetInfo: {
+    flex: 1,
+  },
+  emptyPetTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    marginBottom: 4,
+  },
+  emptyPetSubtitle: {
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  plusBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#eebd2b',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  plusIcon: {
+    color: '#0f172a',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
 });

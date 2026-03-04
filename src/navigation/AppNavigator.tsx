@@ -14,6 +14,7 @@ import CategoryManagementScreen from '../screens/supply/CategoryManagementScreen
 import HealthScreen from '../screens/health/HealthScreen';
 import AddWalkScreen from '../screens/walk/AddWalkScreen';
 import SettingScreen from '../screens/setting/SettingScreen';
+import FamilyManagementScreen from '../screens/setting/FamilyManagementScreen';
 import AlertHistoryScreen from '../screens/notification/AlertHistoryScreen';
 import BottomTab from '../components/tabs/BottomTab';
 import TopBar from '../components/tabs/TopBar';
@@ -76,6 +77,14 @@ export default function AppNavigator() {
         <Stack.Screen name="AddWalk" component={AddWalkScreen} />
         <Stack.Screen name="AddSupply" component={AddSupplyScreen} />
         <Stack.Screen name="CategoryManagement" component={CategoryManagementScreen} />
+        <Stack.Screen 
+          name="FamilyManagement" 
+          component={FamilyManagementScreen} 
+          options={{ 
+            headerShown: true,
+            header: (props) => <TopBar {...props} options={{ headerTitle: '가족 관리' }} />,
+          }} 
+        />
         <Stack.Screen 
           name="AlertHistory" 
           component={AlertHistoryScreen} 
