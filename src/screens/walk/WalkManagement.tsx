@@ -105,8 +105,8 @@ const WalkManagementScreen = ({ navigation }: any) => {
             <Text style={styles.alarmIcon}>⏰</Text>
           </View>
           <View>
-            <Text style={styles.alarmManageTitle}>알림 관리</Text>
-            <Text style={styles.alarmManageSub}>산책 및 일과 알림을 관리하세요</Text>
+            <Text style={styles.alarmManageTitle}>산책 관리</Text>
+            <Text style={styles.alarmManageSub}>산책 및 알림을 관리하세요</Text>
           </View>
         </TouchableOpacity>
       </View>

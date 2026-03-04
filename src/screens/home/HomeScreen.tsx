@@ -1,188 +1,537 @@
-import React, { useState } from 'react';
-import { View, ScrollView, Image, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, ScrollView, Image, StyleSheet, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import {
   Layout,
   Card,
-  ActivityItem,
   Text,
+  Badge,
 } from '../../components';
+import { storageService } from '../../services/auth/StorageService';
+import { petItemService } from '../../services/petItem/PetItemService';
+import { homeService, HomeInfo } from '../../services/home/HomeService';
+import { petTipService } from '../../services/petTip/PetTipService';
+import { PetItem } from '../../types/PetItem';
+import { calculateDaysDifference } from '../../utils/DateUtil';
 
 export default function HomeScreen({ navigation }: any) {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [selectedPet, setSelectedPet] = useState<{ id: number; name: string } | null>(null);
+  const [homeInfo, setHomeInfo] = useState<HomeInfo | null>(null);
+  const [urgentSupplies, setUrgentSupplies] = useState<PetItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [currentTip, setCurrentTip] = useState<string>('');
 
-  const tabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'activity', label: 'Activity' },
-    { id: 'notifications', label: 'Notifications' },
-  ];
+  const loadData = useCallback(async () => {
+    try {
+      const pet = await storageService.getSelectedPet();
+      if (!pet) {
+        setIsLoading(false);
+        return;
+      }
+      setSelectedPet(pet);
+
+      // 1. 홈 기본 정보 API 연동
+      const info = await homeService.getHomeInfo(pet.id);
+      setHomeInfo(info);
+
+      // 2. 랜덤 팁 API 연동
+      const tipData = await petTipService.getRandomPetTip();
+      setCurrentTip(tipData.content);
+
+      // 3. 소진 임박 용품 가져오기 (7일 이내)
+      const itemData = await petItemService.getPetItems(pet.id);
+      if (Array.isArray(itemData)) {
+        const urgent = itemData.filter(item => {
+          if (!item.nextPurchaseAt) return false;
+          const diff = calculateDaysDifference(item.nextPurchaseAt);
+          return diff <= 7;
+        });
+        setUrgentSupplies(urgent.slice(0, 3));
+      }
+    } catch (error) {
+      console.error('Home data load error:', error);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const onRefresh = () => {
+    setIsRefreshing(true);
+    loadData();
+  };
+
+  if (isLoading && !isRefreshing) {
+    return (
+      <Layout style={styles.center}>
+        <ActivityIndicator color="#eebd2b" size="large" />
+      </Layout>
+    );
+  }
 
   return (
-    <Layout>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <Card style={styles.mb24}>
-          <View style={styles.cardHeader}>
-            <View style={styles.rowCenter}>
-              <View style={styles.iconContainer}>
-                <Text style={styles.walkIcon}>🚶</Text>
+    <Layout edges={['left', 'right']} backgroundColor="#fcfaf2">
+      <ScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} color="#eebd2b" />
+        }
+      >
+        {/* Welcome Section */}
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeTitle}>안녕하세요, 집사님! 👋</Text>
+          {/* <Text style={styles.welcomeSubtitle}>
+            {homeInfo?.walkedToday 
+              ? '오늘 산책을 완료했어요! 정말 멋져요. ✨' 
+              : homeInfo?.daysSinceLastWalk !== null 
+                ? `마지막 산책으로부터 ${homeInfo?.daysSinceLastWalk}일이 지났어요.`
+                : '오늘도 즐거운 하루 되세요!'}
+          </Text> */}
+        </View>
+
+        {/* Status Overview Card */}
+        <Card style={styles.mainCard}>
+          <View style={styles.petInfoRow}>
+            <View style={styles.petImageContainer}>
+              <View style={styles.petImagePlaceholder}>
+                {homeInfo?.petProfileImageUrl ? (
+                  <Image 
+                    source={{ uri: homeInfo.petProfileImageUrl }} 
+                    style={styles.petImage} 
+                  />
+                ) : (
+                  <Text style={styles.petEmoji}>🐶</Text>
+                )}
               </View>
-              <Text style={styles.cardTitle}>산책 일정</Text>
             </View>
-            <View style={styles.nextWalkBadge}>
-              <Text style={styles.nextWalkBadgeText}>14:30 PM</Text>
+            <View style={styles.petStatusInfo}>
+              <View style={styles.petNameRow}>
+                <Text style={styles.petNameText}>{homeInfo?.petName || selectedPet?.name}</Text>
+                {homeInfo?.petAge && <Text style={styles.petAgeText}>{homeInfo.petAge}</Text>}
+              </View>
+              <View style={styles.badgeRow}>
+                {homeInfo?.birthdayDday !== null && (
+                  <Badge 
+                    label={homeInfo?.birthdayDday === 0 ? '🎂 오늘 생일!' : `🎂 D-${homeInfo?.birthdayDday}`} 
+                    variant="warning" 
+                  />
+                )}
+                <Badge 
+                  label={homeInfo?.walkedToday ? '오늘 산책 완료' : '산책 대기 중'} 
+                  variant={homeInfo?.walkedToday ? 'success' : 'neutral'} 
+                />
+              </View>
             </View>
           </View>
-          <View style={styles.profileRow}>
-            <View style={styles.profileImageBorder}>
-              <Image
-                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBo4RaKYrDo53w-hlMwsCvFNFfxl48s5ZtDRjKRpS5uB23ANcl8Q3aUz86pA_gmntrTMwbpUzicU2okQeVF1F77u9_J76WK2AcOcB0DAdfm5NSbuH1eHguFRQfD__wXcoguqzzKVC44zrcrjYOfOYmVG4lzCYo02p_iL8OI5m-7rUF4tQzw1DmnoxmSrVZ3T0Whbua3HbvvkcEvH1AGDsJM7otqKfuSJD_62_bCtT9Jhvz5xAlE5Zg-5qLJFSo3F3GizyLMsT-lwIA' }}
-                style={styles.fullImage}
-              />
-            </View>
-            <View>
-              <Text style={styles.profileTitle}>Toby가 기다리고 있어요!</Text>
-              <Text style={styles.profileSubtitle}>공원에서 30분 세션이 계획되어 있습니다</Text>
-            </View>
+          
+          <View style={styles.divider} />
+          
+          <View style={styles.statsRow}>
+            <TouchableOpacity 
+              style={styles.statItem} 
+              onPress={() => navigation.navigate('Walk')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.statValue}>{homeInfo?.recentWalkCount ?? 0}</Text>
+              <Text style={styles.statLabel}>최근 7일</Text>
+            </TouchableOpacity>
+            <View style={styles.verticalDivider} />
+            <TouchableOpacity 
+              style={styles.statItem} 
+              onPress={() => navigation.navigate('Walk')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.statValue}>{homeInfo?.monthlyWalkMinutes ?? 0}</Text>
+              <Text style={styles.statLabel}>이달의 산책(분)</Text>
+            </TouchableOpacity>
+            <View style={styles.verticalDivider} />
+            <TouchableOpacity 
+              style={styles.statItem} 
+              onPress={() => navigation.navigate('Supplies')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.statValue}>{homeInfo?.petItemCount ?? 0}</Text>
+              <Text style={styles.statLabel}>관리 용품</Text>
+            </TouchableOpacity>
           </View>
         </Card>
 
-        <View style={styles.mb24}>
-          <Text style={styles.sectionTitle}>활동 피드</Text>
-          <ActivityItem icon="🍖" title="아침 식사" subtitle="8:00 AM • 모두 완료" time="2시간 전" color="#f0fdf4" iconColor="#22c55e" />
-          <ActivityItem icon="💊" title="비타민" subtitle="7:30 AM • 일일 보충제" time="2.5시간 전" color="#faf5ff" iconColor="#a855f7" />
-          <ActivityItem icon="😴" title="수면" subtitle="11:00 PM - 7:00 AM • 8시간" time="어제" color="#fff7ed" iconColor="#f97316" />
-        </View>
+        {/* Walk Status Card */}
+        {homeInfo?.daysSinceLastWalk !== null && (
+          <Card 
+            style={[
+              styles.walkSummaryCard, 
+              homeInfo.daysSinceLastWalk <= 1 ? styles.borderSuccess : 
+              homeInfo.daysSinceLastWalk === 2 ? styles.borderWarning : 
+              styles.borderError
+            ]}
+          >
+            <View style={styles.walkSummaryContent}>
+              <View>
+                <Text style={styles.walkSummaryLabel}>마지막 산책으로부터</Text>
+                <Text style={styles.walkSummaryValue}>
+                  {homeInfo.daysSinceLastWalk === 0 ? '오늘 산책했어요! ✨' : `${homeInfo.daysSinceLastWalk}일 지났어요`}
+                </Text>
+              </View>
+              <View style={[
+                styles.walkStatusIndicator,
+                homeInfo.daysSinceLastWalk <= 1 ? styles.bgSuccess : 
+                homeInfo.daysSinceLastWalk === 2 ? styles.bgWarning : 
+                styles.bgError
+              ]}>
+                <Text style={styles.walkStatusIcon}>
+                  {homeInfo.daysSinceLastWalk <= 1 ? '🐾' : 
+                   homeInfo.daysSinceLastWalk === 2 ? '⚠️' : '🚨'}
+                </Text>
+              </View>
+            </View>
+          </Card>
+        )}
 
-        <View style={styles.tipCard}>
-          <View style={styles.row}>
-            <Text style={styles.tipIcon}>💡</Text>
-            <View style={styles.flex1}>
-              <Text style={styles.tipTitle}>오늘의 팁</Text>
-              <Text style={styles.tipText}>
-                Toby는 오늘 매우 활발하게 활동했습니다! 충분한 물을 마시고 저녁에는 조용히 휴식을 취하도록 하세요.
-              </Text>
+        {/* Today's Alarms Section */}
+        {homeInfo?.todayWalkAlarmTimes && homeInfo.todayWalkAlarmTimes.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>오늘의 산책</Text>
+            </View>
+            <View style={styles.alarmListRow}>
+              {homeInfo.todayWalkAlarmTimes.map((time, index) => (
+                <View key={index} style={styles.alarmChip}>
+                  <Text style={styles.alarmChipText}>{time.substring(0, 5)}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Urgent Supplies Section */}
+        {urgentSupplies.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>소진 임박 용품 🦴</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Supplies')}>
+                <Text style={styles.seeAll}>전체보기</Text>
+              </TouchableOpacity>
+            </View>
+            {urgentSupplies.map((item) => {
+              const diff = calculateDaysDifference(item.nextPurchaseAt);
+              return (
+                <TouchableOpacity 
+                  key={item.petItemId} 
+                  style={styles.supplyUrgentCard}
+                  onPress={() => navigation.navigate('Supplies')}
+                >
+                  <View style={styles.supplyInfo}>
+                    <Text style={styles.supplyName}>{item.name}</Text>
+                    <Text style={styles.supplyDate}>
+                      {diff < 0 ? '이미 소진되었습니다' : `${diff}일 후 소진 예정`}
+                    </Text>
+                  </View>
+                  <Badge 
+                    label={diff < 0 ? '소진' : `D-${diff}`} 
+                    variant={diff <= 3 ? 'error' : 'warning'} 
+                  />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+
+        {/* Dog Tip Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>팁 💡</Text>
+          </View>
+          <View style={styles.tipCard}>
+            <View style={styles.tipIconContainer}>
+              <Text style={styles.tipIcon}>💡</Text>
+            </View>
+            <View style={styles.tipContent}>
+              <Text style={styles.tipDescription}>{currentTip}</Text>
             </View>
           </View>
         </View>
+
+        <View style={styles.footerSpacer} />
       </ScrollView>
     </Layout>
   );
 }
 
 const styles = StyleSheet.create({
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   scrollView: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingVertical: 24,
   },
-  mb24: {
+  welcomeSection: {
+    marginTop: 24,
     marginBottom: 24,
   },
-  cardHeader: {
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    marginBottom: 4,
+  },
+  welcomeSubtitle: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  mainCard: {
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 32,
+    marginBottom: 32,
+    shadowColor: '#eebd2b',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  petInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginBottom: 20,
+  },
+  petImageContainer: {
+    width: 72,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 3,
+    borderColor: '#eebd2b',
+    padding: 2,
+  },
+  petImagePlaceholder: {
+    flex: 1,
+    borderRadius: 30,
+    backgroundColor: '#fefce8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  petImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 30,
+  },
+  petEmoji: {
+    fontSize: 32,
+  },
+  petStatusInfo: {
+    flex: 1,
+  },
+  petNameRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
+    marginBottom: 6,
+  },
+  petNameText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+  petAgeText: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '600',
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#f1f5f9',
+    marginBottom: 20,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontWeight: 'bold',
+  },
+  verticalDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: '#e2e8f0',
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
-  },
-  rowCenter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  iconContainer: {
-    padding: 8,
-    backgroundColor: '#eff6ff',
-    borderRadius: 8,
-  },
-  walkIcon: {
-    color: '#3b82f6',
-  },
-  cardTitle: {
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  nextWalkBadge: {
-    backgroundColor: '#eebd2b1a',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 9999,
-  },
-  nextWalkBadgeText: {
-    color: '#eebd2b',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  profileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginBottom: 16,
-  },
-  profileImageBorder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 4,
-    borderColor: '#eebd2b',
-    overflow: 'hidden',
-  },
-  fullImage: {
-    width: '100%',
-    height: '100%',
-  },
-  profileTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  profileSubtitle: {
-    fontSize: 12,
-    color: '#64748b',
-  },
-  buttonYellow: {
-    width: '100%',
-    paddingVertical: 12,
-    backgroundColor: '#eebd2b',
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    color: '#0f172a',
-    fontWeight: 'bold',
+    paddingHorizontal: 4,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    paddingHorizontal: 4,
-    marginBottom: 16,
+    color: '#0f172a',
   },
-  tipCard: {
-    backgroundColor: '#f59e0b1a',
-    borderWidth: 1,
-    borderColor: '#f59e0b33',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 128,
-  },
-  row: {
+  alarmListRow: {
     flexDirection: 'row',
-    gap: 12,
+    flexWrap: 'wrap',
+    gap: 10,
   },
-  flex1: {
+  alarmChip: {
+    backgroundColor: 'white',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  alarmChipText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#334155',
+  },
+  seeAll: {
+    fontSize: 14,
+    color: '#eebd2b',
+    fontWeight: 'bold',
+  },
+  supplyUrgentCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 20,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  supplyInfo: {
     flex: 1,
   },
-  tipIcon: {
-    color: '#f59e0b',
-  },
-  tipTitle: {
+  supplyName: {
+    fontSize: 15,
     fontWeight: 'bold',
-    fontSize: 14,
-    color: '#f59e0b',
+    color: '#334155',
+    marginBottom: 2,
   },
-  tipText: {
+  supplyDate: {
     fontSize: 12,
-    color: '#475569',
-    marginTop: 4,
+    color: '#ef4444',
+    fontWeight: '500',
   },
+  tipCard: {
+    flexDirection: 'row',
+    backgroundColor: '#fffbeb',
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#fef3c7',
+    gap: 16,
+  },
+  tipIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#f59e0b',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tipIcon: {
+    fontSize: 24,
+  },
+  tipContent: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  tipDescription: {
+    fontSize: 14,
+    color: '#b45309',
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+  footerSpacer: {
+    height: 100,
+  },
+  walkSummaryCard: {
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    backgroundColor: 'white',
+    borderRadius: 28,
+    marginBottom: 32,
+    borderWidth: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  walkSummaryContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  walkSummaryLabel: {
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  walkSummaryValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+  walkStatusIndicator: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  walkStatusIcon: {
+    fontSize: 22,
+  },
+  borderSuccess: { borderColor: '#22c55e' },
+  borderWarning: { borderColor: '#f97316' },
+  borderError: { borderColor: '#ef4444' },
+  bgSuccess: { backgroundColor: '#f0fdf4' },
+  bgWarning: { backgroundColor: '#fff7ed' },
+  bgError: { backgroundColor: '#fef2f2' },
 });
-
-

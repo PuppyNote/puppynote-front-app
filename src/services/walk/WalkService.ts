@@ -52,6 +52,19 @@ class WalkService {
     return response.data;
   }
 
+  // 최근 산책 목록 조회 API (날짜 필터 없음)
+  public async getWalks(petId: number): Promise<WalkHistory[]> {
+    const response = await apiService.get<WalkHistory[]>('/api/v1/walks', {
+      params: { petId }
+    });
+    
+    if (response.statusCode !== 200) {
+      throw new Error(response.message || '산책 목록 조회에 실패했습니다.');
+    }
+    
+    return response.data;
+  }
+
   // 산책 이력 목록 조회 API
   public async getWalkHistory(petId: number, date: string): Promise<WalkHistory[]> {
     const response = await apiService.get<WalkHistory[]>('/api/v1/walks', {

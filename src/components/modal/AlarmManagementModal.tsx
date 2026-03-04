@@ -123,7 +123,7 @@ export default function AlarmManagementModal({
     <GlobalDetailModal
       visible={visible}
       onClose={onClose}
-      title="알림 관리"
+      title="산책 관리"
       height="80%"
       backgroundColor="#f8fafc"
     >
