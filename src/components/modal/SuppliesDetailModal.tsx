@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, Activit
 import { CustomText } from '../CustomText';
 import GlobalDetailModal from './GlobalDetailModal';
 import Badge from '../badge/Badge';
-import { petItemService } from '../../services/petItem/PetItemService';
+import { petItemService, PurchaseHistory } from '../../services/petItem/PetItemService';
 import { PetItem } from '../../types/PetItem';
 import { calculateDaysDifference } from '../../utils/DateUtil';
 import CustomAlert from './CustomAlert';
@@ -13,35 +13,68 @@ interface SuppliesDetailModalProps {
   visible: boolean;
   onClose: () => void;
   petItemId: number | null;
+  onRefreshList?: () => void;
 }
 
 export default function SuppliesDetailModal({
   visible,
   onClose,
   petItemId,
+  onRefreshList,
 }: SuppliesDetailModalProps) {
   const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
   const [item, setItem] = useState<PetItem | null>(null);
+  const [purchaseHistory, setPurchaseHistory] = useState<PurchaseHistory[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (visible && petItemId) {
-      fetchDetail();
+      loadData();
     } else {
       setItem(null);
+      setPurchaseHistory([]);
     }
   }, [visible, petItemId]);
 
-  const fetchDetail = async () => {
+  const loadData = async () => {
     if (!petItemId) return;
     try {
       setLoading(true);
-      const data = await petItemService.getPetItemDetail(petItemId);
-      setItem(data);
+      const [detailData, historyData] = await Promise.all([
+        petItemService.getPetItemDetail(petItemId),
+        petItemService.getPurchaseHistory(petItemId)
+      ]);
+      setItem(detailData);
+      setPurchaseHistory(historyData);
     } catch (error) {
-      showSimpleAlert('오류', '상세 정보를 불러오는데 실패했습니다.', onClose);
+      showSimpleAlert('오류', '데이터를 불러오는데 실패했습니다.', onClose);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRegisterPurchase = async () => {
+    if (!petItemId) return;
+    try {
+      setIsSubmitting(true);
+      await petItemService.createPurchase(petItemId);
+      showSimpleAlert('성공', '구매 기록이 등록되었습니다.');
+      
+      // 데이터 갱신
+      const [detailData, historyData] = await Promise.all([
+        petItemService.getPetItemDetail(petItemId),
+        petItemService.getPurchaseHistory(petItemId)
+      ]);
+      setItem(detailData);
+      setPurchaseHistory(historyData);
+      
+      // 목록 화면도 갱신이 필요할 경우 호출
+      if (onRefreshList) onRefreshList();
+    } catch (error) {
+      showSimpleAlert('오류', '구매 기록 등록에 실패했습니다.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -115,14 +148,45 @@ export default function SuppliesDetailModal({
                 </View>
               </View>
 
+              {/* Purchase Registration Button */}
+              <TouchableOpacity 
+                style={styles.registerButton} 
+                onPress={handleRegisterPurchase}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <CustomText style={styles.registerButtonText}>✨ 오늘 구매 등록</CustomText>
+                )}
+              </TouchableOpacity>
+
               {item.purchaseUrl && (
                 <TouchableOpacity 
                   style={styles.linkButton} 
                   onPress={() => handleOpenLink(item.purchaseUrl)}
                 >
-                  <CustomText style={styles.linkButtonText}>🛒 구매하러 가기</CustomText>
+                  <CustomText style={styles.linkButtonText}>🛒 구매 링크 열기</CustomText>
                 </TouchableOpacity>
               )}
+
+              {/* Purchase History Section */}
+              <View style={styles.historySection}>
+                <CustomText style={styles.historyTitle}>구매 이력</CustomText>
+                {purchaseHistory.length > 0 ? (
+                  purchaseHistory.map((history) => (
+                    <View key={history.id} style={styles.historyItem}>
+                      <View style={styles.historyDot} />
+                      <CustomText style={styles.historyDate}>{history.purchasedAt}</CustomText>
+                      <CustomText style={styles.historyLabel}>구매 완료</CustomText>
+                    </View>
+                  ))
+                ) : (
+                  <View style={styles.emptyHistory}>
+                    <CustomText style={styles.emptyHistoryText}>아직 구매 이력이 없습니다.</CustomText>
+                  </View>
+                )}
+              </View>
               
               <View style={styles.modalSpacer} />
             </View>
@@ -196,6 +260,18 @@ const styles = StyleSheet.create({
     color: '#0f172a',
     fontWeight: '600',
   },
+  registerButton: {
+    backgroundColor: '#0f172a',
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  registerButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+  },
   linkButton: {
     backgroundColor: '#eebd2b',
     paddingVertical: 16,
@@ -206,11 +282,53 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
+    marginBottom: 24,
   },
   linkButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#0f172a',
+  },
+  historySection: {
+    marginTop: 8,
+  },
+  historyTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    marginBottom: 16,
+  },
+  historyItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  historyDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#eebd2b',
+    marginRight: 12,
+  },
+  historyDate: {
+    flex: 1,
+    fontSize: 15,
+    color: '#334155',
+    fontWeight: '500',
+  },
+  historyLabel: {
+    fontSize: 13,
+    color: '#64748b',
+  },
+  emptyHistory: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  emptyHistoryText: {
+    color: '#94a3b8',
+    fontSize: 14,
   },
   modalSpacer: {
     height: 40,

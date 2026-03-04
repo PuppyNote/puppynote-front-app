@@ -1,6 +1,12 @@
 import { apiService } from '../ApiService';
 import { MajorCategory, PetItem } from '../../types/PetItem';
 
+export interface PurchaseHistory {
+  id: number;
+  petItemId: number;
+  purchasedAt: string;
+}
+
 class PetItemService {
   public async getCategories(): Promise<MajorCategory[]> {
     try {
@@ -49,6 +55,34 @@ class PetItemService {
       return response.data;
     } catch (error) {
       console.error('Failed to fetch pet item detail:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 용품 구매 이력 조회 API
+   */
+  public async getPurchaseHistory(petItemId: number): Promise<PurchaseHistory[]> {
+    try {
+      const response = await apiService.get<PurchaseHistory[]>(`/api/v1/pet-items/${petItemId}/purchases`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch purchase history:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 용품 구매 이력 등록 API
+   */
+  public async createPurchase(petItemId: number, purchasedAt?: string): Promise<PurchaseHistory> {
+    try {
+      const response = await apiService.post<PurchaseHistory>(`/api/v1/pet-items/${petItemId}/purchases`, {
+        purchasedAt: purchasedAt || null
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create purchase history:', error);
       throw error;
     }
   }
