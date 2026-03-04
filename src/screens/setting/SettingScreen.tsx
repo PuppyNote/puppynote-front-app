@@ -1,27 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { Layout, Text, CustomAlert, AlertSettingModal } from '../../components';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, StyleSheet, TouchableOpacity, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { Layout, Text, CustomAlert, AlertSettingModal, UserProfileModal } from '../../components';
+import { authService, UserProfile } from '../../services/auth/AuthService';
 import { storageService } from '../../services/auth/StorageService';
 import { useAlert } from '../../hooks/useAlert';
 
 export default function SettingScreen({ navigation }: any) {
   const { alertConfig, showAlert, showSimpleAlert, hideAlert } = useAlert();
   const [isAlertSettingModalVisible, setIsAlertSettingModalVisible] = useState(false);
-  const [userInfo, setUserInfo] = useState({
-    nickName: '사용자',
-    email: '',
-    profileImage: null
-  });
+  const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadUserInfo();
+    loadUserProfile();
   }, []);
 
-  const loadUserInfo = async () => {
-    // TODO: Fetch user info from API
+  const loadUserProfile = async () => {
+    try {
+      setIsLoading(true);
+      const profile = await authService.getProfile();
+      setUserProfile(profile);
+    } catch (error) {
+      console.error('Failed to load user profile:', error);
+      showSimpleAlert('오류', '프로필 정보를 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const menuItems = [
+    {
+      id: 'profile',
+      title: '내 프로필 수정',
+      icon: '👤',
+      onPress: () => setIsProfileModalVisible(true)
+    },
     {
       id: 'family',
       title: '가족 관리',
@@ -64,19 +78,28 @@ export default function SettingScreen({ navigation }: any) {
           {/* Profile Section */}
           <View style={styles.profileSection}>
             <View style={styles.imageContainer}>
-              {userInfo.profileImage ? (
-                <Image source={{ uri: userInfo.profileImage }} style={styles.profileImage} />
+              {userProfile?.profileUrl ? (
+                <Image source={{ uri: userProfile.profileUrl }} style={styles.profileImage} />
               ) : (
                 <View style={styles.placeholderImage}>
                   <Text style={styles.placeholderIcon}>👤</Text>
                 </View>
               )}
-              <TouchableOpacity style={styles.editBadge}>
+              <TouchableOpacity 
+                style={styles.editBadge}
+                onPress={() => setIsProfileModalVisible(true)}
+              >
                 <Text style={styles.editIcon}>⚙️</Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.nickname}>{userInfo.nickName}</Text>
-            <Text style={styles.email}>{userInfo.email || 'puppynote@example.com'}</Text>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#eebd2b" />
+            ) : (
+              <>
+                <Text style={styles.nickname}>{userProfile?.nickName || '집사님'}</Text>
+                <Text style={styles.email}>{userProfile?.email || 'puppynote@example.com'}</Text>
+              </>
+            )}
           </View>
 
           {/* Menu Section */}
@@ -114,6 +137,16 @@ export default function SettingScreen({ navigation }: any) {
       <AlertSettingModal 
         visible={isAlertSettingModalVisible}
         onClose={() => setIsAlertSettingModalVisible(false)}
+      />
+
+      <UserProfileModal
+        visible={isProfileModalVisible}
+        initialData={userProfile}
+        onClose={() => setIsProfileModalVisible(false)}
+        onSuccess={() => {
+          setIsProfileModalVisible(false);
+          loadUserProfile();
+        }}
       />
 
       <CustomAlert 

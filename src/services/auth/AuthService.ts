@@ -7,6 +7,12 @@ export interface UserData {
   nickName: string;
 }
 
+export interface UserProfile {
+  email: string;
+  nickName: string;
+  profileUrl: string | null;
+}
+
 export interface RegisterRequest {
   email: string;
   nickName: string;
@@ -29,6 +35,27 @@ export interface LoginRequest {
 }
 
 class AuthService {
+  /**
+   * 내 프로필 조회 API
+   */
+  public async getProfile(): Promise<UserProfile> {
+    const response = await apiService.get<UserProfile>('/api/v1/user/profile');
+    if (response.statusCode !== 200) {
+      throw new Error(response.message || '프로필 조회에 실패했습니다.');
+    }
+    return response.data;
+  }
+
+  /**
+   * 내 프로필 수정 API
+   */
+  public async updateProfile(data: { nickName: string; profileUrl?: string | null }): Promise<void> {
+    const response = await apiService.patch('/api/v1/user/profile', data);
+    if (response.statusCode !== 200) {
+      throw new Error(response.message || '프로필 수정에 실패했습니다.');
+    }
+  }
+
   // 이메일 인증번호 발송 API
   public async sendVerification(email: string): Promise<string> {
     const response = await apiService.post<string>('/api/v1/user/email/send', { email });
