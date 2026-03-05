@@ -5,9 +5,8 @@ import {
   Card,
   Text,
   Badge,
-  PetRegistrationModal,
 } from '../../components';
-import { storageService } from '../../services/auth/StorageService';
+import { usePet } from '../../context/PetContext';
 import { petItemService } from '../../services/petItem/PetItemService';
 import { homeService, HomeInfo } from '../../services/home/HomeService';
 import { petTipService } from '../../services/petTip/PetTipService';
@@ -15,42 +14,19 @@ import { PetItem } from '../../types/PetItem';
 import { calculateDaysDifference } from '../../utils/DateUtil';
 
 export default function HomeScreen({ navigation }: any) {
-  const [selectedPet, setSelectedPet] = useState<{ id: number; name: string } | null>(null);
+  const { selectedPet, isLoadingPet } = usePet();
   const [homeInfo, setHomeInfo] = useState<HomeInfo | null>(null);
   const [urgentSupplies, setUrgentSupplies] = useState<PetItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentTip, setCurrentTip] = useState<string>('');
-  const [isPetModalVisible, setIsPetModalVisible] = useState(false);
 
-  const loadData = useCallback(async () => {
+  const loadHomeData = useCallback(async (petId: number) => {
     try {
-      setIsLoading(true);
-
-      // 1. 랜덤 팁 API 연동 (펫 여부와 상관없이 항상 가져옴)
-      try {
-        const tipData = await petTipService.getRandomPetTip();
-        setCurrentTip(tipData.content);
-      } catch (error) {
-        console.warn('Failed to fetch pet tip:', error);
-      }
-
-      const pet = await storageService.getSelectedPet();
-      if (!pet) {
-        setSelectedPet(null);
-        setHomeInfo(null);
-        setUrgentSupplies([]);
-        setIsLoading(false);
-        return;
-      }
-      setSelectedPet(pet);
-
-      // 2. 홈 기본 정보 API 연동
-      const info = await homeService.getHomeInfo(pet.id);
+      const info = await homeService.getHomeInfo(petId);
       setHomeInfo(info);
 
-      // 3. 소진 임박 용품 가져오기 (7일 이내)
-      const itemData = await petItemService.getPetItems(pet.id);
+      const itemData = await petItemService.getPetItems(petId);
       if (Array.isArray(itemData)) {
         const urgent = itemData.filter(item => {
           if (!item.nextPurchaseAt) return false;
@@ -61,25 +37,44 @@ export default function HomeScreen({ navigation }: any) {
       }
     } catch (error) {
       console.error('Home data load error:', error);
+    }
+  }, []);
+
+  const loadInitialData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      // 1. 랜덤 팁 API 연동 (항상 가져옴)
+      try {
+        const tipData = await petTipService.getRandomPetTip();
+        setCurrentTip(tipData.content);
+      } catch (error) {
+        console.warn('Failed to fetch pet tip:', error);
+      }
+
+      if (selectedPet) {
+        await loadHomeData(selectedPet.id);
+      }
+    } catch (error) {
+      console.error('Initial data load error:', error);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [selectedPet, loadHomeData]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (!isLoadingPet) {
+      loadInitialData();
+    }
+  }, [isLoadingPet, selectedPet?.id, loadInitialData]);
 
   const onRefresh = () => {
     setIsRefreshing(true);
-    loadData();
-  };
-
-  const handlePetRegistrationSuccess = async (petId: number, petName: string) => {
-    setIsPetModalVisible(false);
-    await storageService.saveSelectedPet(petId, petName);
-    loadData();
+    if (selectedPet) {
+      loadHomeData(selectedPet.id).finally(() => setIsRefreshing(false));
+    } else {
+      loadInitialData();
+    }
   };
 
   if (isLoading && !isRefreshing) {
@@ -91,7 +86,7 @@ export default function HomeScreen({ navigation }: any) {
   }
 
   return (
-    <Layout edges={['left', 'right']} backgroundColor="#fcfaf2">
+    <Layout edges={['left', 'right']} backgroundColor="#fcfaf2" showPetTab={true}>
       <ScrollView 
         style={styles.scrollView} 
         showsVerticalScrollIndicator={false}
@@ -117,33 +112,22 @@ export default function HomeScreen({ navigation }: any) {
 
         {!selectedPet ? (
           /* Empty Pet State Card */
-          <TouchableOpacity 
-            style={styles.emptyPetCard} 
-            onPress={() => setIsPetModalVisible(true)}
-            activeOpacity={0.9}
-          >
+          <View style={styles.emptyPetCard}>
             <View style={styles.emptyPetContent}>
               <View style={styles.emptyPetIconContainer}>
                 <Text style={styles.emptyPetIcon}>🐶</Text>
               </View>
               <View style={styles.emptyPetInfo}>
                 <Text style={styles.emptyPetTitle}>아직 등록된 아이가 없어요</Text>
-                <Text style={styles.emptyPetSubtitle}>이곳을 눌러 우리 아이를 등록해주세요!</Text>
-              </View>
-              <View style={styles.plusBadge}>
-                <Text style={styles.plusIcon}>+</Text>
+                <Text style={styles.emptyPetSubtitle}>상단 탭의 + 버튼을 눌러 우리 아이를 등록해주세요!</Text>
               </View>
             </View>
-          </TouchableOpacity>
+          </View>
         ) : (
           <>
             {/* Status Overview Card */}
             <Card style={styles.mainCard}>
-              <TouchableOpacity 
-                style={styles.petInfoRow} 
-                onPress={() => setIsPetModalVisible(true)}
-                activeOpacity={0.7}
-              >
+              <View style={styles.petInfoRow}>
                 <View style={styles.petImageContainer}>
                   <View style={styles.petImagePlaceholder}>
                     {homeInfo?.petProfileImageUrl ? (
@@ -160,7 +144,6 @@ export default function HomeScreen({ navigation }: any) {
                   <View style={styles.petNameRow}>
                     <Text style={styles.petNameText}>{homeInfo?.petName || selectedPet?.name}</Text>
                     {homeInfo?.petAge && <Text style={styles.petAgeText}>{homeInfo.petAge}</Text>}
-                    <Text style={styles.editIcon}>✏️</Text>
                   </View>
                   <View style={styles.badgeRow}>
                     {homeInfo?.birthdayDday !== null && (
@@ -175,7 +158,7 @@ export default function HomeScreen({ navigation }: any) {
                     />
                   </View>
                 </View>
-              </TouchableOpacity>
+              </View>
               
               <View style={styles.divider} />
               
@@ -309,18 +292,6 @@ export default function HomeScreen({ navigation }: any) {
 
         <View style={styles.footerSpacer} />
       </ScrollView>
-
-      <PetRegistrationModal
-        visible={isPetModalVisible}
-        onSuccess={handlePetRegistrationSuccess}
-        onClose={() => setIsPetModalVisible(false)}
-        petId={selectedPet?.id}
-        initialData={selectedPet ? {
-          name: homeInfo?.petName || selectedPet.name,
-          imageUrl: homeInfo?.petProfileImageUrl || null,
-          birthDate: homeInfo?.birthDate || null,
-        } : null}
-      />
     </Layout>
   );
 }
@@ -644,18 +615,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#64748b',
     fontWeight: '500',
-  },
-  plusBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#eebd2b',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  plusIcon: {
-    color: '#0f172a',
-    fontSize: 20,
-    fontWeight: 'bold',
   },
 });

@@ -84,17 +84,17 @@ export default function PetRegistrationModal({
       let imageKey = '';
 
       // 1. 이미지 업로드 (이미지가 새로 선택되었거나 변경된 경우)
-      // Note: initialData.imageUrl과 image가 다르면 새로 업로드한 것으로 간주 (단순 비교)
       if (image && image !== initialData?.imageUrl) {
-        const filename = image.split('/').pop() || 'pet_profile.jpg';
+        const filename = image.split('/').pop() || `pet_${Date.now()}.jpg`;
         const match = /\.(\w+)$/.exec(filename);
         const type = match ? `image/${match[1]}` : `image/jpeg`;
         
-        uploadedImageUrl = await storageService.uploadImage('PUPPY_PROFILE', image, filename, type);
-        // S3 Key 추출 (보통 URL의 마지막 부분이나 서버 응답에 따라 다름)
-        // 여기서는 API 명세에 맞춰 uploadedImageUrl이 Key라고 가정하거나 변환 필요
-        // 실제 운영 환경에서는 uploadImage가 Key를 반환하는 것이 좋음
-        imageKey = uploadedImageUrl.split('/').pop() || '';
+        const response = await storageService.uploadImage('PUPPY_PROFILE', image, filename, type);
+        // 업로드 성공 후 반환된 URL에서 Key값(마지막 파일명) 추출
+        imageKey = response.includes('/') ? response.split('/').pop() || '' : response;
+      } else if (image && initialData?.imageUrl === image) {
+        // 이미지가 기존 이미지 그대로인 경우, URL에서 Key값만 다시 추출하거나 null 처리 (서버 정책에 따라)
+        imageKey = image.split('/').pop() || '';
       }
 
       if (isEditMode && petId) {
@@ -102,7 +102,7 @@ export default function PetRegistrationModal({
         await petService.updatePet(petId, {
           name,
           birthDate: birthDate || null,
-          profileImage: imageKey || null, // Key를 보냄
+          profileImage: imageKey || null,
         });
         onSuccess(petId, name);
       } else {
@@ -110,7 +110,7 @@ export default function PetRegistrationModal({
         const petData = await petService.registerPet({
           name,
           birthDate: birthDate || undefined,
-          profileImageUrl: uploadedImageUrl || undefined,
+          profileImage: imageKey || undefined, 
         });
         onSuccess(petData.petId, petData.petName);
       }

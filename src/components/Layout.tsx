@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView, Edge } from 'react-native-safe-area-context';
+import PetTab from './tabs/PetTab';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,6 +9,7 @@ interface LayoutProps {
   edges?: Edge[];
   backgroundColor?: string;
   disableKeyboardAvoid?: boolean;
+  showPetTab?: boolean;
 }
 
 export default function Layout({ 
@@ -15,10 +17,12 @@ export default function Layout({
   style, 
   edges = ['left', 'right', 'bottom'],
   backgroundColor = '#fcfaf2',
-  disableKeyboardAvoid = false
+  disableKeyboardAvoid = false,
+  showPetTab = false
 }: LayoutProps) {
   const content = (
     <SafeAreaView style={[styles.flex1, style]} edges={edges}>
+      {showPetTab && <PetTab />}
       {children}
     </SafeAreaView>
   );

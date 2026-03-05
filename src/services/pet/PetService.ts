@@ -16,7 +16,7 @@ export interface RegisterPetRequest {
   breed?: string;
   birthDate?: string;
   weight?: number;
-  profileImageUrl?: string;
+  profileImage?: string;
 }
 
 class PetService {

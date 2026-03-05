@@ -1,13 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
-import { CustomText as Text } from '../CustomText';
 import { userCategoryService } from '../../services/userCategory/UserCategoryService';
-
-interface TabItem {
-  id: string;
-  label: string;
-}
+import ScrollableTab, { TabItem } from './ScrollableTab';
 
 interface CategoryTabProps {
   tabs?: TabItem[];
@@ -65,84 +59,12 @@ export default function CategoryTab({
   const displayTabs = internalTabs || [];
 
   return (
-    <View style={styles.categoryTab}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.tabRow}>
-          {displayTabs.map((tab) => {
-            const isActive = tab.id === activeTabId;
-            return (
-              <TouchableOpacity 
-                key={tab.id} 
-                style={[styles.tab, isActive && styles.activeTab]}
-                onPress={() => onTabPress(tab.id)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.tabText, isActive ? styles.tabTextActive : styles.tabTextInactive]}>
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-          {onAddPress && (
-            <TouchableOpacity 
-              style={styles.addButton}
-              onPress={onAddPress}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.addText}>+</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </ScrollView>
-    </View>
+    <ScrollableTab 
+      tabs={displayTabs}
+      activeTabId={activeTabId}
+      onTabPress={(id) => onTabPress(id.toString())}
+      onAddPress={onAddPress}
+    />
   );
 }
 
-const styles = StyleSheet.create({
-  categoryTab: {
-    backgroundColor: '#fcfaf2',
-    paddingHorizontal: 24,
-    paddingBottom: 4,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  tab: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 9999,
-    backgroundColor: 'white',
-  },
-  addButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 9999,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  addText: {
-    fontSize: 18,
-    color: '#64748b',
-    fontWeight: 'bold',
-    lineHeight: 18,
-  },
-  activeTab: {
-    backgroundColor: '#eebd2b',
-  },
-  tabText: {
-    fontSize: 14,
-  },
-  tabTextActive: {
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  tabTextInactive: {
-    fontWeight: '500',
-    color: '#64748b',
-  },
-});

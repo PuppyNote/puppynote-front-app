@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, Image, useWindowDimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useState, useEffect, useCallback } from 'react';
+import { StyleSheet, View, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Layout, Text, Calendar, FloatingActionButton, AlarmManagementModal, WalkDetailModal } from '../../components';
+import { usePet } from '../../context/PetContext';
 import { walkService, WalkHistory } from '../../services/walk/WalkService';
-import { storageService } from '../../services/auth/StorageService';
 import { formatToLocalDate, formatToLocalYearMonth } from '../../utils/DateUtil';
 
 const WalkCard = ({ walk, onPress }: { walk: WalkHistory, onPress: (id: number) => void }) => {
@@ -35,6 +34,7 @@ const WalkCard = ({ walk, onPress }: { walk: WalkHistory, onPress: (id: number) 
 };
 
 const WalkManagementScreen = ({ navigation }: any) => {
+  const { selectedPet, isLoadingPet } = usePet();
   const [isAlarmModalVisible, setIsAlarmModalVisible] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [selectedWalkId, setSelectedWalkId] = useState<number | null>(null);
@@ -43,19 +43,10 @@ const WalkManagementScreen = ({ navigation }: any) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const now = new Date();
-    fetchCalendarData(now.getFullYear(), now.getMonth() + 1);
-    fetchWalkHistory(now);
-  }, []);
-
-  const fetchCalendarData = async (year: number, month: number) => {
+  const fetchCalendarData = useCallback(async (petId: number, year: number, month: number) => {
     try {
-      const selectedPet = await storageService.getSelectedPet();
-      if (!selectedPet) return;
-
       const yearMonth = formatToLocalYearMonth(year, month);
-      const data = await walkService.getWalkCalendar(selectedPet.id, yearMonth);
+      const data = await walkService.getWalkCalendar(petId, yearMonth);
       
       const datesWithWalk = data
         .filter(item => item.hasWalk)
@@ -65,28 +56,35 @@ const WalkManagementScreen = ({ navigation }: any) => {
     } catch (error) {
       console.log('Error fetching calendar data:', error);
     }
-  };
+  }, []);
 
-  const fetchWalkHistory = async (date: Date) => {
+  const fetchWalkHistory = useCallback(async (petId: number, date: Date) => {
     setIsLoading(true);
     try {
-      const selectedPet = await storageService.getSelectedPet();
-      if (!selectedPet) return;
-
       const formattedDate = formatToLocalDate(date);
-      
-      const data = await walkService.getWalkHistory(selectedPet.id, formattedDate);
+      const data = await walkService.getWalkHistory(petId, formattedDate);
       setWalkHistory(data);
     } catch (error) {
       console.log('Error fetching walk history:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!isLoadingPet && selectedPet) {
+      const now = new Date();
+      setSelectedDate(now);
+      fetchCalendarData(selectedPet.id, now.getFullYear(), now.getMonth() + 1);
+      fetchWalkHistory(selectedPet.id, now);
+    }
+  }, [isLoadingPet, selectedPet?.id, fetchCalendarData, fetchWalkHistory]);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
-    fetchWalkHistory(date);
+    if (selectedPet) {
+      fetchWalkHistory(selectedPet.id, date);
+    }
   };
 
   const handleWalkPress = (id: number) => {
@@ -95,7 +93,7 @@ const WalkManagementScreen = ({ navigation }: any) => {
   };
 
   return (
-    <Layout>
+    <Layout showPetTab={true}>
       <View style={styles.topSection}>
         <TouchableOpacity 
           style={styles.alarmManageButton}
@@ -115,12 +113,17 @@ const WalkManagementScreen = ({ navigation }: any) => {
         <ScrollView contentContainerStyle={styles.mainContent}>
           <Calendar 
             walkDates={walkDates}
-            onMonthChange={fetchCalendarData}
+            onMonthChange={(y, m) => selectedPet && fetchCalendarData(selectedPet.id, y, m)}
             onDateSelect={handleDateSelect}
+            selectedDate={selectedDate}
           />
 
           {isLoading ? (
             <ActivityIndicator color="#eebd2b" size="large" style={{ marginTop: 20 }} />
+          ) : !selectedPet ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>반려동물을 등록해주세요 🐶</Text>
+            </View>
           ) : walkHistory.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>이 날은 산책 기록이 없어요 🐾</Text>
@@ -239,16 +242,6 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     marginTop: 4,
     lineHeight: 16,
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 9999,
-    borderWidth: 1,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: 'bold',
   },
   emptyContainer: {
     paddingVertical: 40,

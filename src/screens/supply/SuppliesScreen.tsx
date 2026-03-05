@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, ScrollView, StyleSheet, ActivityIndicator, RefreshControl, Image, TouchableOpacity, Linking, Alert } from 'react-native';
+import { View, ScrollView, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
 import Layout from '../../components/Layout';
 import CategoryTab from '../../components/tabs/CategoryTab';
 import SupplyItem from '../../components/items/SupplyItem';
 import FloatingActionButton from '../../components/button/FloatingActionButton';
 import { CustomText } from '../../components/CustomText';
 import SuppliesDetailModal from '../../components/modal/SuppliesDetailModal';
+import { usePet } from '../../context/PetContext';
 import { petItemService } from '../../services/petItem/PetItemService';
-import { storageService } from '../../services/auth/StorageService';
 import { PetItem } from '../../types/PetItem';
 import { calculateDaysDifference } from '../../utils/DateUtil';
 
 export default function SuppliesScreen({ navigation }: any) {
+  const { selectedPet, isLoadingPet } = usePet();
   const [activeTab, setActiveTab] = useState('all');
   const [tabs, setTabs] = useState([{ id: 'all', label: '전체' }]);
   const [items, setItems] = useState<PetItem[]>([]);
@@ -22,13 +23,10 @@ export default function SuppliesScreen({ navigation }: any) {
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
 
-  const fetchItems = useCallback(async (category?: string) => {
+  const fetchItems = useCallback(async (petId: number, category?: string) => {
     try {
       setLoading(true);
-      const selectedPet = await storageService.getSelectedPet();
-      if (!selectedPet) return;
-
-      const data = await petItemService.getPetItems(selectedPet.id, category === 'all' ? undefined : category);
+      const data = await petItemService.getPetItems(petId, category === 'all' ? undefined : category);
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Failed to fetch pet items:', error);
@@ -39,14 +37,22 @@ export default function SuppliesScreen({ navigation }: any) {
   }, []);
 
   useEffect(() => {
-    fetchItems(activeTab);
-  }, [activeTab, fetchItems]);
+    if (!isLoadingPet && selectedPet) {
+      fetchItems(selectedPet.id, activeTab);
+    }
+  }, [isLoadingPet, selectedPet?.id, activeTab, fetchItems]);
+
+  const handleTabPress = (categoryId: string) => {
+    setActiveTab(categoryId);
+  };
 
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchItems(activeTab);
-    setRefreshing(false);
-  }, [activeTab, fetchItems]);
+    if (selectedPet) {
+      setRefreshing(true);
+      await fetchItems(selectedPet.id, activeTab);
+      setRefreshing(false);
+    }
+  }, [selectedPet, activeTab, fetchItems]);
 
   const handleItemPress = (itemId: number) => {
     setSelectedItemId(itemId);
@@ -72,10 +78,10 @@ export default function SuppliesScreen({ navigation }: any) {
   };
 
   return (
-    <Layout>
+    <Layout showPetTab={true}>
       <CategoryTab 
         activeTabId={activeTab} 
-        onTabPress={setActiveTab} 
+        onTabPress={handleTabPress} 
         categoryType="ITEM"
         onTabsChange={setTabs}
         onAddPress={() => navigation.navigate('CategoryManagement', { 
@@ -92,6 +98,10 @@ export default function SuppliesScreen({ navigation }: any) {
       >
         {loading && !refreshing ? (
           <ActivityIndicator color="#eebd2b" size="large" style={styles.loader} />
+        ) : !selectedPet ? (
+          <View style={styles.emptyContainer}>
+            <CustomText style={styles.emptyText}>반려동물을 등록해주세요 🐶</CustomText>
+          </View>
         ) : items.length === 0 ? (
           <View style={styles.emptyContainer}>
             <CustomText style={styles.emptyText}>등록된 용품이 없어요 🦴</CustomText>
