@@ -77,221 +77,219 @@ export default function HomeScreen({ navigation }: any) {
     }
   };
 
-  if (isLoading && !isRefreshing) {
-    return (
-      <Layout style={styles.center}>
-        <ActivityIndicator color="#eebd2b" size="large" />
-      </Layout>
-    );
-  }
-
   return (
     <Layout edges={['left', 'right']} backgroundColor="#fcfaf2" showPetTab={true}>
-      <ScrollView 
-        style={styles.scrollView} 
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} color="#eebd2b" />
-        }
-      >
-        {/* Welcome Section */}
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>안녕하세요, 집사님! 👋</Text>
-          <Text style={styles.welcomeSubtitle}>
-            {!selectedPet 
-              ? '반려동물을 등록하고 PuppyNote를 시작해보세요!' 
-              : homeInfo 
-                ? (homeInfo.walkedToday 
-                  ? '오늘 산책을 완료했어요! 정말 멋져요. ✨' 
-                  : homeInfo.daysSinceLastWalk !== null 
-                    ? `마지막 산책으로부터 ${homeInfo.daysSinceLastWalk}일이 지났어요.`
-                    : '오늘도 즐거운 하루 되세요!')
-                : '오늘도 즐거운 하루 되세요!'}
-          </Text>
+      {isLoading && !isRefreshing ? (
+        <View style={[styles.flex1, styles.center]}>
+          <ActivityIndicator color="#eebd2b" size="large" />
         </View>
+      ) : (
+        <ScrollView 
+          style={styles.scrollView} 
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} color="#eebd2b" />
+          }
+        >
+          {/* Welcome Section */}
+          <View style={styles.welcomeSection}>
+            <Text style={styles.welcomeTitle}>안녕하세요, 집사님! 👋</Text>
+            <Text style={styles.welcomeSubtitle}>
+              {!selectedPet 
+                ? '반려동물을 등록하고 PuppyNote를 시작해보세요!' 
+                : homeInfo 
+                  ? (homeInfo.walkedToday 
+                    ? '오늘 산책을 완료했어요! 정말 멋져요. ✨' 
+                    : homeInfo.daysSinceLastWalk !== null 
+                      ? `마지막 산책으로부터 ${homeInfo.daysSinceLastWalk}일이 지났어요.`
+                      : '오늘도 즐거운 하루 되세요!')
+                  : '오늘도 즐거운 하루 되세요!'}
+            </Text>
+          </View>
 
-        {!selectedPet ? (
-          /* Empty Pet State Card */
-          <View style={styles.emptyPetCard}>
-            <View style={styles.emptyPetContent}>
-              <View style={styles.emptyPetIconContainer}>
-                <Text style={styles.emptyPetIcon}>🐶</Text>
-              </View>
-              <View style={styles.emptyPetInfo}>
-                <Text style={styles.emptyPetTitle}>아직 등록된 아이가 없어요</Text>
-                <Text style={styles.emptyPetSubtitle}>상단 탭의 + 버튼을 눌러 우리 아이를 등록해주세요!</Text>
+          {!selectedPet ? (
+            /* Empty Pet State Card */
+            <View style={styles.emptyPetCard}>
+              <View style={styles.emptyPetContent}>
+                <View style={styles.emptyPetIconContainer}>
+                  <Text style={styles.emptyPetIcon}>🐶</Text>
+                </View>
+                <View style={styles.emptyPetInfo}>
+                  <Text style={styles.emptyPetTitle}>아직 등록된 아이가 없어요</Text>
+                  <Text style={styles.emptyPetSubtitle}>상단 탭의 + 버튼을 눌러 우리 아이를 등록해주세요!</Text>
+                </View>
               </View>
             </View>
-          </View>
-        ) : (
-          <>
-            {/* Status Overview Card */}
-            <Card style={styles.mainCard}>
-              <View style={styles.petInfoRow}>
-                <View style={styles.petImageContainer}>
-                  <View style={styles.petImagePlaceholder}>
-                    {homeInfo?.petProfileImageUrl ? (
-                      <Image 
-                        source={{ uri: homeInfo.petProfileImageUrl }} 
-                        style={styles.petImage} 
-                      />
-                    ) : (
-                      <Text style={styles.petEmoji}>🐶</Text>
-                    )}
+          ) : (
+            <>
+              {/* Status Overview Card */}
+              <Card style={styles.mainCard}>
+                <View style={styles.petInfoRow}>
+                  <View style={styles.petImageContainer}>
+                    <View style={styles.petImagePlaceholder}>
+                      {homeInfo?.petProfileImageUrl ? (
+                        <Image 
+                          source={{ uri: homeInfo.petProfileImageUrl }} 
+                          style={styles.petImage} 
+                        />
+                      ) : (
+                        <Text style={styles.petEmoji}>🐶</Text>
+                      )}
+                    </View>
                   </View>
-                </View>
-                <View style={styles.petStatusInfo}>
-                  <View style={styles.petNameRow}>
-                    <Text style={styles.petNameText}>{homeInfo?.petName || selectedPet?.name}</Text>
-                    {homeInfo?.petAge && <Text style={styles.petAgeText}>{homeInfo.petAge}</Text>}
-                  </View>
-                  <View style={styles.badgeRow}>
-                    {homeInfo?.birthdayDday !== null && (
+                  <View style={styles.petStatusInfo}>
+                    <View style={styles.petNameRow}>
+                      <Text style={styles.petNameText}>{homeInfo?.petName || selectedPet?.name}</Text>
+                      {homeInfo?.petAge && <Text style={styles.petAgeText}>{homeInfo.petAge}</Text>}
+                    </View>
+                    <View style={styles.badgeRow}>
+                      {homeInfo?.birthdayDday !== null && (
+                        <Badge 
+                          label={homeInfo?.birthdayDday === 0 ? '🎂 오늘 생일!' : `🎂 D-${homeInfo?.birthdayDday}`} 
+                          variant="warning" 
+                        />
+                      )}
                       <Badge 
-                        label={homeInfo?.birthdayDday === 0 ? '🎂 오늘 생일!' : `🎂 D-${homeInfo?.birthdayDday}`} 
-                        variant="warning" 
+                        label={homeInfo?.walkedToday ? '오늘 산책 완료' : '산책 대기 중'} 
+                        variant={homeInfo?.walkedToday ? 'success' : 'neutral'} 
                       />
-                    )}
-                    <Badge 
-                      label={homeInfo?.walkedToday ? '오늘 산책 완료' : '산책 대기 중'} 
-                      variant={homeInfo?.walkedToday ? 'success' : 'neutral'} 
-                    />
+                    </View>
                   </View>
                 </View>
-              </View>
-              
-              <View style={styles.divider} />
-              
-              <View style={styles.statsRow}>
-                <TouchableOpacity 
-                  style={styles.statItem} 
-                  onPress={() => navigation.navigate('Walk')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.statValue}>{homeInfo?.recentWalkCount ?? 0}</Text>
-                  <Text style={styles.statLabel}>최근 7일</Text>
-                </TouchableOpacity>
-                <View style={styles.verticalDivider} />
-                <TouchableOpacity 
-                  style={styles.statItem} 
-                  onPress={() => navigation.navigate('Walk')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.statValue}>{homeInfo?.monthlyWalkMinutes ?? 0}</Text>
-                  <Text style={styles.statLabel}>이달의 산책(분)</Text>
-                </TouchableOpacity>
-                <View style={styles.verticalDivider} />
-                <TouchableOpacity 
-                  style={styles.statItem} 
-                  onPress={() => navigation.navigate('Supplies')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.statValue}>{homeInfo?.petItemCount ?? 0}</Text>
-                  <Text style={styles.statLabel}>관리 용품</Text>
-                </TouchableOpacity>
-              </View>
-            </Card>
-
-            {/* Walk Status Card */}
-            {homeInfo && homeInfo.daysSinceLastWalk !== null && (
-              <Card 
-                style={[
-                  styles.walkSummaryCard, 
-                  homeInfo.daysSinceLastWalk <= 1 ? styles.borderSuccess : 
-                  homeInfo.daysSinceLastWalk === 2 ? styles.borderWarning : 
-                  styles.borderError
-                ]}
-              >
-                <View style={styles.walkSummaryContent}>
-                  <View>
-                    <Text style={styles.walkSummaryLabel}>마지막 산책으로부터</Text>
-                    <Text style={styles.walkSummaryValue}>
-                      {homeInfo.daysSinceLastWalk === 0 ? '오늘 산책했어요! ✨' : `${homeInfo.daysSinceLastWalk}일 지났어요`}
-                    </Text>
-                  </View>
-                  <View style={[
-                    styles.walkStatusIndicator,
-                    homeInfo.daysSinceLastWalk <= 1 ? styles.bgSuccess : 
-                    homeInfo.daysSinceLastWalk === 2 ? styles.bgWarning : 
-                    styles.bgError
-                  ]}>
-                    <Text style={styles.walkStatusIcon}>
-                      {homeInfo.daysSinceLastWalk <= 1 ? '🐾' : 
-                       homeInfo.daysSinceLastWalk === 2 ? '⚠️' : '🚨'}
-                    </Text>
-                  </View>
+                
+                <View style={styles.divider} />
+                
+                <View style={styles.statsRow}>
+                  <TouchableOpacity 
+                    style={styles.statItem} 
+                    onPress={() => navigation.navigate('Walk')}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.statValue}>{homeInfo?.recentWalkCount ?? 0}</Text>
+                    <Text style={styles.statLabel}>최근 7일</Text>
+                  </TouchableOpacity>
+                  <View style={styles.verticalDivider} />
+                  <TouchableOpacity 
+                    style={styles.statItem} 
+                    onPress={() => navigation.navigate('Walk')}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.statValue}>{homeInfo?.monthlyWalkMinutes ?? 0}</Text>
+                    <Text style={styles.statLabel}>이달의 산책(분)</Text>
+                  </TouchableOpacity>
+                  <View style={styles.verticalDivider} />
+                  <TouchableOpacity 
+                    style={styles.statItem} 
+                    onPress={() => navigation.navigate('Supplies')}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.statValue}>{homeInfo?.petItemCount ?? 0}</Text>
+                    <Text style={styles.statLabel}>관리 용품</Text>
+                  </TouchableOpacity>
                 </View>
               </Card>
-            )}
-          </>
-        )}
 
-        {/* Today's Alarms Section */}
-        {homeInfo?.todayWalkAlarmTimes && homeInfo.todayWalkAlarmTimes.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>오늘의 산책</Text>
-            </View>
-            <View style={styles.alarmListRow}>
-              {homeInfo.todayWalkAlarmTimes.map((time, index) => (
-                <View key={index} style={styles.alarmChip}>
-                  <Text style={styles.alarmChipText}>{time.substring(0, 5)}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Urgent Supplies Section */}
-        {urgentSupplies.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>소진 임박 용품 🦴</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Supplies')}>
-                <Text style={styles.seeAll}>전체보기</Text>
-              </TouchableOpacity>
-            </View>
-            {urgentSupplies.map((item) => {
-              const diff = calculateDaysDifference(item.nextPurchaseAt);
-              return (
-                <TouchableOpacity 
-                  key={item.petItemId} 
-                  style={styles.supplyUrgentCard}
-                  onPress={() => navigation.navigate('Supplies')}
+              {/* Walk Status Card */}
+              {homeInfo && homeInfo.daysSinceLastWalk !== null && (
+                <Card 
+                  style={[
+                    styles.walkSummaryCard, 
+                    homeInfo.daysSinceLastWalk <= 1 ? styles.borderSuccess : 
+                    homeInfo.daysSinceLastWalk === 2 ? styles.borderWarning : 
+                    styles.borderError
+                  ]}
                 >
-                  <View style={styles.supplyInfo}>
-                    <Text style={styles.supplyName}>{item.name}</Text>
-                    <Text style={styles.supplyDate}>
-                      {diff < 0 ? '이미 소진되었습니다' : `${diff}일 후 소진 예정`}
-                    </Text>
+                  <View style={styles.walkSummaryContent}>
+                    <View>
+                      <Text style={styles.walkSummaryLabel}>마지막 산책으로부터</Text>
+                      <Text style={styles.walkSummaryValue}>
+                        {homeInfo.daysSinceLastWalk === 0 ? '오늘 산책했어요! ✨' : `${homeInfo.daysSinceLastWalk}일 지났어요`}
+                      </Text>
+                    </View>
+                    <View style={[
+                      styles.walkStatusIndicator,
+                      homeInfo.daysSinceLastWalk <= 1 ? styles.bgSuccess : 
+                      homeInfo.daysSinceLastWalk === 2 ? styles.bgWarning : 
+                      styles.bgError
+                    ]}>
+                      <Text style={styles.walkStatusIcon}>
+                        {homeInfo.daysSinceLastWalk <= 1 ? '🐾' : 
+                         homeInfo.daysSinceLastWalk === 2 ? '⚠️' : '🚨'}
+                      </Text>
+                    </View>
                   </View>
-                  <Badge 
-                    label={diff < 0 ? '소진' : `D-${diff}`} 
-                    variant={diff <= 3 ? 'error' : 'warning'} 
-                  />
+                </Card>
+              )}
+            </>
+          )}
+
+          {/* Today's Alarms Section */}
+          {homeInfo?.todayWalkAlarmTimes && homeInfo.todayWalkAlarmTimes.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>오늘의 산책</Text>
+              </View>
+              <View style={styles.alarmListRow}>
+                {homeInfo.todayWalkAlarmTimes.map((time, index) => (
+                  <View key={index} style={styles.alarmChip}>
+                    <Text style={styles.alarmChipText}>{time.substring(0, 5)}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Urgent Supplies Section */}
+          {urgentSupplies.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>소진 임박 용품 🦴</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('Supplies')}>
+                  <Text style={styles.seeAll}>전체보기</Text>
                 </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
-
-        {/* Dog Tip Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>팁 💡</Text>
-          </View>
-          <View style={styles.tipCard}>
-            <View style={styles.tipIconContainer}>
-              <Text style={styles.tipIcon}>💡</Text>
+              </View>
+              {urgentSupplies.map((item) => {
+                const diff = calculateDaysDifference(item.nextPurchaseAt);
+                return (
+                  <TouchableOpacity 
+                    key={item.petItemId} 
+                    style={styles.supplyUrgentCard}
+                    onPress={() => navigation.navigate('Supplies')}
+                  >
+                    <View style={styles.supplyInfo}>
+                      <Text style={styles.supplyName}>{item.name}</Text>
+                      <Text style={styles.supplyDate}>
+                        {diff < 0 ? '이미 소진되었습니다' : `${diff}일 후 소진 예정`}
+                      </Text>
+                    </View>
+                    <Badge 
+                      label={diff < 0 ? '소진' : `D-${diff}`} 
+                      variant={diff <= 3 ? 'error' : 'warning'} 
+                    />
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-            <View style={styles.tipContent}>
-              <Text style={styles.tipDescription}>{currentTip}</Text>
+          )}
+
+          {/* Dog Tip Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>팁 💡</Text>
+            </View>
+            <View style={styles.tipCard}>
+              <View style={styles.tipIconContainer}>
+                <Text style={styles.tipIcon}>💡</Text>
+              </View>
+              <View style={styles.tipContent}>
+                <Text style={styles.tipDescription}>{currentTip}</Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        <View style={styles.footerSpacer} />
-      </ScrollView>
+          <View style={styles.footerSpacer} />
+        </ScrollView>
+      )}
     </Layout>
   );
 }
