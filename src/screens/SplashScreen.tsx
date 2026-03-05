@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Animated, StyleSheet, Image } from 'react-native';
 import { Layout, Text } from '../components';
+import { storageService } from '../services/auth/StorageService';
 
 export default function SplashScreen({ navigation }: any) {
   const fadeAnim = new Animated.Value(0);
@@ -12,11 +13,28 @@ export default function SplashScreen({ navigation }: any) {
       useNativeDriver: true,
     }).start();
 
-    const timer = setTimeout(() => {
-      navigation.replace('Login');
-    }, 3000);
+    const checkAutoLogin = async () => {
+      try {
+        // 토큰 존재 여부 확인
+        const token = await storageService.getAccessToken();
+        
+        // 최소 애니메이션 시간을 보장하기 위해 2초 대기
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
-    return () => clearTimeout(timer);
+        if (token) {
+          // 토큰이 있으면 메인 화면으로 이동
+          navigation.replace('MainTabs');
+        } else {
+          // 토큰이 없으면 로그인 화면으로 이동
+          navigation.replace('Login');
+        }
+      } catch (error) {
+        console.error('Auto login check failed:', error);
+        navigation.replace('Login');
+      }
+    };
+
+    checkAutoLogin();
   }, []);
 
   return (
