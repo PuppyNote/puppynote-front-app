@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { CustomText } from '../CustomText';
 import GlobalDetailModal from './GlobalDetailModal';
 import Badge from '../badge/Badge';
@@ -22,7 +23,8 @@ export default function SuppliesDetailModal({
   petItemId,
   onRefreshList,
 }: SuppliesDetailModalProps) {
-  const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
+  const navigation = useNavigation<any>();
+  const { alertConfig, showSimpleAlert, showConfirmAlert, hideAlert } = useAlert();
   const [item, setItem] = useState<PetItem | null>(null);
   const [purchaseHistory, setPurchaseHistory] = useState<PurchaseHistory[]>([]);
   const [loading, setLoading] = useState(false);
@@ -78,6 +80,32 @@ export default function SuppliesDetailModal({
     }
   };
 
+  const handleEdit = () => {
+    if (!item) return;
+    onClose();
+    navigation.navigate('AddSupply', { editItem: item });
+  };
+
+  const handleDelete = () => {
+    showConfirmAlert(
+      '용품 삭제',
+      '정말로 이 용품을 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.',
+      async () => {
+        if (!petItemId) return;
+        try {
+          setIsSubmitting(true);
+          await petItemService.deletePetItem(petItemId);
+          if (onRefreshList) onRefreshList();
+          onClose();
+        } catch (error) {
+          showSimpleAlert('오류', '용품 삭제에 실패했습니다.');
+        } finally {
+          setIsSubmitting(false);
+        }
+      }
+    );
+  };
+
   const handleOpenLink = async (url: string) => {
     if (!url) return;
     const supported = await Linking.canOpenURL(url);
@@ -120,7 +148,17 @@ export default function SuppliesDetailModal({
         ) : item ? (
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.detailContainer}>
-              <Image source={{ uri: item.imageUrl }} style={styles.detailImage} />
+              <View style={styles.imageWrapper}>
+                <Image source={{ uri: item.imageUrl }} style={styles.detailImage} />
+                <View style={styles.actionButtonsOverlay}>
+                  <TouchableOpacity style={styles.iconButton} onPress={handleEdit}>
+                    <CustomText style={styles.iconText}>✏️</CustomText>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.iconButton, styles.deleteIconButton]} onPress={handleDelete}>
+                    <CustomText style={styles.iconText}>🗑️</CustomText>
+                  </TouchableOpacity>
+                </View>
+              </View>
               
               <View style={styles.detailHeader}>
                 <View style={{ flex: 1, marginRight: 12 }}>
@@ -198,7 +236,11 @@ export default function SuppliesDetailModal({
         visible={alertConfig.visible}
         title={alertConfig.title}
         message={alertConfig.message}
-        onConfirm={hideAlert}
+        confirmText={alertConfig.confirmText}
+        cancelText={alertConfig.cancelText}
+        onConfirm={alertConfig.onConfirm}
+        onCancel={hideAlert}
+        type={alertConfig.type}
       />
     </>
   );
@@ -213,12 +255,44 @@ const styles = StyleSheet.create({
   detailContainer: {
     paddingBottom: 24,
   },
-  detailImage: {
+  imageWrapper: {
     width: '100%',
     height: 240,
     borderRadius: 24,
     marginBottom: 24,
     backgroundColor: '#f1f5f9',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  detailImage: {
+    width: '100%',
+    height: '100%',
+  },
+  actionButtonsOverlay: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  iconButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  deleteIconButton: {
+    backgroundColor: 'rgba(254, 242, 242, 0.9)',
+  },
+  iconText: {
+    fontSize: 16,
   },
   detailHeader: {
     flexDirection: 'row',

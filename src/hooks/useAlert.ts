@@ -38,6 +38,32 @@ export const useAlert = () => {
     });
   };
 
+  const showConfirmAlert = (
+    title: string, 
+    message: string, 
+    onConfirm: () => void, 
+    onCancel?: () => void,
+    confirmText: string = '확인',
+    cancelText: string = '취소'
+  ) => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      confirmText,
+      cancelText,
+      onConfirm: () => {
+        onConfirm();
+        hideAlert();
+      },
+      onCancel: () => {
+        if (onCancel) onCancel();
+        hideAlert();
+      },
+      type: 'info'
+    });
+  };
+
   const hideAlert = () => {
     setAlertConfig(prev => ({ ...prev, visible: false }));
   };
@@ -46,6 +72,7 @@ export const useAlert = () => {
     alertConfig,
     showAlert,
     showSimpleAlert,
+    showConfirmAlert,
     hideAlert,
   };
 };

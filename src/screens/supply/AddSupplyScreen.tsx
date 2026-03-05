@@ -23,13 +23,16 @@ import { storageService } from '../../services/auth/StorageService';
 import { UserCategoryResponse } from '../../types/PetItem';
 import { useAlert } from '../../hooks/useAlert';
 
-export default function AddSupplyScreen({ navigation }: any) {
+export default function AddSupplyScreen({ navigation, route }: any) {
   const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
-  const [name, setName] = useState('');
-  const [purchaseUrl, setPurchaseUrl] = useState('');
-  const [purchaseCycleDays, setPurchaseCycleDays] = useState(30);
+  const editItem = route.params?.editItem;
+  const isEditMode = !!editItem;
+
+  const [name, setName] = useState(editItem?.name || '');
+  const [purchaseUrl, setPurchaseUrl] = useState(editItem?.purchaseUrl || '');
+  const [purchaseCycleDays, setPurchaseCycleDays] = useState(editItem?.purchaseCycleDays || 30);
   const [selectedCategory, setSelectedCategory] = useState<UserCategoryResponse | null>(null);
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageUri, setImageUri] = useState<string | null>(editItem?.imageUrl || null);
   const [loading, setLoading] = useState(false);
   const [userCategories, setUserCategories] = useState<UserCategoryResponse[]>([]);
   
@@ -45,7 +48,11 @@ export default function AddSupplyScreen({ navigation }: any) {
     try {
       const data = await userCategoryService.getUserCategories('ITEM');
       setUserCategories(data);
-      if (data.length > 0) {
+      
+      if (isEditMode && editItem.category) {
+        const found = data.find(c => c.category === editItem.category);
+        if (found) setSelectedCategory(found);
+      } else if (data.length > 0 && !selectedCategory) {
         setSelectedCategory(data[0]);
       }
     } catch (error) {
@@ -84,25 +91,37 @@ export default function AddSupplyScreen({ navigation }: any) {
         return;
       }
 
-      let imageKey = undefined;
-      if (imageUri) {
+      let imageKey = editItem?.imageUrl?.split('/').pop()?.split('?')[0] || undefined;
+      
+      // 이미지가 변경된 경우만 업로드 (HTTP URL이 아닌 로컬 URI인 경우)
+      if (imageUri && imageUri.startsWith('file://')) {
         const filename = imageUri.split('/').pop() || 'image.jpg';
         const type = `image/${filename.split('.').pop()}`;
         imageKey = await storageService.uploadImage('PET_ITEM_PHOTO', imageUri, filename, type);
       }
 
-      await petItemService.createPetItem({
-        petId: selectedPet.id,
-        name,
-        category: selectedCategory.category,
-        purchaseCycleDays,
-        purchaseUrl: purchaseUrl.trim() || undefined,
-        imageKey,
-      });
-
-      showSimpleAlert('성공', '용품이 등록되었습니다.', () => navigation.goBack());
+      if (isEditMode) {
+        await petItemService.updatePetItem(editItem.petItemId, {
+          name,
+          category: selectedCategory.category,
+          purchaseCycleDays,
+          purchaseUrl: purchaseUrl.trim() || undefined,
+          imageKey,
+        });
+        showSimpleAlert('성공', '용품 정보가 수정되었습니다.', () => navigation.goBack());
+      } else {
+        await petItemService.createPetItem({
+          petId: selectedPet.id,
+          name,
+          category: selectedCategory.category,
+          purchaseCycleDays,
+          purchaseUrl: purchaseUrl.trim() || undefined,
+          imageKey,
+        });
+        showSimpleAlert('성공', '용품이 등록되었습니다.', () => navigation.goBack());
+      }
     } catch (error: any) {
-      showSimpleAlert('오류', error.message || '용품 등록 중 오류가 발생했습니다.');
+      showSimpleAlert('오류', error.message || `용품 ${isEditMode ? '수정' : '등록'} 중 오류가 발생했습니다.`);
     } finally {
       setLoading(false);
     }
@@ -111,7 +130,7 @@ export default function AddSupplyScreen({ navigation }: any) {
   return (
     <Layout edges={['bottom', 'left', 'right']} backgroundColor="#fcfaf2">
       <AddTopBar 
-        title="용품 등록하기" 
+        title={isEditMode ? "용품 수정하기" : "용품 등록하기"} 
         onBack={() => navigation.goBack()} 
       />
 

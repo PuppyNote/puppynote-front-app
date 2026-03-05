@@ -60,6 +60,37 @@ class PetItemService {
   }
 
   /**
+   * 용품 수정 API
+   */
+  public async updatePetItem(petItemId: number, data: {
+    name: string;
+    category: string;
+    purchaseCycleDays: number;
+    purchaseUrl?: string;
+    imageKey?: string;
+  }): Promise<PetItem> {
+    try {
+      const response = await apiService.patch<PetItem>(`/api/v1/pet-items/${petItemId}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update pet item:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 용품 삭제 API
+   */
+  public async deletePetItem(petItemId: number): Promise<void> {
+    try {
+      await apiService.delete(`/api/v1/pet-items/${petItemId}`);
+    } catch (error) {
+      console.error('Failed to delete pet item:', error);
+      throw error;
+    }
+  }
+
+  /**
    * 용품 구매 이력 조회 API
    */
   public async getPurchaseHistory(petItemId: number): Promise<PurchaseHistory[]> {
