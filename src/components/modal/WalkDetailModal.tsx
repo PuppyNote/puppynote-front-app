@@ -11,6 +11,7 @@ interface WalkDetailModalProps {
   visible: boolean;
   walkId: number | null;
   onClose: () => void;
+  onRefresh?: () => void;
 }
 
 const { width } = Dimensions.get('window');
@@ -19,11 +20,13 @@ export default function WalkDetailModal({
   visible,
   walkId,
   onClose,
+  onRefresh,
 }: WalkDetailModalProps) {
   const [detail, setWalkDetail] = useState<WalkDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [fullScreenImage, setFullScreenImage] = useState<string | null>(null);
-  const { alertConfig, showAlert } = useAlert();
+  const { alertConfig, showSimpleAlert, showConfirmAlert, hideAlert } = useAlert();
 
   useEffect(() => {
     if (visible && walkId) {
@@ -40,10 +43,32 @@ export default function WalkDetailModal({
       const data = await walkService.getWalkDetail(walkId);
       setWalkDetail(data);
     } catch (error: any) {
-      showAlert('오류', error.message || '상세 정보를 가져오는데 실패했습니다.');
+      showSimpleAlert('오류', error.message || '상세 정보를 가져오는데 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDelete = () => {
+    showConfirmAlert(
+      '산책 기록 삭제',
+      '정말로 이 산책 기록을 삭제하시겠습니까? 삭제된 기록은 복구할 수 없습니다.',
+      async () => {
+        if (!walkId) return;
+        setIsDeleting(true);
+        try {
+          await walkService.deleteWalk(walkId);
+          showSimpleAlert('성공', '산책 기록이 삭제되었습니다.', () => {
+            if (onRefresh) onRefresh();
+            onClose();
+          });
+        } catch (error: any) {
+          showSimpleAlert('오류', error.message || '삭제 중 오류가 발생했습니다.');
+        } finally {
+          setIsDeleting(false);
+        }
+      }
+    );
   };
 
   const formatTime = (isoString: string) => {
@@ -66,6 +91,25 @@ export default function WalkDetailModal({
         </View>
       ) : detail ? (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          {/* Header with Delete Button */}
+          <View style={styles.headerRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.infoLabel}>장소</Text>
+              <Text style={styles.locationTitle}>{detail.location}</Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.deleteButton} 
+              onPress={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <ActivityIndicator size="small" color="#ef4444" />
+              ) : (
+                <Text style={styles.deleteButtonText}>🗑️ 삭제</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
           {/* Photo Gallery */}
           {detail.photoUrls && detail.photoUrls.length > 0 && (
             <View style={styles.photoSection}>
@@ -84,11 +128,6 @@ export default function WalkDetailModal({
 
           {/* Info Section */}
           <View style={styles.infoSection}>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>장소</Text>
-              <Text style={styles.infoValue}>{detail.location}</Text>
-            </View>
-
             <View style={styles.infoRow}>
               <View style={styles.infoItemFlex}>
                 <Text style={styles.infoLabel}>시작</Text>
@@ -168,7 +207,11 @@ export default function WalkDetailModal({
         visible={alertConfig.visible}
         title={alertConfig.title}
         message={alertConfig.message}
+        confirmText={alertConfig.confirmText}
+        cancelText={alertConfig.cancelText}
         onConfirm={alertConfig.onConfirm}
+        onCancel={hideAlert}
+        type={alertConfig.type}
       />
     </GlobalDetailModal>
   );
@@ -182,6 +225,32 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 20,
+    paddingHorizontal: 4,
+  },
+  locationTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginTop: 4,
+  },
+  deleteButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fee2e2',
+  },
+  deleteButtonText: {
+    fontSize: 12,
+    color: '#ef4444',
+    fontWeight: '600',
   },
   photoSection: {
     marginBottom: 24,
@@ -303,8 +372,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 60,
     right: 24,
-    width: 40,
-    height: 40,
+    width: 40, height: 40,
     borderRadius: 20,
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',

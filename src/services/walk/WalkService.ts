@@ -99,6 +99,17 @@ class WalkService {
       throw new Error(response.message || '산책 기록 저장에 실패했습니다.');
     }
   }
+
+  /**
+   * 산책 이력 삭제 API
+   */
+  public async deleteWalk(walkId: number): Promise<void> {
+    const response = await apiService.delete(`/api/v1/walks/${walkId}`);
+    
+    if (response.statusCode !== 200) {
+      throw new Error(response.message || '산책 기록 삭제에 실패했습니다.');
+    }
+  }
 }
 
 export const walkService = new WalkService();

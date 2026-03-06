@@ -152,6 +152,12 @@ const WalkManagementScreen = ({ navigation }: any) => {
           setIsDetailModalVisible(false);
           setSelectedWalkId(null);
         }}
+        onRefresh={() => {
+          if (selectedPet) {
+            fetchCalendarData(selectedPet.id, selectedDate.getFullYear(), selectedDate.getMonth() + 1);
+            fetchWalkHistory(selectedPet.id, selectedDate);
+          }
+        }}
       />
     </Layout>
   );
