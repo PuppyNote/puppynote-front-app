@@ -5,6 +5,7 @@ import {
   Card,
   Text,
   Badge,
+  PetRegistrationModal,
 } from '../../components';
 import { usePet } from '../../context/PetContext';
 import { petItemService } from '../../services/petItem/PetItemService';
@@ -14,12 +15,13 @@ import { PetItem } from '../../types/PetItem';
 import { calculateDaysDifference } from '../../utils/DateUtil';
 
 export default function HomeScreen({ navigation }: any) {
-  const { selectedPet, isLoadingPet } = usePet();
+  const { selectedPet, isLoadingPet, refreshPets } = usePet();
   const [homeInfo, setHomeInfo] = useState<HomeInfo | null>(null);
   const [urgentSupplies, setUrgentSupplies] = useState<PetItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentTip, setCurrentTip] = useState<string>('');
+  const [isPetModalVisible, setIsPetModalVisible] = useState(false);
 
   const loadHomeData = useCallback(async (petId: number) => {
     try {
@@ -77,6 +79,20 @@ export default function HomeScreen({ navigation }: any) {
     }
   };
 
+  const handlePetCardPress = () => {
+    if (selectedPet) {
+      setIsPetModalVisible(true);
+    }
+  };
+
+  const handlePetUpdateSuccess = async () => {
+    setIsPetModalVisible(false);
+    await refreshPets(); // 전역 펫 목록 갱신 (탭 이름 등)
+    if (selectedPet) {
+      loadHomeData(selectedPet.id); // 현재 화면 데이터 갱신
+    }
+  };
+
   return (
     <Layout edges={['left', 'right']} backgroundColor="#fcfaf2" showPetTab={true}>
       {isLoading && !isRefreshing ? (
@@ -122,72 +138,75 @@ export default function HomeScreen({ navigation }: any) {
             </View>
           ) : (
             <>
-              {/* Status Overview Card */}
-              <Card style={styles.mainCard}>
-                <View style={styles.petInfoRow}>
-                  <View style={styles.petImageContainer}>
-                    <View style={styles.petImagePlaceholder}>
-                      {homeInfo?.petProfileImageUrl ? (
-                        <Image 
-                          source={{ uri: homeInfo.petProfileImageUrl }} 
-                          style={styles.petImage} 
-                        />
-                      ) : (
-                        <Text style={styles.petEmoji}>🐶</Text>
-                      )}
+              {/* Status Overview Card - 클릭 시 수정 팝업 오픈 */}
+              <TouchableOpacity onPress={handlePetCardPress} activeOpacity={0.9}>
+                <Card style={styles.mainCard}>
+                  <View style={styles.petInfoRow}>
+                    <View style={styles.petImageContainer}>
+                      <View style={styles.petImagePlaceholder}>
+                        {homeInfo?.petProfileImageUrl ? (
+                          <Image 
+                            source={{ uri: homeInfo.petProfileImageUrl }} 
+                            style={styles.petImage} 
+                          />
+                        ) : (
+                          <Text style={styles.petEmoji}>🐶</Text>
+                        )}
+                      </View>
                     </View>
-                  </View>
-                  <View style={styles.petStatusInfo}>
-                    <View style={styles.petNameRow}>
-                      <Text style={styles.petNameText}>{homeInfo?.petName || selectedPet?.name}</Text>
-                      {homeInfo?.petAge && <Text style={styles.petAgeText}>{homeInfo.petAge}</Text>}
-                    </View>
-                    <View style={styles.badgeRow}>
-                      {homeInfo?.birthdayDday !== null && (
+                    <View style={styles.petStatusInfo}>
+                      <View style={styles.petNameRow}>
+                        <Text style={styles.petNameText}>{homeInfo?.petName || selectedPet?.name}</Text>
+                        {homeInfo?.petAge && <Text style={styles.petAgeText}>{homeInfo.petAge}</Text>}
+                        <Text style={styles.editHintIcon}>✏️</Text>
+                      </View>
+                      <View style={styles.badgeRow}>
+                        {homeInfo?.birthdayDday !== null && (
+                          <Badge 
+                            label={homeInfo?.birthdayDday === 0 ? '🎂 오늘 생일!' : `🎂 D-${homeInfo?.birthdayDday}`} 
+                            variant="warning" 
+                          />
+                        )}
                         <Badge 
-                          label={homeInfo?.birthdayDday === 0 ? '🎂 오늘 생일!' : `🎂 D-${homeInfo?.birthdayDday}`} 
-                          variant="warning" 
+                          label={homeInfo?.walkedToday ? '오늘 산책 완료' : '산책 대기 중'} 
+                          variant={homeInfo?.walkedToday ? 'success' : 'neutral'} 
                         />
-                      )}
-                      <Badge 
-                        label={homeInfo?.walkedToday ? '오늘 산책 완료' : '산책 대기 중'} 
-                        variant={homeInfo?.walkedToday ? 'success' : 'neutral'} 
-                      />
+                      </View>
                     </View>
                   </View>
-                </View>
-                
-                <View style={styles.divider} />
-                
-                <View style={styles.statsRow}>
-                  <TouchableOpacity 
-                    style={styles.statItem} 
-                    onPress={() => navigation.navigate('Walk')}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.statValue}>{homeInfo?.recentWalkCount ?? 0}</Text>
-                    <Text style={styles.statLabel}>최근 7일</Text>
-                  </TouchableOpacity>
-                  <View style={styles.verticalDivider} />
-                  <TouchableOpacity 
-                    style={styles.statItem} 
-                    onPress={() => navigation.navigate('Walk')}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.statValue}>{homeInfo?.monthlyWalkMinutes ?? 0}</Text>
-                    <Text style={styles.statLabel}>이달의 산책(분)</Text>
-                  </TouchableOpacity>
-                  <View style={styles.verticalDivider} />
-                  <TouchableOpacity 
-                    style={styles.statItem} 
-                    onPress={() => navigation.navigate('Supplies')}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.statValue}>{homeInfo?.petItemCount ?? 0}</Text>
-                    <Text style={styles.statLabel}>관리 용품</Text>
-                  </TouchableOpacity>
-                </View>
-              </Card>
+                  
+                  <View style={styles.divider} />
+                  
+                  <View style={styles.statsRow}>
+                    <TouchableOpacity 
+                      style={styles.statItem} 
+                      onPress={() => navigation.navigate('Walk')}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.statValue}>{homeInfo?.recentWalkCount ?? 0}</Text>
+                      <Text style={styles.statLabel}>최근 7일</Text>
+                    </TouchableOpacity>
+                    <View style={styles.verticalDivider} />
+                    <TouchableOpacity 
+                      style={styles.statItem} 
+                      onPress={() => navigation.navigate('Walk')}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.statValue}>{homeInfo?.monthlyWalkMinutes ?? 0}</Text>
+                      <Text style={styles.statLabel}>이달의 산책(분)</Text>
+                    </TouchableOpacity>
+                    <View style={styles.verticalDivider} />
+                    <TouchableOpacity 
+                      style={styles.statItem} 
+                      onPress={() => navigation.navigate('Supplies')}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.statValue}>{homeInfo?.petItemCount ?? 0}</Text>
+                      <Text style={styles.statLabel}>관리 용품</Text>
+                    </TouchableOpacity>
+                  </View>
+                </Card>
+              </TouchableOpacity>
 
               {/* Walk Status Card */}
               {homeInfo && homeInfo.daysSinceLastWalk !== null && (
@@ -290,11 +309,22 @@ export default function HomeScreen({ navigation }: any) {
           <View style={styles.footerSpacer} />
         </ScrollView>
       )}
+
+      {/* 강아지 정보 수정 모달 */}
+      <PetRegistrationModal 
+        visible={isPetModalVisible}
+        editPetId={selectedPet?.id}
+        onClose={() => setIsPetModalVisible(false)}
+        onSuccess={handlePetUpdateSuccess}
+      />
     </Layout>
   );
 }
 
 const styles = StyleSheet.create({
+  flex1: {
+    flex: 1,
+  },
   center: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -378,7 +408,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
     fontWeight: '600',
   },
-  editIcon: {
+  editHintIcon: {
     fontSize: 12,
     marginLeft: 4,
     opacity: 0.5,

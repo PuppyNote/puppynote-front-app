@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -14,6 +14,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { CustomText as Text } from '../CustomText';
 import { petService } from '../../services/pet/PetService';
+import { homeService } from '../../services/home/HomeService';
 import { storageService } from '../../services/auth/StorageService';
 import DatePickerModal from './DatePickerModal';
 import CustomAlert from './CustomAlert';
@@ -23,41 +24,52 @@ interface PetRegistrationModalProps {
   visible: boolean;
   onSuccess: (petId: number, petName: string) => void;
   onClose?: () => void;
-  petId?: number | null;
-  initialData?: {
-    name: string;
-    birthDate?: string | null;
-    imageUrl?: string | null;
-  } | null;
+  editPetId?: number | null; // HomeScreen에서 editPetId로 전달함
 }
 
 export default function PetRegistrationModal({
   visible,
   onSuccess,
   onClose,
-  petId,
-  initialData,
+  editPetId,
 }: PetRegistrationModalProps) {
   const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [image, setImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDataLoading, setIsDataLoading] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
 
-  const isEditMode = !!petId;
+  const isEditMode = !!editPetId;
+
+  const fetchPetDetail = useCallback(async (petId: number) => {
+    setIsDataLoading(true);
+    try {
+      // homeService의 getHomeInfo를 사용하면 기본 정보를 가져올 수 있습니다.
+      const data = await homeService.getHomeInfo(petId);
+      setName(data.petName || '');
+      setBirthDate(data.birthDate || ''); 
+      setImage(data.petProfileImageUrl || null);
+    } catch (error) {
+      console.error('Failed to fetch pet detail:', error);
+    } finally {
+      setIsDataLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    if (visible && initialData) {
-      setName(initialData.name || '');
-      setBirthDate(initialData.birthDate || '');
-      setImage(initialData.imageUrl || null);
-    } else if (visible && !isEditMode) {
-      setName('');
-      setBirthDate('');
-      setImage(null);
+    if (visible) {
+      if (editPetId) {
+        fetchPetDetail(editPetId);
+      } else {
+        // 등록 모드일 때는 초기화
+        setName('');
+        setBirthDate('');
+        setImage(null);
+      }
     }
-  }, [visible, initialData, isEditMode]);
+  }, [visible, editPetId, fetchPetDetail]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -80,39 +92,34 @@ export default function PetRegistrationModal({
 
     setIsLoading(true);
     try {
-      let uploadedImageUrl = '';
       let imageKey = '';
 
-      // 1. 이미지 업로드 (이미지가 새로 선택되었거나 변경된 경우)
-      if (image && image !== initialData?.imageUrl) {
+      // 이미지 처리 로직
+      if (image && image.startsWith('file://')) {
         const filename = image.split('/').pop() || `pet_${Date.now()}.jpg`;
         const match = /\.(\w+)$/.exec(filename);
         const type = match ? `image/${match[1]}` : `image/jpeg`;
         
-        const response = await storageService.uploadImage('PUPPY_PROFILE', image, filename, type);
-        // 업로드 성공 후 반환된 URL에서 Key값(마지막 파일명) 추출
-        imageKey = response.includes('/') ? response.split('/').pop() || '' : response;
-      } else if (image && initialData?.imageUrl === image) {
-        // 이미지가 기존 이미지 그대로인 경우, URL에서 Key값만 다시 추출하거나 null 처리 (서버 정책에 따라)
-        imageKey = image.split('/').pop() || '';
+        imageKey = await storageService.uploadImage('PUPPY_PROFILE', image, filename, type);
+      } else if (image && image.startsWith('http')) {
+        // 기존 이미지를 그대로 사용하는 경우 URL에서 키 추출
+        imageKey = image.split('/').pop()?.split('?')[0] || '';
       }
 
-      if (isEditMode && petId) {
-        // 2. 펫 수정
-        await petService.updatePet(petId, {
+      if (isEditMode && editPetId) {
+        await petService.updatePet(editPetId, {
           name,
           birthDate: birthDate || null,
           profileImage: imageKey || null,
         });
-        onSuccess(petId, name);
+        showSimpleAlert('성공', '정보가 수정되었습니다.', () => onSuccess(editPetId, name));
       } else {
-        // 2. 펫 등록
         const petData = await petService.registerPet({
           name,
           birthDate: birthDate || undefined,
           profileImage: imageKey || undefined, 
         });
-        onSuccess(petData.petId, petData.petName);
+        showSimpleAlert('성공', '반려동물이 등록되었습니다.', () => onSuccess(petData.petId, petData.petName));
       }
     } catch (error: any) {
       showSimpleAlert('오류', error.message || `${isEditMode ? '수정' : '등록'} 중 오류가 발생했습니다.`);
@@ -129,67 +136,74 @@ export default function PetRegistrationModal({
           style={styles.keyboardView}
         >
           <View style={styles.modalContent}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.modalTitle}>{isEditMode ? '우리 아이 정보 수정' : '우리 아이 등록하기'}</Text>
-              <Text style={styles.modalSubtitle}>
-                {isEditMode ? '수정할 반려동물의 정보를 입력해주세요.' : '함께할 반려동물의 정보를 입력해주세요.'}
-              </Text>
-
-              <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-                {image ? (
-                  <Image source={{ uri: image }} style={styles.previewImage} />
-                ) : (
-                  <View style={styles.imagePlaceholder}>
-                    <Text style={styles.cameraIcon}>📷</Text>
-                    <Text style={styles.imagePickerText}>사진 추가</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>이름 (필수)</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="이름을 입력하세요"
-                  value={name}
-                  onChangeText={setName}
-                />
-
-                <Text style={styles.label}>생년월일</Text>
-                <TouchableOpacity 
-                  style={styles.datePickerButton} 
-                  onPress={() => setIsDatePickerVisible(true)}
-                >
-                  <Text style={[styles.dateText, !birthDate && styles.placeholderText]}>
-                    {birthDate || 'YYYY-MM-DD'}
-                  </Text>
-                  <Text style={styles.calendarIcon}>📅</Text>
-                </TouchableOpacity>
+            {isDataLoading ? (
+              <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+                <ActivityIndicator color="#eebd2b" size="large" />
+                <Text style={{ marginTop: 12, color: '#64748b' }}>정보를 불러오는 중...</Text>
               </View>
+            ) : (
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <Text style={styles.modalTitle}>{isEditMode ? '우리 아이 정보 수정' : '우리 아이 등록하기'}</Text>
+                <Text style={styles.modalSubtitle}>
+                  {isEditMode ? '수정할 반려동물의 정보를 입력해주세요.' : '함께할 반려동물의 정보를 입력해주세요.'}
+                </Text>
 
-              <View style={styles.buttonGroup}>
-                {onClose && (
-                  <TouchableOpacity
-                    style={styles.cancelButton}
-                    onPress={onClose}
-                    disabled={isLoading}
-                  >
-                    <Text style={styles.cancelButtonText}>취소</Text>
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity
-                  style={[styles.submitButton, !name && styles.disabledButton]}
-                  onPress={handleRegister}
-                  disabled={isLoading || !name}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color="#0f172a" />
+                <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+                  {image ? (
+                    <Image source={{ uri: image }} style={styles.previewImage} />
                   ) : (
-                    <Text style={styles.submitButtonText}>{isEditMode ? '수정하기' : '등록하기'}</Text>
+                    <View style={styles.imagePlaceholder}>
+                      <Text style={styles.cameraIcon}>📷</Text>
+                      <Text style={styles.imagePickerText}>사진 추가</Text>
+                    </View>
                   )}
                 </TouchableOpacity>
-              </View>
-            </ScrollView>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>이름 (필수)</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="이름을 입력하세요"
+                    value={name}
+                    onChangeText={setName}
+                  />
+
+                  <Text style={styles.label}>생년월일</Text>
+                  <TouchableOpacity 
+                    style={styles.datePickerButton} 
+                    onPress={() => setIsDatePickerVisible(true)}
+                  >
+                    <Text style={[styles.dateText, !birthDate && styles.placeholderText]}>
+                      {birthDate || 'YYYY-MM-DD'}
+                    </Text>
+                    <Text style={styles.calendarIcon}>📅</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.buttonGroup}>
+                  {onClose && (
+                    <TouchableOpacity
+                      style={styles.cancelButton}
+                      onPress={onClose}
+                      disabled={isLoading}
+                    >
+                      <Text style={styles.cancelButtonText}>취소</Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity
+                    style={[styles.submitButton, !name && styles.disabledButton]}
+                    onPress={handleRegister}
+                    disabled={isLoading || !name}
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator color="#0f172a" />
+                    ) : (
+                      <Text style={styles.submitButtonText}>{isEditMode ? '수정하기' : '등록하기'}</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            )}
           </View>
         </KeyboardAvoidingView>
       </View>
