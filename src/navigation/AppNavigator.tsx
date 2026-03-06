@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useEffect } from 'react';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
@@ -18,9 +18,11 @@ import FamilyManagementScreen from '../screens/setting/FamilyManagementScreen';
 import AlertHistoryScreen from '../screens/notification/AlertHistoryScreen';
 import BottomTab from '../components/tabs/BottomTab';
 import TopBar from '../components/tabs/TopBar';
+import { apiService } from '../services/ApiService';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+export const navigationRef = createNavigationContainerRef();
 
 function TabNavigator() {
   return (
@@ -61,8 +63,21 @@ function TabNavigator() {
 }
 
 export default function AppNavigator() {
+  useEffect(() => {
+    // 401 에러 시 로그인 화면으로 이동하는 리스너 등록
+    apiService.setLogoutListener(() => {
+      if (navigationRef.isReady()) {
+        // @ts-ignore
+        navigationRef.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+      }
+    });
+  }, []);
+
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator 
         initialRouteName="Splash"
         screenOptions={{
@@ -97,4 +112,3 @@ export default function AppNavigator() {
     </NavigationContainer>
   );
 }
-

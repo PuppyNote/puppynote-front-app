@@ -115,6 +115,22 @@ class AuthService {
     
     return response.data;
   }
+
+  // 토큰 재발급 API
+  public async refreshToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+    const response = await apiService.post<{ accessToken: string; refreshToken: string }>('/api/v1/auth/refresh', {
+      refreshToken
+    });
+
+    if (response.statusCode !== 200) {
+      throw new Error(response.message || '토큰 재발급에 실패했습니다.');
+    }
+
+    await storageService.saveAccessToken(response.data.accessToken);
+    await storageService.saveRefreshToken(response.data.refreshToken);
+
+    return response.data;
+  }
 }
 
 export const authService = new AuthService();
