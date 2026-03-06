@@ -6,7 +6,7 @@ interface PetContextType {
   pets: PetSummary[];
   selectedPet: { id: number; name: string } | null;
   setSelectedPet: (pet: { id: number; name: string } | null) => void;
-  updateSelectedPet: (pet: PetSummary) => Promise<void>;
+  updateSelectedPet: (pet: PetSummary | null) => Promise<void>;
   refreshPets: () => Promise<PetSummary[]>;
   isLoadingPet: boolean;
 }

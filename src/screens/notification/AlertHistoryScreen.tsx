@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Layout, Text, CustomAlert } from '../../components';
-import { PagedFlatList } from '../../components/items/PagedFlatList';
+import { Layout, Text, CustomAlert, PagedFlatList } from '../../components';
 import { alertHistoryService, AlertHistory } from '../../services/alertHistory/AlertHistoryService';
 import { familyService } from '../../services/family/FamilyService';
 import { useAlert } from '../../hooks/useAlert';

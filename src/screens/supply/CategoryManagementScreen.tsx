@@ -11,12 +11,15 @@ import {
   Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CustomText as Text } from '../../components/CustomText';
+import { 
+  Layout,
+  Text,
+  AddTopBar,
+  CustomAlert,
+} from '../../components';
 import { petItemService } from '../../services/petItem/PetItemService';
 import { userCategoryService } from '../../services/userCategory/UserCategoryService';
 import { MajorCategory, Category } from '../../types/PetItem';
-import AddTopBar from '../../components/tabs/AddTopBar';
-import CustomAlert from '../../components/modal/CustomAlert';
 import { useAlert } from '../../hooks/useAlert';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {

@@ -16,8 +16,8 @@ import AddWalkScreen from '../screens/walk/AddWalkScreen';
 import SettingScreen from '../screens/setting/SettingScreen';
 import FamilyManagementScreen from '../screens/setting/FamilyManagementScreen';
 import AlertHistoryScreen from '../screens/notification/AlertHistoryScreen';
-import BottomTab from '../components/tabs/BottomTab';
-import TopBar from '../components/tabs/TopBar';
+import BottomTab from '../components/common/item/BottomTab';
+import TopBar from '../components/common/item/TopBar';
 import { apiService } from '../services/ApiService';
 
 const Stack = createNativeStackNavigator();
