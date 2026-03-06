@@ -68,7 +68,7 @@ export default function SettingScreen({ navigation }: any) {
   };
 
   return (
-    <Layout edges={['top', 'left', 'right']} backgroundColor="#fcfaf2">
+    <Layout edges={['top', 'left', 'right', 'bottom']} backgroundColor="#fcfaf2">
       <ScrollView 
         style={styles.container} 
         contentContainerStyle={styles.scrollContent}
@@ -174,15 +174,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   topSection: {
-    paddingTop: 40,
+    paddingTop: 16, // 40에서 16으로 감소
   },
   bottomSection: {
-    marginTop: 40,
+    marginTop: 24, // 40에서 24로 감소
     gap: 16,
   },
   profileSection: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 24, // 40에서 24로 감소
   },
   imageContainer: {
     position: 'relative',
@@ -277,15 +277,18 @@ const styles = StyleSheet.create({
   },
   prettyLogoutButton: {
     backgroundColor: '#fee2e2',
-    paddingVertical: 16,
-    borderRadius: 16,
+    paddingVertical: 10, // 16에서 10으로 감소
+    paddingHorizontal: 24, // 가로 패딩 추가
+    borderRadius: 999, // 둥근 모양으로 변경
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#fecaca',
+    alignSelf: 'center', // 가운데 정렬
+    minWidth: 100, // 최소 너비 설정
   },
   prettyLogoutText: {
-    fontSize: 16,
+    fontSize: 14, // 16에서 14로 감소
     color: '#ef4444',
     fontWeight: 'bold',
   },

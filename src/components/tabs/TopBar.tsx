@@ -79,13 +79,13 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#fcfaf2',
     paddingHorizontal: 24,
-    paddingBottom: 16,
+    paddingBottom: 4, // 16에서 4로 대폭 감소
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 4, // 8에서 4로 감소
   },
   leftContent: {
     flexDirection: 'row',

@@ -4,6 +4,7 @@ export interface PetSummary {
   petId: number;
   petName: string;
   petProfileUrl: string;
+  roleType?: 'OWNER' | 'MEMBER';
 }
 
 export interface PetDetail {
@@ -54,6 +55,17 @@ class PetService {
     
     if (response.statusCode !== 200) {
       throw new Error(response.message || '펫 프로필 수정에 실패했습니다.');
+    }
+  }
+
+  /**
+   * 펫 삭제 API (OWNER만 가능)
+   */
+  public async deletePet(petId: number): Promise<void> {
+    const response = await apiService.delete(`/api/v1/pets/${petId}`);
+    
+    if (response.statusCode !== 200) {
+      throw new Error(response.message || '펫 삭제에 실패했습니다.');
     }
   }
 }

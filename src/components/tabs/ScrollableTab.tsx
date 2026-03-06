@@ -5,6 +5,7 @@ import { CustomText as Text } from '../CustomText';
 export interface TabItem {
   id: string | number;
   label: string;
+  onDeletePress?: () => void;
 }
 
 interface ScrollableTabProps {
@@ -31,24 +32,33 @@ export default function ScrollableTab({
             const isActive = String(tab.id) === String(activeTabId);
             
             return (
-              <TouchableOpacity 
-                key={tab.id.toString()} 
-                style={[
-                  styles.tab, 
-                  isActive && styles.activeTab
-                ]}
-                onPress={() => onTabPress(tab.id)}
-                activeOpacity={0.7}
-              >
-                <Text 
+              <View key={tab.id.toString()} style={styles.tabContainer}>
+                <TouchableOpacity 
                   style={[
-                    styles.tabText, 
-                    isActive ? styles.tabTextActive : styles.tabTextInactive
+                    styles.tab, 
+                    isActive && styles.activeTab
                   ]}
+                  onPress={() => onTabPress(tab.id)}
+                  activeOpacity={0.7}
                 >
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
+                  <Text 
+                    style={[
+                      styles.tabText, 
+                      isActive ? styles.tabTextActive : styles.tabTextInactive
+                    ]}
+                  >
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+                {tab.onDeletePress && (
+                  <TouchableOpacity 
+                    style={styles.deleteButton} 
+                    onPress={tab.onDeletePress}
+                  >
+                    <Text style={styles.deleteText}>×</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             );
           })}
           {onAddPress && (
@@ -70,13 +80,18 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fcfaf2',
     paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 16, // 여유 있는 하단 패딩 추가
+    paddingTop: 0, // 4에서 0으로 제거 (TopBar에 바짝 붙임)
+    paddingBottom: 8, 
   },
   tabRow: {
     flexDirection: 'row',
     gap: 12,
-    paddingBottom: 4, // 그림자가 잘리지 않도록 추가
+    paddingTop: 8, // x 버튼 공간 확보를 위해 row에만 패딩 유지
+    paddingBottom: 4, 
+  },
+  tabContainer: {
+    position: 'relative',
+    marginRight: 8, // 탭 간 간격 및 x 버튼 공간 확보
   },
   tab: {
     paddingHorizontal: 16,
@@ -89,6 +104,27 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#ef4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'white',
+    zIndex: 2,
+  },
+  deleteText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+    lineHeight: 12,
+    textAlign: 'center',
   },
   addButton: {
     paddingHorizontal: 16,
