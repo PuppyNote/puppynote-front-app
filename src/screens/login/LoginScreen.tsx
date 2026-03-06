@@ -8,6 +8,7 @@ import { storageService } from '../../services/auth/StorageService';
 import { petService } from '../../services/pet/PetService';
 import { useAlert } from '../../hooks/useAlert';
 import { useDevice } from '../../context/DeviceContext';
+import { usePet } from '../../context/PetContext';
 
 export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
@@ -17,29 +18,15 @@ export default function LoginScreen({ navigation }: any) {
   const [isPetModalVisible, setIsPetModalVisible] = useState(false);
   const [isInviteModalVisible, setIsInviteModalVisible] = useState(false);
   const { alertConfig, showAlert, showSimpleAlert, hideAlert } = useAlert();
+  const { refreshPets } = usePet();
   
   // Context에서 기기 정보 가져오기
   const { deviceId, fcmToken } = useDevice();
 
   const handleLoginSuccess = async (settingStatus?: string) => {
-    // 펫 조회
-    const pets = await petService.getPets();
-
-    if (pets && pets.length > 0) {
-      await storageService.saveSelectedPet(pets[0].petId, pets[0].petName);
-      navigation.replace('MainTabs');
-    } else {
-      // 잠시 주석 처리: 펫이 없어도 바로 메인으로 이동하도록 변경
-      navigation.replace('MainTabs');
-      /*
-      if (settingStatus === 'INCOMPLETE') {
-        setIsEntryOptionVisible(true);
-      } else {
-        // 혹시 데이터가 꼬였을 경우를 대비한 기본값
-        setIsEntryOptionVisible(true);
-      }
-      */
-    }
+    // 펫 목록 갱신
+    await refreshPets();
+    navigation.replace('MainTabs');
   };
 
   const handleLogin = async () => {
@@ -72,8 +59,17 @@ export default function LoginScreen({ navigation }: any) {
       await handleLoginSuccess(response.settingStatus);
     } catch (error: any) {
       console.log('Kakao Login Error:', error);
+
       if (error.message !== 'Logged out') {
-        showSimpleAlert('오류', '카카오 로그인 중 오류가 발생했습니다.');
+        // 상세 에러 정보를 팝업으로 표시하여 디버깅 용이하게 변경
+        const errorMessage = error.message || '알 수 없는 오류';
+        const errorCode = error.code ? `[${error.code}]` : '';
+        const errorDetail = JSON.stringify(error);
+
+        showSimpleAlert(
+          '카카오 로그인 오류', 
+          `에러: ${errorMessage} ${errorCode}\n\n상세: ${errorDetail.slice(0, 100)}${errorDetail.length > 100 ? '...' : ''}`
+        );
       }
     } finally {
       setIsLoading(false);
