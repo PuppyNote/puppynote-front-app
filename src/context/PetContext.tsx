@@ -24,29 +24,37 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
       setPets(data);
       return data;
     } catch (error) {
-      console.error('Failed to fetch pets in PetContext:', error);
+      console.log('Failed to fetch pets in PetContext (Might not be logged in yet)');
       return [];
     }
   }, []);
 
-  const updateSelectedPet = useCallback(async (pet: PetSummary) => {
+  const updateSelectedPet = useCallback(async (pet: PetSummary | null) => {
+    if (!pet) {
+      setSelectedPetState(null);
+      await storageService.clearSelectedPet();
+      return;
+    }
     const petObj = { id: pet.petId, name: pet.petName };
     setSelectedPetState(petObj);
     await storageService.saveSelectedPet(pet.petId, pet.petName);
   }, []);
 
-  const refreshPets = useCallback(async () => {
-    return await fetchPets();
-  }, [fetchPets]);
-
   const loadSavedPet = useCallback(async () => {
     try {
       setIsLoadingPet(true);
-      const savedPet = await storageService.getSelectedPet();
+      
+      // 토큰 확인 (로그인 여부)
+      const token = await storageService.getAccessToken();
+      if (!token) {
+        setIsLoadingPet(false);
+        return;
+      }
+
       const fetchedPets = await fetchPets();
+      const savedPet = await storageService.getSelectedPet();
       
       if (savedPet) {
-        // 저장된 펫이 현재 펫 목록에 있는지 확인
         const exists = fetchedPets.some(p => p.petId === savedPet.id);
         if (exists) {
           setSelectedPetState(savedPet);
@@ -66,6 +74,20 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     loadSavedPet();
   }, [loadSavedPet]);
+
+  const refreshPets = useCallback(async () => {
+    const token = await storageService.getAccessToken();
+    if (!token) return [];
+    
+    const fetchedPets = await fetchPets();
+    
+    // 현재 선택된 펫이 없고 목록이 있다면 첫 번째 펫을 자동으로 선택
+    if (fetchedPets.length > 0 && !selectedPet) {
+      await updateSelectedPet(fetchedPets[0]);
+    }
+    
+    return fetchedPets;
+  }, [fetchPets, selectedPet, updateSelectedPet]);
 
   return (
     <PetContext.Provider value={{ 
