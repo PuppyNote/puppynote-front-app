@@ -20,8 +20,20 @@ import { formatToLocalDate } from '../../utils/DateUtil';
 export default function AddWalkScreen({ navigation }: any) {
   const today = formatToLocalDate(new Date());
   
-  const [startTime, setStartTime] = useState('09:00');
-  const [endTime, setEndTime] = useState('09:30');
+  // 현재 시간을 5분 단위로 반올림하여 시작/종료 시간 초기값 설정
+  const now = new Date();
+  const roundedNow = new Date(Math.round(now.getTime() / (5 * 60 * 1000)) * (5 * 60 * 1000));
+  
+  const formatTime = (date: Date) => {
+    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+  };
+  
+  const initialStartTime = formatTime(roundedNow);
+  const endPlus20 = new Date(roundedNow.getTime() + 20 * 60000);
+  const initialEndTime = formatTime(endPlus20);
+
+  const [startTime, setStartTime] = useState(initialStartTime);
+  const [endTime, setEndTime] = useState(initialEndTime);
   const [location, setLocation] = useState('');
   const [coords, setCoords] = useState({ latitude: 37.5665, longitude: 126.978 });
   const [memo, setMemo] = useState('');
@@ -29,13 +41,13 @@ export default function AddWalkScreen({ navigation }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [isStartTimeVisible, setIsStartTimeVisible] = useState(false);
   const [isEndTimeVisible, setIsEndTimeVisible] = useState(false);
-  const { alertConfig, showAlert } = useAlert();
+  const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
 
   React.useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        showAlert('알림', '위치 정보 권한이 거부되었습니다. 장소를 직접 입력해주세요.');
+        showSimpleAlert('알림', '위치 정보 권한이 거부되었습니다. 장소를 직접 입력해주세요.');
         return;
       }
 
@@ -68,7 +80,7 @@ export default function AddWalkScreen({ navigation }: any) {
 
   const pickImage = async () => {
     if (images.length >= 5) {
-      showAlert('알림', '사진은 최대 5장까지 등록 가능합니다.');
+      showSimpleAlert('알림', '사진은 최대 5장까지 등록 가능합니다.');
       return;
     }
 
@@ -90,7 +102,7 @@ export default function AddWalkScreen({ navigation }: any) {
 
   const handleSave = async () => {
     if (!location) {
-      showAlert('알림', '산책 장소를 입력해주세요.');
+      showSimpleAlert('알림', '산책 장소를 입력해주세요.');
       return;
     }
 
@@ -98,7 +110,7 @@ export default function AddWalkScreen({ navigation }: any) {
     try {
       const selectedPet = await storageService.getSelectedPet();
       if (!selectedPet) {
-        showAlert('오류', '선택된 펫이 없습니다.');
+        showSimpleAlert('오류', '선택된 펫이 없습니다.');
         return;
       }
 
@@ -125,11 +137,11 @@ export default function AddWalkScreen({ navigation }: any) {
         photoKeys,
       });
 
-      showAlert('성공', '산책 기록이 저장되었습니다.', () => {
+      showSimpleAlert('성공', '산책 기록이 저장되었습니다.', () => {
         navigation.goBack();
       });
     } catch (error: any) {
-      showAlert('오류', error.message || '저장 중 오류가 발생했습니다.');
+      showSimpleAlert('오류', error.message || '저장 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }

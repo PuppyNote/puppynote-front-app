@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 import { Layout, Text, Calendar, FloatingActionButton, AlarmManagementModal, WalkDetailModal } from '../../components';
 import { usePet } from '../../context/PetContext';
 import { walkService, WalkHistory } from '../../services/walk/WalkService';
@@ -35,6 +36,7 @@ const WalkCard = ({ walk, onPress }: { walk: WalkHistory, onPress: (id: number) 
 
 const WalkManagementScreen = ({ navigation }: any) => {
   const { selectedPet, isLoadingPet } = usePet();
+  const isFocused = useIsFocused();
   const [isAlarmModalVisible, setIsAlarmModalVisible] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [selectedWalkId, setSelectedWalkId] = useState<number | null>(null);
@@ -72,13 +74,14 @@ const WalkManagementScreen = ({ navigation }: any) => {
   }, []);
 
   useEffect(() => {
-    if (!isLoadingPet && selectedPet) {
+    if (isFocused && !isLoadingPet && selectedPet) {
       const now = new Date();
-      setSelectedDate(now);
-      fetchCalendarData(selectedPet.id, now.getFullYear(), now.getMonth() + 1);
-      fetchWalkHistory(selectedPet.id, now);
+      // 기존에 선택된 날짜가 오늘이라면 fetchWalkHistory(now) 호출
+      // 다른 날짜라면 해당 날짜로 유지하며 새로고침
+      fetchCalendarData(selectedPet.id, selectedDate.getFullYear(), selectedDate.getMonth() + 1);
+      fetchWalkHistory(selectedPet.id, selectedDate);
     }
-  }, [isLoadingPet, selectedPet?.id, fetchCalendarData, fetchWalkHistory]);
+  }, [isFocused, isLoadingPet, selectedPet?.id, fetchCalendarData, fetchWalkHistory]);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
