@@ -65,9 +65,10 @@ export default function TopBar({ navigation, options, route }: any) {
         {!isAlertHistory && (
           <TouchableOpacity onPress={handleNotificationPress} style={styles.notificationButton}>
             <Image 
-              source={hasNotification ? require('../../../../assets/alarm/alarm-on.png') : require('../../../../assets/alarm/alarm.png')}
+              source={require('../../../../assets/alarm/alarm.png')}
               style={styles.notificationIcon}
             />
+            {hasNotification && <View style={styles.notificationBadge} />}
           </TouchableOpacity>
         )}
       </View>
@@ -127,7 +128,18 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   notificationIcon: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 11,
+    height: 11,
+    borderRadius: 5.5,
+    backgroundColor: '#ef4444', 
+    borderWidth: 2,
+    borderColor: '#fcfaf2', 
   },
 });
