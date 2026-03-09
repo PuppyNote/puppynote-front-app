@@ -8,8 +8,8 @@ export { default as ScrollableTab } from './common/item/ScrollableTab';
 export { default as PetTab } from './common/item/PetTab';
 export { default as Badge } from './common/item/Badge';
 export { default as FloatingActionButton } from './common/item/FloatingActionButton';
-export { default as WheelPicker } from './common/item/WheelPicker';
-export { default as PagedFlatList } from './common/item/PagedFlatList';
+export { WheelPicker } from './common/item/WheelPicker';
+export { PagedFlatList } from './common/item/PagedFlatList';
 
 // Common - Card
 export { default as Card } from './common/card/Card';
