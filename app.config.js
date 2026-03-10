@@ -19,8 +19,9 @@ export default {
       supportsTablet: true,
       bundleIdentifier: "com.puppynote",
       googleServicesFile: "./GoogleService-Info.plist",
+      // iOS에서 Google Maps 설정을 제거하여 Apple Maps가 기본이 되도록 함
       config: {
-        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || ""
+        // googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || ""
       }
     },
     android: {
@@ -28,7 +29,6 @@ export default {
       googleServicesFile: "./google-services.json",
       config: {
         googleMaps: {
-          // 환경 변수가 없을 경우 빈 문자열을 제공하여 에러 방지
           apiKey: process.env.GOOGLE_MAPS_API_KEY || ""
         }
       },
@@ -43,6 +43,8 @@ export default {
       favicon: "./assets/puppynote-icon.png"
     },
     plugins: [
+      // react-native-maps 플러그인을 제거하여 iOS에서 Google Maps 종속성을 빼버림
+      // "react-native-maps", 
       [
         "expo-build-properties",
         {
@@ -57,7 +59,6 @@ export default {
       [
         "@react-native-seoul/kakao-login",
         {
-          // 환경 변수가 없을 경우 빈 문자열을 제공하여 XML 변환 에러 방지
           kakaoAppKey: process.env.KAKAO_NATIVE_APP_KEY || "",
           kotlinVersion: "2.0.21"
         }
