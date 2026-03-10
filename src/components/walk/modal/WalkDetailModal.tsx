@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Modal, TouchableOpacity, ScrollView, Image, ActivityIndicator, Dimensions } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { View, StyleSheet, Modal, TouchableOpacity, ScrollView, Image, ActivityIndicator, Dimensions, Platform } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import { CustomText as Text } from '../../common/item/CustomText';
 import { walkService, WalkDetail } from '../../../services/walk/WalkService';
 import { useAlert } from '../../../hooks/useAlert';
@@ -155,7 +155,7 @@ export default function WalkDetailModal({
               <Text style={styles.infoLabel}>위치 정보</Text>
               <View style={styles.mapContainer}>
                 <MapView
-                  provider={PROVIDER_GOOGLE}
+                  provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
                   style={styles.map}
                   initialRegion={{
                     latitude: detail.latitude,

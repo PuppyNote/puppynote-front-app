@@ -18,7 +18,10 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.puppynote",
-      googleServicesFile: "./GoogleService-Info.plist"
+      googleServicesFile: "./GoogleService-Info.plist",
+      config: {
+        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || ""
+      }
     },
     android: {
       package: "com.puppynote",
@@ -45,6 +48,9 @@ export default {
         {
           android: {
             "extraMavenRepos": ["https://devrepo.kakao.com/nexus/content/groups/public/"]
+          },
+          ios: {
+            "useFrameworks": "static"
           }
         }
       ],
