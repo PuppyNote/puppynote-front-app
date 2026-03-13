@@ -19,7 +19,7 @@ export default {
       supportsTablet: true,
       bundleIdentifier: "com.puppynote",
       googleServicesFile: "./GoogleService-Info.plist",
-      icon: "./assets/puppynote-app-icon.png",
+      icon: "./assets/puppynote-ios-app-icon.png",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false
       },
@@ -38,7 +38,7 @@ export default {
         }
       },
       adaptiveIcon: {
-        foregroundImage: "./assets/puppynote-app-icon.png",
+        foregroundImage: "./assets/puppynote-aos-app-icon.png",
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
