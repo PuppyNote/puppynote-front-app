@@ -4,11 +4,11 @@
     "slug": "puppynote-front-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/puppynote-icon.png",
+    "icon": "./assets/puppynote-app-icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/puppynote-icon.png",
+      "image": "./assets/puppynote-app-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,23 +16,24 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.puppynote",
       "googleServicesFile": "./GoogleService-Info.plist",
-      "icon": "./assets/puppynote-icon.png",
+      "icon": "./assets/puppynote-app-icon.png",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false      
       }
     },
     "android": {
+      "versionCode": 3,
       "package": "com.puppynote",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/puppynote-icon.png",
+        "foregroundImage": "./assets/puppynote-app-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/puppynote-icon.png"
+      "favicon": "./assets/puppynote-app-icon.png"
     },
     "extra": {
       "eas": {
