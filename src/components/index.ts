@@ -47,3 +47,6 @@ export { default as AlertSettingModal } from './setting/modal/AlertSettingModal'
 // Health
 export { default as HealthItem } from './health/item/HealthItem';
 export { default as CategoryTab } from './health/item/CategoryTab';
+
+// Community
+export { default as PostCard } from './community/card/PostCard';
