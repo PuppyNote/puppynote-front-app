@@ -7,11 +7,11 @@ export default {
     scheme: "puppynote",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/puppynote-icon.png",
+    icon: "./assets/puppynote-app-icon.png",
     userInterfaceStyle: "light",
     newArchEnabled: true,
     splash: {
-      image: "./assets/puppynote-icon.png",
+      image: "./assets/puppynote-app-icon.png",
       resizeMode: "contain",
       backgroundColor: "#ffffff"
     },
@@ -19,12 +19,17 @@ export default {
       supportsTablet: true,
       bundleIdentifier: "com.puppynote",
       googleServicesFile: "./GoogleService-Info.plist",
+      icon: "./assets/puppynote-app-icon.png",
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false
+      },
       // iOS에서 Google Maps 설정을 제거하여 Apple Maps가 기본이 되도록 함
       config: {
         // googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || ""
       }
     },
     android: {
+      versionCode: 3,
       package: "com.puppynote",
       googleServicesFile: "./google-services.json",
       config: {
@@ -33,14 +38,14 @@ export default {
         }
       },
       adaptiveIcon: {
-        foregroundImage: "./assets/puppynote-icon.png",
+        foregroundImage: "./assets/puppynote-app-icon.png",
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false
     },
     web: {
-      favicon: "./assets/puppynote-icon.png"
+      favicon: "./assets/puppynote-app-icon.png"
     },
     plugins: [
       // react-native-maps 플러그인을 제거하여 iOS에서 Google Maps 종속성을 빼버림
