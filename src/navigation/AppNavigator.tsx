@@ -98,6 +98,10 @@ export default function AppNavigator() {
         <Stack.Screen 
           name="CommunityDetail" 
           component={CommunityDetailScreen}
+          options={{ 
+            headerShown: true,
+            header: (props) => <TopBar {...props} options={{ headerTitle: '게시물' }} />,
+          }} 
         />
         <Stack.Screen 
           name="AddPost" 

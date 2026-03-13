@@ -42,6 +42,13 @@ class CommunityService {
   async updatePost(postId: number, request: UpdatePostRequest): Promise<ApiResponse<null>> {
     return apiService.patch<null>(`${this.BASE_PATH}/${postId}`, request);
   }
+
+  /**
+   * 게시물 삭제
+   */
+  async deletePost(postId: number): Promise<ApiResponse<null>> {
+    return apiService.delete<null>(`${this.BASE_PATH}/${postId}`);
+  }
 }
 
 export const communityService = new CommunityService();

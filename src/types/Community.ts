@@ -4,6 +4,7 @@ export interface Post {
   userNickname: string;
   userProfileUrl: string;
   content: string;
+  imageKeys: string[];
   imageUrls: string[];
   hashtags: string[];
   createdDate: string;
@@ -25,5 +26,6 @@ export interface CreatePostRequest {
 export interface UpdatePostRequest {
   content: string;
   hashtags?: string[];
-  imageKeys?: string[];
+  addImageKeys?: string[];
+  deleteImageKeys?: string[];
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   StyleSheet, 
@@ -8,8 +8,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Dimensions,
-  Platform,
-  Keyboard
+  Alert
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { 
@@ -20,17 +19,34 @@ import {
 import { communityService } from '../../services/community/CommunityService';
 import { storageService } from '../../services/auth/StorageService';
 import { useAlert } from '../../hooks/useAlert';
+import { Post } from '../../types/Community';
 
 const { width } = Dimensions.get('window');
 
-export default function AddPostScreen({ navigation }: any) {
-  const [content, setContent] = useState('');
-  const [images, setImages] = useState<string[]>([]);
+interface ImageItem {
+  uri: string;
+  key?: string; // S3 key for existing images
+  isNew: boolean;
+}
+
+export default function AddPostScreen({ navigation, route }: any) {
+  const editPost = route.params?.editPost as Post | undefined;
+  const isEditMode = !!editPost;
+
+  const [content, setContent] = useState(editPost?.content || '');
+  const [images, setImages] = useState<ImageItem[]>(
+    editPost?.imageUrls.map((url, i) => ({ 
+      uri: url, 
+      key: editPost.imageKeys[i], 
+      isNew: false 
+    })) || []
+  );
+  const [deletedImageKeys, setDeletedImageKeys] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { showSimpleAlert } = useAlert();
 
   // Hashtag states
-  const [hashtags, setHashtags] = useState<string[]>([]);
+  const [hashtags, setHashtags] = useState<string[]>(editPost?.hashtags || []);
   const [tagInput, setTagInput] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -71,7 +87,6 @@ export default function AddPostScreen({ navigation }: any) {
   };
 
   const handleTagInputChange = (text: string) => {
-    // If user types space, complete the tag
     if (text.endsWith(' ')) {
       addHashtag(text.trim());
     } else {
@@ -93,12 +108,19 @@ export default function AddPostScreen({ navigation }: any) {
     });
 
     if (!result.canceled) {
-      const newUris = result.assets.map(asset => asset.uri);
-      setImages(prev => [...prev, ...newUris]);
+      const newImages = result.assets.map(asset => ({
+        uri: asset.uri,
+        isNew: true
+      }));
+      setImages(prev => [...prev, ...newImages]);
     }
   };
 
   const removeImage = (index: number) => {
+    const target = images[index];
+    if (!target.isNew && target.key) {
+      setDeletedImageKeys(prev => [...prev, target.key!]);
+    }
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -111,25 +133,50 @@ export default function AddPostScreen({ navigation }: any) {
     try {
       setIsLoading(true);
       
-      const imageKeys: string[] = [];
-      for (const uri of images) {
-        const filename = uri.split('/').pop() || `post_${Date.now()}.jpg`;
-        const type = `image/${filename.split('.').pop()}`;
-        const key = await storageService.uploadImage('COMMUNITY_POST', uri, filename, type);
-        imageKeys.push(key);
+      if (isEditMode) {
+        // 1. Upload only NEW images
+        const addImageKeys: string[] = [];
+        for (const img of images) {
+          if (img.isNew) {
+            const filename = img.uri.split('/').pop() || `post_${Date.now()}.jpg`;
+            const type = `image/${filename.split('.').pop()}`;
+            const key = await storageService.uploadImage('COMMUNITY_POST_PHOTO', img.uri, filename, type);
+            addImageKeys.push(key);
+          }
+        }
+
+        await communityService.updatePost(editPost!.postId, {
+          content: content.trim(),
+          hashtags: hashtags,
+          addImageKeys: addImageKeys.length > 0 ? addImageKeys : undefined,
+          deleteImageKeys: deletedImageKeys.length > 0 ? deletedImageKeys : undefined
+        });
+
+        showSimpleAlert('성공', '게시물이 수정되었습니다!', () => {
+          navigation.navigate('CommunityDetail', { postId: editPost!.postId });
+        });
+      } else {
+        // Create Mode
+        const imageKeys: string[] = [];
+        for (const img of images) {
+          const filename = img.uri.split('/').pop() || `post_${Date.now()}.jpg`;
+          const type = `image/${filename.split('.').pop()}`;
+          const key = await storageService.uploadImage('COMMUNITY_POST_PHOTO', img.uri, filename, type);
+          imageKeys.push(key);
+        }
+
+        await communityService.createPost({
+          content: content.trim(),
+          hashtags: hashtags.length > 0 ? hashtags : undefined,
+          imageKeys: imageKeys.length > 0 ? imageKeys : undefined
+        });
+
+        showSimpleAlert('성공', '게시물이 등록되었습니다!', () => {
+          navigation.navigate('MainTabs', { screen: 'Community' });
+        });
       }
-
-      await communityService.createPost({
-        content: content.trim(),
-        hashtags: hashtags.length > 0 ? hashtags : undefined,
-        imageKeys: imageKeys.length > 0 ? imageKeys : undefined
-      });
-
-      showSimpleAlert('성공', '게시물이 등록되었습니다!', () => {
-        navigation.navigate('MainTabs', { screen: 'Community' });
-      });
     } catch (error: any) {
-      showSimpleAlert('오류', error.message || '게시물 등록에 실패했습니다.');
+      showSimpleAlert('오류', error.message || '요청 처리에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -137,7 +184,7 @@ export default function AddPostScreen({ navigation }: any) {
 
   return (
     <Layout edges={['bottom', 'left', 'right']} backgroundColor="#fcfaf2">
-      <AddTopBar title="게시물 작성" onBack={() => navigation.goBack()} />
+      <AddTopBar title={isEditMode ? "게시물 수정" : "게시물 작성"} onBack={() => navigation.goBack()} />
       
       <ScrollView 
         style={styles.flex1} 
@@ -151,9 +198,9 @@ export default function AddPostScreen({ navigation }: any) {
               <Text style={styles.imageCountText}>{images.length}/5</Text>
             </TouchableOpacity>
             
-            {images.map((uri, index) => (
+            {images.map((img, index) => (
               <View key={index} style={styles.imageContainer}>
-                <Image source={{ uri }} style={styles.selectedImage} />
+                <Image source={{ uri: img.uri }} style={styles.selectedImage} />
                 <TouchableOpacity style={styles.removeButton} onPress={() => removeImage(index)}>
                   <Text style={styles.removeButtonText}>✕</Text>
                 </TouchableOpacity>
@@ -174,7 +221,6 @@ export default function AddPostScreen({ navigation }: any) {
           />
         </View>
 
-        {/* Hashtag Section */}
         <View style={styles.hashtagSection}>
           <Text style={styles.label}>해시태그</Text>
           
@@ -205,7 +251,7 @@ export default function AddPostScreen({ navigation }: any) {
             )}
             <TextInput
               style={styles.tagInput}
-              placeholder="해시태그를 입력하세요 (예: 강아지산책)"
+              placeholder="해시태그를 입력하세요"
               placeholderTextColor="#cbd5e1"
               value={tagInput}
               onChangeText={handleTagInputChange}
@@ -214,7 +260,6 @@ export default function AddPostScreen({ navigation }: any) {
               onSubmitEditing={() => addHashtag(tagInput)}
             />
           </View>
-          <Text style={styles.helperText}>공백(띄어쓰기)이나 엔터를 치면 태그가 완성됩니다.</Text>
         </View>
 
         <TouchableOpacity 
@@ -225,7 +270,7 @@ export default function AddPostScreen({ navigation }: any) {
           {isLoading ? (
             <ActivityIndicator color="#0f172a" />
           ) : (
-            <Text style={styles.submitButtonText}>등록하기</Text>
+            <Text style={styles.submitButtonText}>{isEditMode ? "수정하기" : "등록하기"}</Text>
           )}
         </TouchableOpacity>
         
@@ -398,12 +443,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#eebd2b',
     fontWeight: '600',
-  },
-  helperText: {
-    fontSize: 11,
-    color: '#94a3b8',
-    marginTop: 8,
-    marginLeft: 4,
   },
   submitButton: {
     backgroundColor: '#eebd2b',

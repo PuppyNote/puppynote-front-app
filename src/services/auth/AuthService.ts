@@ -8,6 +8,7 @@ export interface UserData {
 }
 
 export interface UserProfile {
+  userId: number;
   email: string;
   nickName: string;
   profileUrl: string | null;

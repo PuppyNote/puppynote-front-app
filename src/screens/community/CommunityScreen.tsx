@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { 
   View, 
   StyleSheet, 
@@ -21,12 +21,24 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
-export default function CommunityScreen({ navigation }: any) {
+export default function CommunityScreen({ navigation, route }: any) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [keyword, setKeyword] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const insets = useSafeAreaInsets();
   const listRef = useRef<any>(null);
+
+  // Handle incoming searchTag from detail screen
+  useEffect(() => {
+    if (route.params?.searchTag) {
+      const tag = route.params.searchTag;
+      setKeyword(tag);
+      setSearchQuery(tag);
+      
+      // Clear params to avoid re-triggering on every focus
+      navigation.setParams({ searchTag: undefined });
+    }
+  }, [route.params?.searchTag]);
 
   const fetchPosts = useCallback(async (page: number) => {
     // page - 1 because API uses 0-based page
