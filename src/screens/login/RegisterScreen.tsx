@@ -160,6 +160,7 @@ export default function RegisterScreen({ navigation }: any) {
             <Image 
               source={require('../../../assets/puppynote-icon.png')}
               style={styles.logoImage}
+              resizeMode="contain"
             />
           </View>
           <Text style={styles.titleText}>회원가입</Text>

@@ -46,6 +46,7 @@ export default function SplashScreen({ navigation }: any) {
           <Image 
             source={require('../../assets/puppynote-icon.png')}
             style={styles.logoImage}
+            resizeMode="contain"
           />
         </View>
         

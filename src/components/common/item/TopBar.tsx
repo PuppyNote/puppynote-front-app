@@ -56,7 +56,7 @@ export default function TopBar({ navigation, options, route }: any) {
               {typeof iconSource === 'string' ? (
                 <Text style={styles.icon}>{iconSource}</Text>
               ) : (
-                <Image source={iconSource} style={{ width: 32, height: 32 }} />
+                <Image source={iconSource} style={{ width: 32, height: 32 }} resizeMode="contain" />
               )}
             </View>
           )}

@@ -105,6 +105,7 @@ export default function LoginScreen({ navigation }: any) {
           <Image
             source={require('../../../assets/puppynote-icon.png')}
             style={styles.logoImage}
+            resizeMode="contain"
           />
         </View>
         <Text style={styles.titleText}>PuppyNote</Text>
