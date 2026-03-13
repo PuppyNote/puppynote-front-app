@@ -18,10 +18,12 @@ export interface PostListResponse {
 
 export interface CreatePostRequest {
   content: string;
+  hashtags?: string[];
   imageKeys?: string[];
 }
 
 export interface UpdatePostRequest {
   content: string;
+  hashtags?: string[];
   imageKeys?: string[];
 }

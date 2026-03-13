@@ -30,6 +30,13 @@ class CommunityService {
   }
 
   /**
+   * 해시태그 자동완성 목록 조회
+   */
+  async getHashtags(keyword: string): Promise<ApiResponse<string[]>> {
+    return apiService.get<string[]>(`${this.BASE_PATH}/hashtags`, { params: { keyword } });
+  }
+
+  /**
    * 게시물 수정
    */
   async updatePost(postId: number, request: UpdatePostRequest): Promise<ApiResponse<null>> {

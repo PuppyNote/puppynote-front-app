@@ -61,7 +61,7 @@ export default function CommunityScreen({ navigation }: any) {
         <View style={styles.searchBar}>
           <TextInput
             style={styles.searchInput}
-            placeholder="해시태그나 내용을 검색해보세요"
+            placeholder="장소를 검색해보세요"
             placeholderTextColor="#94a3b8"
             value={keyword}
             onChangeText={setKeyword}
