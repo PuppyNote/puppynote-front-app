@@ -1,5 +1,4 @@
 import { apiService } from '../ApiService';
-import { deviceService } from './DeviceService';
 import { storageService } from './StorageService';
 
 export interface UserData {

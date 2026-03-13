@@ -20,6 +20,7 @@ import { communityService } from '../../services/community/CommunityService';
 import { authService, UserProfile } from '../../services/auth/AuthService';
 import { Post } from '../../types/Community';
 import { useAlert } from '../../hooks/useAlert';
+import { useIsFocused } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
@@ -29,17 +30,21 @@ export default function CommunityDetailScreen({ route, navigation }: any) {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const { alertConfig, showAlert, showSimpleAlert, hideAlert } = useAlert();
+  const isFocused = useIsFocused();
 
   useEffect(() => {
-    loadData();
-  }, [postId]);
+    if (isFocused) {
+      loadData();
+    }
+  }, [postId, isFocused]);
 
   const loadData = async () => {
     try {
-      setIsLoading(true);
+      // Don't show full loading if we already have data (for smoother refresh)
+      if (!post) setIsLoading(true);
       const [postRes, userProfile] = await Promise.all([
         communityService.getPostById(postId),
-        authService.getProfile().catch(() => null) // Fallback if user profile fails
+        authService.getProfile().catch(() => null)
       ]);
       setPost(postRes.data);
       setCurrentUser(userProfile);
@@ -62,7 +67,10 @@ export default function CommunityDetailScreen({ route, navigation }: any) {
         try {
           await communityService.deletePost(postId);
           showSimpleAlert('성공', '게시물이 삭제되었습니다.', () => {
-            navigation.navigate('MainTabs', { screen: 'Community' });
+            navigation.navigate('MainTabs', { 
+              screen: 'Community', 
+              params: { refresh: true } 
+            });
           });
         } catch (error: any) {
           showSimpleAlert('오류', error.message || '삭제에 실패했습니다.');

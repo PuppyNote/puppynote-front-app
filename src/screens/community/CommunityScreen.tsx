@@ -6,7 +6,8 @@ import {
   TouchableOpacity, 
   Image, 
   FlatList,
-  Dimensions
+  Dimensions,
+  ScrollView
 } from 'react-native';
 import { 
   Layout, 
@@ -18,6 +19,7 @@ import {
 import { communityService } from '../../services/community/CommunityService';
 import { Post } from '../../types/Community';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useIsFocused } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
@@ -25,20 +27,50 @@ export default function CommunityScreen({ navigation, route }: any) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [keyword, setKeyword] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  
   const insets = useSafeAreaInsets();
-  const listRef = useRef<any>(null);
+  const isFocused = useIsFocused();
 
-  // Handle incoming searchTag from detail screen
+  // Hashtag suggestions logic
   useEffect(() => {
-    if (route.params?.searchTag) {
-      const tag = route.params.searchTag;
-      setKeyword(tag);
-      setSearchQuery(tag);
-      
-      // Clear params to avoid re-triggering on every focus
-      navigation.setParams({ searchTag: undefined });
+    const fetchSuggestions = async () => {
+      if (keyword.length > 0) {
+        try {
+          const response = await communityService.getHashtags(keyword);
+          setSuggestions(response.data);
+          setShowSuggestions(response.data.length > 0);
+        } catch (error) {
+          console.error('Failed to fetch hashtags:', error);
+        }
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        setSearchQuery(''); // Clear search when input is empty
+      }
+    };
+
+    const timer = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(timer);
+  }, [keyword]);
+
+  // Handle incoming searchTag or refresh request
+  useEffect(() => {
+    if (isFocused) {
+      if (route.params?.searchTag) {
+        const tag = route.params.searchTag;
+        setKeyword(tag);
+        setSearchQuery(tag);
+        setShowSuggestions(false);
+        navigation.setParams({ searchTag: undefined });
+      } else if (route.params?.refresh) {
+        setRefreshKey(prev => prev + 1);
+        navigation.setParams({ refresh: undefined });
+      }
     }
-  }, [route.params?.searchTag]);
+  }, [isFocused, route.params]);
 
   const fetchPosts = useCallback(async (page: number) => {
     // page - 1 because API uses 0-based page
@@ -49,13 +81,10 @@ export default function CommunityScreen({ navigation, route }: any) {
     };
   }, [searchQuery]);
 
-  const handleSearch = () => {
-    setSearchQuery(keyword);
-  };
-
   const handleHashtagPress = (tag: string) => {
     setKeyword(tag);
     setSearchQuery(tag);
+    setShowSuggestions(false);
   };
 
   const renderPostItem = ({ item }: { item: Post }) => (
@@ -68,7 +97,7 @@ export default function CommunityScreen({ navigation, route }: any) {
 
   return (
     <Layout edges={['left', 'right']} backgroundColor="#fcfaf2">
-      {/* Search Bar Area (Replacing PetTab) */}
+      {/* Search Bar Area */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
           <TextInput
@@ -77,17 +106,38 @@ export default function CommunityScreen({ navigation, route }: any) {
             placeholderTextColor="#94a3b8"
             value={keyword}
             onChangeText={setKeyword}
-            onSubmitEditing={handleSearch}
             returnKeyType="search"
+            onSubmitEditing={() => {
+              setSearchQuery(keyword);
+              setShowSuggestions(false);
+            }}
           />
-          <TouchableOpacity onPress={handleSearch} style={styles.searchButton}>
-            <Text style={styles.searchIcon}>🔍</Text>
-          </TouchableOpacity>
         </View>
+
+        {/* Autocomplete Suggestions Popup */}
+        {showSuggestions && (
+          <View style={styles.suggestionWrapper}>
+            <ScrollView 
+              style={styles.suggestionList} 
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={true}
+            >
+              {suggestions.map((item, index) => (
+                <TouchableOpacity 
+                  key={index} 
+                  style={styles.suggestionItem}
+                  onPress={() => handleHashtagPress(item)}
+                >
+                  <Text style={styles.suggestionText}>#{item}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
       </View>
 
       <PagedFlatList
-        key={searchQuery} // Force re-render/re-fetch on search
+        key={`${searchQuery}-${refreshKey}`}
         data={posts}
         onDataChange={setPosts}
         fetchData={fetchPosts}
@@ -112,6 +162,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fcfaf2',
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
+    zIndex: 100, // Ensure suggestions are on top
   },
   searchBar: {
     flexDirection: 'row',
@@ -132,11 +183,36 @@ const styles = StyleSheet.create({
     color: '#0f172a',
     fontWeight: '500',
   },
-  searchButton: {
-    padding: 4,
+  suggestionWrapper: {
+    position: 'absolute',
+    top: 64, // below search bar
+    left: 24,
+    right: 24,
+    maxHeight: 200,
+    backgroundColor: 'white',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    overflow: 'hidden',
   },
-  searchIcon: {
-    fontSize: 18,
+  suggestionList: {
+    flex: 1,
+  },
+  suggestionItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f8fafc',
+  },
+  suggestionText: {
+    fontSize: 14,
+    color: '#eebd2b',
+    fontWeight: '600',
   },
   listContent: {
     padding: 24,

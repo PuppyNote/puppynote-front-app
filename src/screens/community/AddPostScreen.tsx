@@ -14,7 +14,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { 
   Layout, 
   Text, 
-  AddTopBar 
+  AddTopBar,
+  CustomAlert
 } from '../../components';
 import { communityService } from '../../services/community/CommunityService';
 import { storageService } from '../../services/auth/StorageService';
@@ -43,7 +44,7 @@ export default function AddPostScreen({ navigation, route }: any) {
   );
   const [deletedImageKeys, setDeletedImageKeys] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { showSimpleAlert } = useAlert();
+  const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
 
   // Hashtag states
   const [hashtags, setHashtags] = useState<string[]>(editPost?.hashtags || []);
@@ -140,7 +141,7 @@ export default function AddPostScreen({ navigation, route }: any) {
           if (img.isNew) {
             const filename = img.uri.split('/').pop() || `post_${Date.now()}.jpg`;
             const type = `image/${filename.split('.').pop()}`;
-            const key = await storageService.uploadImage('COMMUNITY_POST_PHOTO', img.uri, filename, type);
+            const key = await storageService.uploadImage('COMMUNITY_POST', img.uri, filename, type);
             addImageKeys.push(key);
           }
         }
@@ -153,7 +154,7 @@ export default function AddPostScreen({ navigation, route }: any) {
         });
 
         showSimpleAlert('성공', '게시물이 수정되었습니다!', () => {
-          navigation.navigate('CommunityDetail', { postId: editPost!.postId });
+          navigation.goBack();
         });
       } else {
         // Create Mode
@@ -161,7 +162,7 @@ export default function AddPostScreen({ navigation, route }: any) {
         for (const img of images) {
           const filename = img.uri.split('/').pop() || `post_${Date.now()}.jpg`;
           const type = `image/${filename.split('.').pop()}`;
-          const key = await storageService.uploadImage('COMMUNITY_POST_PHOTO', img.uri, filename, type);
+          const key = await storageService.uploadImage('COMMUNITY_POST', img.uri, filename, type);
           imageKeys.push(key);
         }
 
@@ -172,7 +173,10 @@ export default function AddPostScreen({ navigation, route }: any) {
         });
 
         showSimpleAlert('성공', '게시물이 등록되었습니다!', () => {
-          navigation.navigate('MainTabs', { screen: 'Community' });
+          navigation.navigate('MainTabs', { 
+            screen: 'Community', 
+            params: { refresh: true } 
+          });
         });
       }
     } catch (error: any) {
@@ -276,6 +280,14 @@ export default function AddPostScreen({ navigation, route }: any) {
         
         <View style={styles.footerSpacer} />
       </ScrollView>
+
+      <CustomAlert 
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onConfirm={alertConfig.onConfirm}
+        onCancel={hideAlert}
+      />
     </Layout>
   );
 }
