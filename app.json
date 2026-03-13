@@ -4,11 +4,11 @@
     "slug": "puppynote-front-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/puppynote-app-icon.png",
+    "icon": "./assets/puppynote-icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/puppynote-app-icon.png",
+      "image": "./assets/puppynote-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -33,7 +33,7 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/puppynote-app-icon.png"
+      "favicon": "./assets/puppynote-icon.png"
     },
     "extra": {
       "eas": {

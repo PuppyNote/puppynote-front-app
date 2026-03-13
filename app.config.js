@@ -7,11 +7,11 @@ export default {
     scheme: "puppynote",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/puppynote-app-icon.png",
+    icon: "./assets/puppynote-icon.png",
     userInterfaceStyle: "light",
     newArchEnabled: true,
     splash: {
-      image: "./assets/puppynote-app-icon.png",
+      image: "./assets/puppynote-icon.png",
       resizeMode: "contain",
       backgroundColor: "#ffffff"
     },
@@ -45,7 +45,7 @@ export default {
       predictiveBackGestureEnabled: false
     },
     web: {
-      favicon: "./assets/puppynote-app-icon.png"
+      favicon: "./assets/puppynote-icon.png"
     },
     plugins: [
       // react-native-maps 플러그인을 제거하여 iOS에서 Google Maps 종속성을 빼버림
