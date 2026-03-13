@@ -15,7 +15,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.puppynote",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "icon": "./assets/puppynote-icon.png",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false      
+      }
     },
     "android": {
       "package": "com.puppynote",
