@@ -4,11 +4,13 @@ import { Layout, Text, CustomAlert, PagedFlatList } from '../../components';
 import { alertHistoryService, AlertHistory } from '../../services/alertHistory/AlertHistoryService';
 import { familyService } from '../../services/family/FamilyService';
 import { useAlert } from '../../hooks/useAlert';
+import { usePet } from '../../context/PetContext';
 
 export default function AlertHistoryScreen({ navigation }: any) {
   const [histories, setHistories] = useState<AlertHistory[]>([]);
   const { alertConfig, showAlert, showSimpleAlert, hideAlert } = useAlert();
   const [isProcessing, setIsProcessing] = useState(false);
+  const { refreshPets } = usePet();
 
   const handleItemClick = async (item: AlertHistory) => {
     // 1. 읽음 처리 (아직 안 읽었을 경우)
@@ -42,8 +44,12 @@ export default function AlertHistoryScreen({ navigation }: any) {
           try {
             setIsProcessing(true);
             await familyService.registerFamily(inviterUserId);
+            
+            // 가족 등록 성공 후 펫 정보 새로고침
+            await refreshPets();
+            
             showSimpleAlert('성공', '가족 등록이 완료되었습니다! 🐾', () => {
-              // 등록 성공 후 메인으로 이동
+              // 등록 성공 및 새로고침 후 메인으로 이동
               navigation.navigate('MainTabs', { screen: 'Home' });
             });
           } catch (error: any) {
