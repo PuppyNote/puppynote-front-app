@@ -171,9 +171,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   walkDay: {
-    backgroundColor: '#f0fdf4',
+    backgroundColor: '#fffbeb',
     borderRadius: 14,
-    color: '#16a34a',
+    color: '#eebd2b',
     fontWeight: 'bold',
     overflow: 'hidden',
   },
@@ -186,6 +186,6 @@ const styles = StyleSheet.create({
   },
   pawIcon: {
     fontSize: 10,
-    color: '#22c55e',
+    color: '#eebd2b',
   },
 });
