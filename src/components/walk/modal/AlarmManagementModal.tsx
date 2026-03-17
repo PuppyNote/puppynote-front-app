@@ -24,7 +24,7 @@ export default function AlarmManagementModal({
   const [alarms, setAlarms] = useState<WalkAlarm[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [petId, setPetId] = useState<number | null>(null);
-  const { alertConfig, showAlert } = useAlert();
+  const { alertConfig, showSimpleAlert } = useAlert();
 
   useEffect(() => {
     if (visible) {
@@ -53,6 +53,11 @@ export default function AlarmManagementModal({
   const handleSaveAlarm = async (data: any) => {
     if (!petId) return;
 
+    if (!data.days || data.days.length === 0) {
+      showSimpleAlert('알림', '최소 하루 이상을 선택해주세요.');
+      return;
+    }
+
     setIsLoading(true);
     try {
       if (editingAlarmId) {
@@ -76,8 +81,9 @@ export default function AlarmManagementModal({
       setAlarms(fetchedAlarms);
       setIsAdding(false);
       setEditingAlarmId(null);
+      showSimpleAlert('성공', '알림이 저장되었습니다.');
     } catch (error: any) {
-      showAlert('오류', error.message || '알람 저장에 실패했습니다.');
+      showSimpleAlert('오류', error.message || '알람 저장에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +107,7 @@ export default function AlarmManagementModal({
         a.alarmId === alarm.alarmId ? { ...a, alarmStatus: newStatus } : a
       ));
     } catch (error: any) {
-      showAlert('오류', error.message || '상태 변경에 실패했습니다.');
+      showSimpleAlert('오류', error.message || '상태 변경에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -112,8 +118,9 @@ export default function AlarmManagementModal({
     try {
       await petWalkAlarmService.deleteWalkAlarm(parseInt(id, 10));
       setAlarms(prev => prev.filter(alarm => alarm.alarmId.toString() !== id));
+      showSimpleAlert('성공', '알림이 삭제되었습니다.');
     } catch (error: any) {
-      showAlert('오류', error.message || '알람 삭제에 실패했습니다.');
+      showSimpleAlert('오류', error.message || '알람 삭제에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }

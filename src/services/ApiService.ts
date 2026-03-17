@@ -100,12 +100,20 @@ class ApiService {
 
         if (error.response) {
           const errorData = error.response.data as any;
+          console.error('API Error Response:', {
+            status: error.response.status,
+            data: errorData,
+            url: config?.url,
+            method: config?.method
+          });
+          
           return Promise.reject({ 
-            message: errorData?.message || '서버 오류가 발생했습니다.',
+            message: errorData?.message || `서버 오류가 발생했습니다. (상태 코드: ${error.response.status})`,
             statusCode: errorData?.statusCode || error.response.status,
             ...errorData
           });
         }
+        console.error('Network or Unknown Error:', error.message);
         return Promise.reject({ message: '네트워크 연결을 확인해주세요.' });
       }
     );
