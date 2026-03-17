@@ -3,41 +3,59 @@ import { View, StyleSheet, TouchableOpacity, Image, ScrollView, TextInput, Activ
 import { useFocusEffect } from '@react-navigation/native';
 import { Layout, Text, Badge, CustomAlert } from '../../components';
 import { familyService, FamilyMember, SearchedUser } from '../../services/family/FamilyService';
+import { authService, UserProfile } from '../../services/auth/AuthService';
+import { usePet } from '../../context/PetContext';
 import { useAlert } from '../../hooks/useAlert';
 
 export default function FamilyManagementScreen() {
-  const { alertConfig, showAlert, showSimpleAlert, hideAlert } = useAlert();
+  const { alertConfig, showAlert, showSimpleAlert, hideAlert, showConfirmAlert } = useAlert();
+  const { selectedPet, isLoadingPet, refreshPets, updateSelectedPet } = usePet();
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [searchEmail, setSearchEmail] = useState('');
   const [searchedUsers, setSearchedUsers] = useState<SearchedUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const loadFamilyMembers = useCallback(async (showLoading = true) => {
+  const loadData = useCallback(async (showLoading = true) => {
+    if (!selectedPet) {
+      setFamilyMembers([]);
+      setIsLoading(false);
+      setIsRefreshing(false);
+      return;
+    }
+
     try {
       if (showLoading) setIsLoading(true);
-      const members = await familyService.getFamilyMembers();
+      const [members, profile] = await Promise.all([
+        familyService.getFamilyMembers(selectedPet.id),
+        authService.getProfile()
+      ]);
       setFamilyMembers(members);
+      setUserProfile(profile);
     } catch (error) {
-      console.error('Failed to load family members:', error);
-      showSimpleAlert('오류', '가족 목록을 불러오는데 실패했습니다.');
+      console.error('Failed to load family data:', error);
+      showSimpleAlert('오류', '데이터를 불러오는데 실패했습니다.');
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [selectedPet]);
 
   useFocusEffect(
     useCallback(() => {
-      loadFamilyMembers(false);
-    }, [loadFamilyMembers])
+      if (!isLoadingPet) {
+        loadData(false);
+      }
+    }, [loadData, isLoadingPet])
   );
 
   const onRefresh = () => {
     setIsRefreshing(true);
-    loadFamilyMembers(false);
+    loadData(false);
   };
 
   const handleSearch = async () => {
@@ -61,19 +79,22 @@ export default function FamilyManagementScreen() {
   };
 
   const handleInvite = (user: SearchedUser) => {
+    if (!selectedPet) return;
+
     showAlert({
       title: '가족 초대',
-      message: `${user.nickName}님을 가족으로 초대하시겠습니까?`,
+      message: `${selectedPet.name}의 가족으로 ${user.nickName}님을 초대하시겠습니까?`,
       confirmText: '초대하기',
       cancelText: '취소',
       onConfirm: async () => {
         hideAlert();
         try {
           setIsInviting(true);
-          await familyService.inviteFamilyMember(user.userId);
+          await familyService.inviteFamilyMember(user.userId, selectedPet.id);
           showSimpleAlert('성공', '초대를 보냈습니다. 상대방이 수락하면 가족으로 등록됩니다.');
           setSearchedUsers([]);
           setSearchEmail('');
+          loadData(false);
         } catch (error) {
           showSimpleAlert('오류', '초대 발송에 실패했습니다.');
         } finally {
@@ -84,29 +105,88 @@ export default function FamilyManagementScreen() {
     });
   };
 
-  const renderFamilyItem = ({ item }: { item: FamilyMember }) => (
-    <View style={styles.memberItem}>
-      <View style={styles.memberImageContainer}>
-        {item.profileUrl ? (
-          <Image source={{ uri: item.profileUrl }} style={styles.memberImage} />
-        ) : (
-          <View style={styles.placeholderImage}>
-            <Text style={styles.placeholderIcon}>👤</Text>
+  const handleDeleteMember = (member: FamilyMember) => {
+    if (!selectedPet) return;
+
+    // 본인은 삭제 불가 (가족 관리 화면이므로)
+    if (member.userId === userProfile?.userId) {
+      showSimpleAlert('알림', '본인은 삭제할 수 없습니다. 서비스 탈퇴는 설정 메뉴를 이용해주세요.');
+      return;
+    }
+
+    let message = '';
+    if (member.role === 'OWNER') {
+      message = `정말로 ${member.nickName}님과의 가족 관계를 끊으시겠습니까?\n이 ${selectedPet.name}에 대한 연결이 모두 끊기게 됩니다.`;
+    } else {
+      message = `정말로 ${member.nickName}님을 가족에서 제외하시겠습니까?\n해당 유저는 ${selectedPet.name}의 정보에 접근할 수 없게 됩니다.`;
+    }
+
+    showConfirmAlert(
+      '가족 관계 삭제',
+      message,
+      async () => {
+        try {
+          setIsProcessing(true);
+          await familyService.deleteFamilyMember(member.userId, selectedPet.id);
+          showSimpleAlert('성공', '가족 관계가 삭제되었습니다.');
+          const updatedPets = await refreshPets(); // 펫 탭 목록 갱신
+          
+          // 현재 펫이 목록에서 사라졌을 경우(내가 FAMILY였는데 나간 경우 등) 첫 번째 펫 자동 선택
+          if (updatedPets && updatedPets.length > 0) {
+            const stillExists = updatedPets.some(p => p.petId === selectedPet.id);
+            if (!stillExists) {
+              await updateSelectedPet(updatedPets[0]);
+            }
+          } else {
+            await updateSelectedPet(null);
+          }
+          
+          loadData(false);
+        } catch (error: any) {
+          showSimpleAlert('오류', error.message || '가족 삭제에 실패했습니다.');
+        } finally {
+          setIsProcessing(false);
+        }
+      }
+    );
+  };
+
+  const renderFamilyItem = ({ item }: { item: FamilyMember }) => {
+    const isMe = item.userId === userProfile?.userId;
+
+    return (
+      <View style={styles.memberItem}>
+        <View style={styles.memberImageContainer}>
+          {item.profileUrl ? (
+            <Image source={{ uri: item.profileUrl }} style={styles.memberImage} />
+          ) : (
+            <View style={styles.placeholderImage}>
+              <Text style={styles.placeholderIcon}>👤</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.memberInfo}>
+          <View style={styles.nameRow}>
+            <Text style={styles.memberName}>{item.nickName}{isMe ? ' (나)' : ''}</Text>
+            <Badge 
+              label={item.role === 'OWNER' ? '주인' : '가족'} 
+              variant={item.role === 'OWNER' ? 'warning' : 'neutral'} 
+            />
           </View>
+          <Text style={styles.memberStatus}>{item.status === 'DONE' ? '등록 완료' : '수락 대기 중'}</Text>
+        </View>
+        {!isMe && (
+          <TouchableOpacity 
+            style={styles.deleteButton} 
+            onPress={() => handleDeleteMember(item)}
+            disabled={isProcessing}
+          >
+            <Text style={styles.deleteButtonText}>✕</Text>
+          </TouchableOpacity>
         )}
       </View>
-      <View style={styles.memberInfo}>
-        <View style={styles.nameRow}>
-          <Text style={styles.memberName}>{item.nickName}</Text>
-          <Badge 
-            label={item.role === 'OWNER' ? '주인' : '가족'} 
-            variant={item.role === 'OWNER' ? 'warning' : 'neutral'} 
-          />
-        </View>
-        <Text style={styles.memberStatus}>{item.status === 'DONE' ? '등록 완료' : '수락 대기 중'}</Text>
-      </View>
-    </View>
-  );
+    );
+  };
 
   const renderSearchedUserItem = ({ item }: { item: SearchedUser }) => (
     <TouchableOpacity 
@@ -134,7 +214,7 @@ export default function FamilyManagementScreen() {
   );
 
   return (
-    <Layout edges={['left', 'right']} backgroundColor="#fcfaf2">
+    <Layout edges={['left', 'right']} backgroundColor="#fcfaf2" showPetTab={true}>
       <View style={styles.container}>
         {/* Search Section */}
         <View style={styles.searchSection}>
@@ -357,6 +437,15 @@ const styles = StyleSheet.create({
   memberStatus: {
     fontSize: 13,
     color: '#64748b',
+  },
+  deleteButton: {
+    padding: 8,
+    marginLeft: 8,
+  },
+  deleteButtonText: {
+    fontSize: 18,
+    color: '#cbd5e1',
+    fontWeight: 'bold',
   },
   emptyContainer: {
     marginTop: 60,

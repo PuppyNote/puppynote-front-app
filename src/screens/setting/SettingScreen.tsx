@@ -3,10 +3,12 @@ import { View, StyleSheet, TouchableOpacity, Image, ScrollView, ActivityIndicato
 import { Layout, Text, CustomAlert, AlertSettingModal, UserProfileModal } from '../../components';
 import { authService, UserProfile } from '../../services/auth/AuthService';
 import { storageService } from '../../services/auth/StorageService';
+import { usePet } from '../../context/PetContext';
 import { useAlert } from '../../hooks/useAlert';
 
 export default function SettingScreen({ navigation }: any) {
   const { alertConfig, showAlert, showSimpleAlert, hideAlert } = useAlert();
+  const { resetPetContext } = usePet();
   const [isAlertSettingModalVisible, setIsAlertSettingModalVisible] = useState(false);
   const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -58,6 +60,7 @@ export default function SettingScreen({ navigation }: any) {
       cancelText: '취소',
       onConfirm: async () => {
         hideAlert();
+        resetPetContext(); // Context 초기화
         await storageService.clearTokens();
         await storageService.clearSelectedPet();
         navigation.replace('Login');

@@ -8,6 +8,7 @@ interface PetContextType {
   setSelectedPet: (pet: { id: number; name: string } | null) => void;
   updateSelectedPet: (pet: PetSummary | null) => Promise<void>;
   refreshPets: () => Promise<PetSummary[]>;
+  resetPetContext: () => void;
   isLoadingPet: boolean;
 }
 
@@ -17,6 +18,12 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
   const [pets, setPets] = useState<PetSummary[]>([]);
   const [selectedPet, setSelectedPetState] = useState<{ id: number; name: string } | null>(null);
   const [isLoadingPet, setIsLoadingPet] = useState(true);
+
+  const resetPetContext = useCallback(() => {
+    setPets([]);
+    setSelectedPetState(null);
+    setIsLoadingPet(false);
+  }, []);
 
   const fetchPets = useCallback(async () => {
     try {
@@ -96,6 +103,7 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
       setSelectedPet: setSelectedPetState, 
       updateSelectedPet,
       refreshPets,
+      resetPetContext,
       isLoadingPet 
     }}>
       {children}
