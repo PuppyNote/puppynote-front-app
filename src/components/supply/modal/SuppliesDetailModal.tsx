@@ -80,6 +80,35 @@ export default function SuppliesDetailModal({
     }
   };
 
+  const handleDeletePurchase = (purchaseId: number) => {
+    showConfirmAlert(
+      '구매 이력 삭제',
+      '이 구매 기록을 삭제하시겠습니까?',
+      async () => {
+        try {
+          setIsSubmitting(true);
+          await petItemService.deletePurchase(purchaseId);
+          
+          // 데이터 다시 불러오기
+          if (petItemId) {
+            const [detailData, historyData] = await Promise.all([
+              petItemService.getPetItemDetail(petItemId),
+              petItemService.getPurchaseHistory(petItemId)
+            ]);
+            setItem(detailData);
+            setPurchaseHistory(historyData);
+          }
+          
+          if (onRefreshList) onRefreshList();
+        } catch (error) {
+          showSimpleAlert('오류', '구매 기록 삭제에 실패했습니다.');
+        } finally {
+          setIsSubmitting(false);
+        }
+      }
+    );
+  };
+
   const handleEdit = () => {
     if (!item) return;
     onClose();
@@ -217,6 +246,12 @@ export default function SuppliesDetailModal({
                       <View style={styles.historyDot} />
                       <CustomText style={styles.historyDate}>{history.purchasedAt}</CustomText>
                       <CustomText style={styles.historyLabel}>구매 완료</CustomText>
+                      <TouchableOpacity 
+                        style={styles.deleteHistoryButton} 
+                        onPress={() => handleDeletePurchase(history.id)}
+                      >
+                        <CustomText style={styles.deleteHistoryText}>✕</CustomText>
+                      </TouchableOpacity>
                     </View>
                   ))
                 ) : (
@@ -395,6 +430,15 @@ const styles = StyleSheet.create({
   historyLabel: {
     fontSize: 13,
     color: '#64748b',
+  },
+  deleteHistoryButton: {
+    padding: 8,
+    marginLeft: 8,
+  },
+  deleteHistoryText: {
+    fontSize: 16,
+    color: '#cbd5e1',
+    fontWeight: 'bold',
   },
   emptyHistory: {
     paddingVertical: 20,
