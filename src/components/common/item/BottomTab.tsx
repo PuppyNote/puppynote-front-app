@@ -1,29 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { storageService } from '../../../services/auth/StorageService';
+import { usePet } from '../../../context/PetContext';
 import CustomAlert from '../modal/CustomAlert';
 import { useAlert } from '../../../hooks/useAlert';
 
 export default function BottomTab({ state, descriptors, navigation }: any) {
-  const [hasPet, setHasPet] = useState(false);
+  const { selectedPet } = usePet();
   const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
-
-  const checkPet = useCallback(async () => {
-    const pet = await storageService.getSelectedPet();
-    setHasPet(!!pet);
-  }, []);
-
-  useEffect(() => {
-    checkPet();
-
-    // 탭 바는 네비게이션 상태 변경 시마다 렌더링되므로, 
-    // 포커스가 변할 때마다 펫 존재 여부를 다시 확인합니다.
-    const unsubscribe = navigation.addListener('state', () => {
-      checkPet();
-    });
-
-    return unsubscribe;
-  }, [navigation, checkPet]);
 
   const getTabIcon = (routeName: string, isFocused: boolean, isDisabled: boolean) => {
     // 비활성화된 경우 흐릿하게 표시하거나 별도 아이콘 처리 가능 (현재는 동일 아이콘 사용)
@@ -60,7 +43,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         const isFocused = state.index === index;
         
         // 산책, 용품 탭은 펫이 없을 때 비활성화
-        const isDisabled = !hasPet && (route.name === 'Walk' || route.name === 'Supplies');
+        const isDisabled = !selectedPet && (route.name === 'Walk' || route.name === 'Supplies');
 
         const onPress = () => {
           if (isDisabled) {

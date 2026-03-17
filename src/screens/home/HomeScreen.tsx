@@ -553,7 +553,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   footerSpacer: {
-    height: 100,
+    height: 120,
   },
   walkSummaryCard: {
     paddingHorizontal: 20,
