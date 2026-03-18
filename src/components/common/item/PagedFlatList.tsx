@@ -51,7 +51,21 @@ export function PagedFlatList<T>({
       if (refreshing) {
         setItems(response.content);
       } else {
-        setItems(prev => [...prev, ...response.content]);
+        setItems(prev => {
+          const combined = [...prev, ...response.content];
+          const keyExtractor = flatListProps.keyExtractor;
+          
+          if (keyExtractor) {
+            const seenKeys = new Set();
+            return combined.filter(item => {
+              const key = keyExtractor(item, 0);
+              if (seenKeys.has(key)) return false;
+              seenKeys.add(key);
+              return true;
+            });
+          }
+          return combined;
+        });
       }
       setTotalPage(response.totalPage);
       setPage(pageNum);
