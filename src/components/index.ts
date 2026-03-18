@@ -1,6 +1,7 @@
 // Common - Item
 export { CustomText as Text } from './common/item/CustomText';
 export { default as Layout } from './common/item/Layout';
+export { PhotoGallery } from './common/item/PhotoGallery';
 export { default as TopBar } from './common/item/TopBar';
 export { default as AddTopBar } from './common/item/AddTopBar';
 export { default as BottomTab } from './common/item/BottomTab';

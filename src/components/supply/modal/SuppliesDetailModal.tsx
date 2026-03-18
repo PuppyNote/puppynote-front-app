@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, ActivityIndicator, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CustomText } from '../../common/item/CustomText';
 import GlobalDetailModal from '../../common/modal/GlobalDetailModal';
 import Badge from '../../common/item/Badge';
+import { PhotoGallery } from '../../common/item/PhotoGallery';
 import { petItemService, PurchaseHistory } from '../../../services/petItem/PetItemService';
 import { PetItem } from '../../../types/PetItem';
 import { calculateDaysDifference } from '../../../utils/DateUtil';
@@ -16,6 +17,8 @@ interface SuppliesDetailModalProps {
   petItemId: number | null;
   onRefreshList?: () => void;
 }
+
+const { width } = Dimensions.get('window');
 
 export default function SuppliesDetailModal({
   visible,
@@ -177,8 +180,13 @@ export default function SuppliesDetailModal({
         ) : item ? (
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.detailContainer}>
-              <View style={styles.imageWrapper}>
-                <Image source={{ uri: item.imageUrl }} style={styles.detailImage} />
+              <View style={styles.imageSection}>
+                <PhotoGallery 
+                  photoUrls={[item.imageUrl]} 
+                  width={width - 48} 
+                  height={width - 48}
+                  borderRadius={24}
+                />
                 <View style={styles.actionButtonsOverlay}>
                   <TouchableOpacity style={styles.iconButton} onPress={handleEdit}>
                     <CustomText style={styles.iconText}>✏️</CustomText>
@@ -290,18 +298,10 @@ const styles = StyleSheet.create({
   detailContainer: {
     paddingBottom: 24,
   },
-  imageWrapper: {
+  imageSection: {
     width: '100%',
-    height: 240,
-    borderRadius: 24,
     marginBottom: 24,
-    backgroundColor: '#f1f5f9',
     position: 'relative',
-    overflow: 'hidden',
-  },
-  detailImage: {
-    width: '100%',
-    height: '100%',
   },
   actionButtonsOverlay: {
     position: 'absolute',

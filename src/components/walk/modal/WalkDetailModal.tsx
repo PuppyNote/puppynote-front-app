@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Modal, TouchableOpacity, ScrollView, Image, ActivityIndicator, Dimensions, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
-import { CustomText as Text } from '../../common/item/CustomText';
+import { Text, PhotoGallery } from '../../index';
 import { walkService, WalkDetail } from '../../../services/walk/WalkService';
 import { useAlert } from '../../../hooks/useAlert';
 import CustomAlert from '../../common/modal/CustomAlert';
@@ -26,13 +27,11 @@ export default function WalkDetailModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [fullScreenImage, setFullScreenImage] = useState<string | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { alertConfig, showSimpleAlert, showConfirmAlert, hideAlert } = useAlert();
 
   useEffect(() => {
     if (visible && walkId) {
       fetchDetail();
-      setCurrentImageIndex(0);
     } else {
       setWalkDetail(null);
     }
@@ -78,15 +77,6 @@ export default function WalkDetailModal({
     return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
   };
 
-  const handleScroll = (event: any) => {
-    const contentOffset = event.nativeEvent.contentOffset.x;
-    const viewSize = event.nativeEvent.layoutMeasurement.width;
-    if (viewSize > 0) {
-      const index = Math.round(contentOffset / viewSize);
-      setCurrentImageIndex(index);
-    }
-  };
-
   if (!visible) return null;
 
   return (
@@ -124,24 +114,10 @@ export default function WalkDetailModal({
           {/* Photo Gallery */}
           {detail.photoUrls && detail.photoUrls.length > 0 && (
             <View style={styles.photoSection}>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false} 
-                pagingEnabled 
-                snapToInterval={width - 48} 
-                decelerationRate="fast"
-                onMomentumScrollEnd={handleScroll}
-                scrollEventThrottle={16}
-              >
-                {detail.photoUrls.map((url, index) => (
-                  <TouchableOpacity key={index} activeOpacity={0.9} onPress={() => setFullScreenImage(url)}>
-                    <Image source={{ uri: url }} style={styles.walkImage} resizeMode="cover" />
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-              <View style={styles.photoCountBadge}>
-                <Text style={styles.photoCountText}>{currentImageIndex + 1}/{detail.photoUrls.length}</Text>
-              </View>
+              <PhotoGallery 
+                photoUrls={detail.photoUrls}
+                onImagePress={(url) => setFullScreenImage(url)}
+              />
             </View>
           )}
 
@@ -208,18 +184,22 @@ export default function WalkDetailModal({
 
       {/* Image Full Screen View */}
       <Modal visible={!!fullScreenImage} transparent animationType="fade">
-        <TouchableOpacity 
-          style={styles.fullScreenOverlay} 
-          activeOpacity={1} 
-          onPress={() => setFullScreenImage(null)}
-        >
-          {fullScreenImage && (
-            <Image source={{ uri: fullScreenImage }} style={styles.fullScreenImage} resizeMode="contain" />
-          )}
+        <View style={styles.fullScreenOverlay}>
+          <ScrollView
+            maximumZoomScale={5}
+            minimumZoomScale={1}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.fullScreenScroll}
+          >
+            {fullScreenImage && (
+              <Image source={{ uri: fullScreenImage }} style={styles.fullScreenImage} resizeMode="contain" />
+            )}
+          </ScrollView>
           <TouchableOpacity style={styles.fullScreenClose} onPress={() => setFullScreenImage(null)}>
             <Text style={styles.fullScreenCloseText}>✕</Text>
           </TouchableOpacity>
-        </TouchableOpacity>
+        </View>
       </Modal>
 
       <CustomAlert 
@@ -274,25 +254,6 @@ const styles = StyleSheet.create({
   photoSection: {
     marginBottom: 24,
     position: 'relative',
-  },
-  walkImage: {
-    width: width - 48,
-    height: 240,
-    borderRadius: 24,
-  },
-  photoCountBadge: {
-    position: 'absolute',
-    bottom: 12,
-    right: 12,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  photoCountText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: 'bold',
   },
   infoSection: {
     gap: 20,

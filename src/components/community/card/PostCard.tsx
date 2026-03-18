@@ -5,14 +5,11 @@ import {
   TouchableOpacity, 
   Image, 
   Dimensions,
-  ScrollView,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
   LayoutAnimation,
   Platform,
   UIManager
 } from 'react-native';
-import { Card, Text } from '../../index';
+import { Card, Text, PhotoGallery } from '../../index';
 import { Post } from '../../../types/Community';
 
 // Enable LayoutAnimation for Android
@@ -32,15 +29,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, onPress, onHashtagPress }: PostCardProps) {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
-  const hasMultipleImages = post.imageUrls && post.imageUrls.length > 1;
-
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const contentOffset = event.nativeEvent.contentOffset.x;
-    const index = Math.round(contentOffset / IMAGE_WIDTH);
-    setCurrentImageIndex(index);
-  };
 
   const toggleExpand = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -60,42 +49,6 @@ export default function PostCard({ post, onPress, onHashtagPress }: PostCardProp
     </View>
   );
 
-  const ImageSection = () => (
-    <View style={styles.imageSection}>
-      {hasMultipleImages ? (
-        <ScrollView 
-          horizontal 
-          pagingEnabled 
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-          decelerationRate="fast"
-        >
-          {post.imageUrls.map((url, index) => (
-            <View key={index}>
-              <Image 
-                source={{ uri: url }} 
-                style={styles.postImage} 
-                resizeMode="cover"
-              />
-            </View>
-          ))}
-        </ScrollView>
-      ) : (
-        <Image 
-          source={{ uri: post.imageUrls[0] }} 
-          style={styles.postImage} 
-          resizeMode="cover"
-        />
-      )}
-      {hasMultipleImages && (
-        <View style={styles.imageBadge}>
-          <Text style={styles.imageBadgeText}>{currentImageIndex + 1}/{post.imageUrls.length}</Text>
-        </View>
-      )}
-    </View>
-  );
-
   return (
     <Card style={styles.postCard}>
       {/* 1. Header & User Info */}
@@ -109,13 +62,15 @@ export default function PostCard({ post, onPress, onHashtagPress }: PostCardProp
 
       {/* 2. Photos */}
       {post.imageUrls && post.imageUrls.length > 0 && (
-        onPress ? (
-          <TouchableOpacity activeOpacity={1} onPress={onPress}>
-            <ImageSection />
-          </TouchableOpacity>
-        ) : (
-          <ImageSection />
-        )
+        <View style={styles.imageSection}>
+          <PhotoGallery 
+            photoUrls={post.imageUrls} 
+            width={IMAGE_WIDTH} 
+            height={IMAGE_WIDTH}
+            borderRadius={16}
+            onImagePress={onPress}
+          />
+        </View>
       )}
 
       {/* 3. Content (Expandable) */}
@@ -179,30 +134,8 @@ const styles = StyleSheet.create({
   },
   imageSection: {
     width: IMAGE_WIDTH,
-    height: IMAGE_WIDTH * 0.7,
+    height: IMAGE_WIDTH,
     marginBottom: 16,
-    position: 'relative',
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  postImage: {
-    width: IMAGE_WIDTH,
-    height: IMAGE_WIDTH * 0.7,
-    backgroundColor: '#f1f5f9',
-  },
-  imageBadge: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  imageBadgeText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: 'bold',
   },
   content: {
     fontSize: 15,

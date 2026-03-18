@@ -14,7 +14,8 @@ import {
   Text, 
   Card,
   Badge,
-  CustomAlert
+  CustomAlert,
+  PhotoGallery
 } from '../../components';
 import { communityService } from '../../services/community/CommunityService';
 import { authService, UserProfile } from '../../services/auth/AuthService';
@@ -127,28 +128,12 @@ export default function CommunityDetailScreen({ route, navigation }: any) {
         </View>
 
         {post.imageUrls && post.imageUrls.length > 0 && (
-          <View style={styles.imageContainer}>
-            <ScrollView 
-              horizontal 
-              pagingEnabled 
-              showsHorizontalScrollIndicator={false}
-              style={styles.imageScroll}
-            >
-              {post.imageUrls.map((url, index) => (
-                <Image 
-                  key={index} 
-                  source={{ uri: url }} 
-                  style={styles.detailImage} 
-                  resizeMode="cover"
-                />
-              ))}
-            </ScrollView>
-            {post.imageUrls.length > 1 && (
-              <View style={styles.imageBadge}>
-                <Text style={styles.imageBadgeText}>1/{post.imageUrls.length}</Text>
-              </View>
-            )}
-          </View>
+          <PhotoGallery 
+            photoUrls={post.imageUrls}
+            width={width}
+            height={width}
+            borderRadius={0}
+          />
         )}
 
         <View style={styles.contentSection}>
@@ -244,32 +229,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#ef4444',
     fontWeight: '600',
-  },
-  imageContainer: {
-    position: 'relative',
-  },
-  imageScroll: {
-    width: width,
-    height: width,
-  },
-  detailImage: {
-    width: width,
-    height: width,
-    backgroundColor: '#f1f5f9',
-  },
-  imageBadge: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  imageBadgeText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: 'bold',
   },
   contentSection: {
     padding: 24,
