@@ -7,10 +7,18 @@ import {
   Dimensions,
   ScrollView,
   NativeSyntheticEvent,
-  NativeScrollEvent
+  NativeScrollEvent,
+  LayoutAnimation,
+  Platform,
+  UIManager
 } from 'react-native';
 import { Card, Text } from '../../index';
 import { Post } from '../../../types/Community';
+
+// Enable LayoutAnimation for Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const { width } = Dimensions.get('window');
 const CARD_MARGIN = 24;
@@ -25,6 +33,7 @@ interface PostCardProps {
 
 export default function PostCard({ post, onPress, onHashtagPress }: PostCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
   const hasMultipleImages = post.imageUrls && post.imageUrls.length > 1;
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -33,66 +42,93 @@ export default function PostCard({ post, onPress, onHashtagPress }: PostCardProp
     setCurrentImageIndex(index);
   };
 
-  return (
-    <Card style={styles.postCard}>
-      {/* 1. Header & User Info (Clickable) */}
-      <TouchableOpacity activeOpacity={0.7} onPress={onPress} style={styles.postHeader}>
-        <Image 
-          source={post.userProfileUrl ? { uri: post.userProfileUrl } : require('../../../../assets/puppynote-icon.png')} 
-          style={styles.profileImage} 
-        />
-        <View style={styles.headerInfo}>
-          <Text style={styles.nickname}>{post.userNickname}</Text>
-          <Text style={styles.date}>{new Date(post.createdDate).toLocaleDateString()}</Text>
-        </View>
-      </TouchableOpacity>
+  const toggleExpand = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIsExpanded(!isExpanded);
+  };
 
-      {/* 2. Photos (Slider) */}
-      {post.imageUrls && post.imageUrls.length > 0 && (
-        <View style={styles.imageSection}>
-          {hasMultipleImages ? (
-            <ScrollView 
-              horizontal 
-              pagingEnabled 
-              showsHorizontalScrollIndicator={false}
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
-              decelerationRate="fast"
-            >
-              {post.imageUrls.map((url, index) => (
-                <TouchableOpacity 
-                  key={index} 
-                  activeOpacity={1} 
-                  onPress={onPress}
-                >
-                  <Image 
-                    source={{ uri: url }} 
-                    style={styles.postImage} 
-                    resizeMode="cover"
-                  />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          ) : (
-            <TouchableOpacity activeOpacity={1} onPress={onPress}>
+  const Header = () => (
+    <View style={styles.postHeader}>
+      <Image 
+        source={post.userProfileUrl ? { uri: post.userProfileUrl } : require('../../../../assets/puppynote-icon.png')} 
+        style={styles.profileImage} 
+      />
+      <View style={styles.headerInfo}>
+        <Text style={styles.nickname}>{post.userNickname}</Text>
+        <Text style={styles.date}>{new Date(post.createdDate).toLocaleDateString()}</Text>
+      </View>
+    </View>
+  );
+
+  const ImageSection = () => (
+    <View style={styles.imageSection}>
+      {hasMultipleImages ? (
+        <ScrollView 
+          horizontal 
+          pagingEnabled 
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          decelerationRate="fast"
+        >
+          {post.imageUrls.map((url, index) => (
+            <View key={index}>
               <Image 
-                source={{ uri: post.imageUrls[0] }} 
+                source={{ uri: url }} 
                 style={styles.postImage} 
                 resizeMode="cover"
               />
-            </TouchableOpacity>
-          )}
-          {hasMultipleImages && (
-            <View style={styles.imageBadge}>
-              <Text style={styles.imageBadgeText}>{currentImageIndex + 1}/{post.imageUrls.length}</Text>
             </View>
-          )}
+          ))}
+        </ScrollView>
+      ) : (
+        <Image 
+          source={{ uri: post.imageUrls[0] }} 
+          style={styles.postImage} 
+          resizeMode="cover"
+        />
+      )}
+      {hasMultipleImages && (
+        <View style={styles.imageBadge}>
+          <Text style={styles.imageBadgeText}>{currentImageIndex + 1}/{post.imageUrls.length}</Text>
         </View>
       )}
+    </View>
+  );
 
-      {/* 3. Content (Clickable) */}
-      <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
-        <Text style={styles.content} numberOfLines={3}>{post.content}</Text>
+  return (
+    <Card style={styles.postCard}>
+      {/* 1. Header & User Info */}
+      {onPress ? (
+        <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
+          <Header />
+        </TouchableOpacity>
+      ) : (
+        <Header />
+      )}
+
+      {/* 2. Photos */}
+      {post.imageUrls && post.imageUrls.length > 0 && (
+        onPress ? (
+          <TouchableOpacity activeOpacity={1} onPress={onPress}>
+            <ImageSection />
+          </TouchableOpacity>
+        ) : (
+          <ImageSection />
+        )
+      )}
+
+      {/* 3. Content (Expandable) */}
+      <TouchableOpacity activeOpacity={0.9} onPress={toggleExpand}>
+        <Text 
+          style={styles.content} 
+          numberOfLines={isExpanded ? undefined : 3}
+        >
+          {post.content}
+        </Text>
+        {post.content.length > 60 && (
+          <Text style={styles.moreText}>{isExpanded ? '접기' : '더보기'}</Text>
+        )}
       </TouchableOpacity>
 
       {/* 4. Hashtags */}
@@ -172,6 +208,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#334155',
     lineHeight: 22,
+    marginBottom: 12,
+  },
+  moreText: {
+    fontSize: 13,
+    color: '#94a3b8',
+    fontWeight: '600',
+    marginTop: -8,
     marginBottom: 12,
   },
   hashtagRow: {

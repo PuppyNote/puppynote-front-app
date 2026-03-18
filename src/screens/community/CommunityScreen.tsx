@@ -107,7 +107,6 @@ export default function CommunityScreen({ navigation, route }: any) {
   const renderPostItem = ({ item }: { item: Post }) => (
     <PostCard 
       post={item} 
-      onPress={() => navigation.navigate('CommunityDetail', { postId: item.postId })} 
       onHashtagPress={handleHashtagPress}
     />
   );
@@ -119,7 +118,7 @@ export default function CommunityScreen({ navigation, route }: any) {
         <View style={styles.searchBar}>
           <TextInput
             style={styles.searchInput}
-            placeholder="장소를 검색해보세요"
+            placeholder="해시태그를 검색해보세요"
             placeholderTextColor="#94a3b8"
             value={keyword}
             onChangeText={(text) => {
