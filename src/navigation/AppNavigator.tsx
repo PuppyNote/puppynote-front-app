@@ -15,6 +15,7 @@ import HealthScreen from '../screens/health/HealthScreen';
 import CommunityScreen from '../screens/community/CommunityScreen';
 import CommunityDetailScreen from '../screens/community/CommunityDetailScreen';
 import AddPostScreen from '../screens/community/AddPostScreen';
+import MyPostsScreen from '../screens/community/MyPostsScreen';
 import AddWalkScreen from '../screens/walk/AddWalkScreen';
 import SettingScreen from '../screens/setting/SettingScreen';
 import FamilyManagementScreen from '../screens/setting/FamilyManagementScreen';
@@ -125,6 +126,13 @@ export default function AppNavigator() {
           options={{ 
             headerShown: true,
             header: (props) => <TopBar {...props} options={{ headerTitle: '알림 내역' }} />,
+          }} 
+        />
+        <Stack.Screen 
+          name="MyPosts" 
+          component={MyPostsScreen} 
+          options={{ 
+            headerShown: false,
           }} 
         />
       </Stack.Navigator>

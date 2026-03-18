@@ -31,12 +31,20 @@ export default function CommunityScreen({ navigation, route }: any) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   
+  const isInternalUpdate = useRef(false);
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
 
   // Hashtag suggestions logic
   useEffect(() => {
     const fetchSuggestions = async () => {
+      // If keyword was set via handleHashtagPress or route params, don't show suggestions
+      if (isInternalUpdate.current) {
+        isInternalUpdate.current = false;
+        setShowSuggestions(false);
+        return;
+      }
+
       if (keyword.length > 0) {
         try {
           const response = await communityService.getHashtags(keyword);
@@ -61,6 +69,7 @@ export default function CommunityScreen({ navigation, route }: any) {
     if (isFocused) {
       if (route.params?.searchTag) {
         const tag = route.params.searchTag;
+        isInternalUpdate.current = true;
         setKeyword(tag);
         setSearchQuery(tag);
         setShowSuggestions(false);
@@ -82,8 +91,16 @@ export default function CommunityScreen({ navigation, route }: any) {
   }, [searchQuery]);
 
   const handleHashtagPress = (tag: string) => {
+    isInternalUpdate.current = true;
     setKeyword(tag);
     setSearchQuery(tag);
+    setShowSuggestions(false);
+  };
+
+  const handleClearSearch = () => {
+    setKeyword('');
+    setSearchQuery('');
+    setSuggestions([]);
     setShowSuggestions(false);
   };
 
@@ -105,13 +122,23 @@ export default function CommunityScreen({ navigation, route }: any) {
             placeholder="장소를 검색해보세요"
             placeholderTextColor="#94a3b8"
             value={keyword}
-            onChangeText={setKeyword}
+            onChangeText={(text) => {
+              isInternalUpdate.current = false;
+              setKeyword(text);
+            }}
             returnKeyType="search"
             onSubmitEditing={() => {
-              setSearchQuery(keyword);
+              isInternalUpdate.current = true;
+              const cleanedKeyword = keyword.trim().replace(/^#/, '');
+              setSearchQuery(cleanedKeyword);
               setShowSuggestions(false);
             }}
           />
+          {keyword.length > 0 && (
+            <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
+              <Text style={styles.clearButtonText}>✕</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Autocomplete Suggestions Popup */}
@@ -135,6 +162,7 @@ export default function CommunityScreen({ navigation, route }: any) {
           </View>
         )}
       </View>
+
 
       <PagedFlatList
         key={`${searchQuery}-${refreshKey}`}
@@ -182,6 +210,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#0f172a',
     fontWeight: '500',
+  },
+  clearButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  clearButtonText: {
+    fontSize: 16,
+    color: '#94a3b8',
+    fontWeight: '600',
   },
   suggestionWrapper: {
     position: 'absolute',

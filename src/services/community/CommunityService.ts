@@ -23,6 +23,13 @@ class CommunityService {
   }
 
   /**
+   * 내가 작성한 게시물 목록 조회
+   */
+  async getMyPosts(page: number = 0, size: number = 20): Promise<ApiResponse<PostListResponse>> {
+    return apiService.get<PostListResponse>(`${this.BASE_PATH}/my`, { params: { page, size } });
+  }
+
+  /**
    * 게시물 단건 조회
    */
   async getPostById(postId: number): Promise<ApiResponse<Post>> {
