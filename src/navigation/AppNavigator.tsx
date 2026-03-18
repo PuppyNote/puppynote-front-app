@@ -20,8 +20,9 @@ import SettingScreen from '../screens/setting/SettingScreen';
 import FamilyManagementScreen from '../screens/setting/FamilyManagementScreen';
 import AlertHistoryScreen from '../screens/notification/AlertHistoryScreen';
 import BottomTab from '../components/common/item/BottomTab';
-import TopBar from '../components/common/item/TopBar';
+import { TopBar } from '../components';
 import { apiService } from '../services/ApiService';
+import { usePet } from '../context/PetContext';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -66,9 +67,12 @@ function TabNavigator() {
 }
 
 export default function AppNavigator() {
+  const { resetPetContext } = usePet();
+
   useEffect(() => {
     // 401 에러 시 로그인 화면으로 이동하는 리스너 등록
     apiService.setLogoutListener(() => {
+      resetPetContext(); // Context 초기화
       if (navigationRef.isReady()) {
         // @ts-ignore
         navigationRef.reset({
@@ -77,7 +81,7 @@ export default function AppNavigator() {
         });
       }
     });
-  }, []);
+  }, [resetPetContext]);
 
   return (
     <NavigationContainer ref={navigationRef}>

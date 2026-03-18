@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   mainContent: {
     paddingHorizontal: 24,
     paddingTop: 12,
-    paddingBottom: 50,
+    paddingBottom: 120,
   },
   card: {
     backgroundColor: 'white',

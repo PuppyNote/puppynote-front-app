@@ -27,39 +27,45 @@ export default function AlertHistoryScreen({ navigation }: any) {
 
     // 2. 가족 초대 처리
     if (item.alertDestinationType === 'FAMILY_INVITE') {
-      const inviterUserId = parseInt(item.alertDestinationInfo);
-      
-      if (isNaN(inviterUserId)) {
-        showSimpleAlert('오류', '잘못된 초대 정보입니다.');
-        return;
-      }
+      try {
+        const inviteInfo = JSON.parse(item.alertDestinationInfo);
+        const { userId, petId } = inviteInfo;
+        
+        if (!userId || !petId) {
+          showSimpleAlert('오류', '잘못된 초대 정보입니다.');
+          return;
+        }
 
-      showAlert({
-        title: '가족 초대 수락',
-        message: '가족 초대를 수락하시겠습니까?\n수락하면 상대방의 반려동물을 함께 관리할 수 있습니다.',
-        confirmText: '수락하기',
-        cancelText: '취소',
-        onConfirm: async () => {
-          hideAlert();
-          try {
-            setIsProcessing(true);
-            await familyService.registerFamily(inviterUserId);
-            
-            // 가족 등록 성공 후 펫 정보 새로고침
-            await refreshPets();
-            
-            showSimpleAlert('성공', '가족 등록이 완료되었습니다! 🐾', () => {
-              // 등록 성공 및 새로고침 후 메인으로 이동
-              navigation.navigate('MainTabs', { screen: 'Home' });
-            });
-          } catch (error: any) {
-            showSimpleAlert('오류', error.message || '가족 등록에 실패했습니다.');
-          } finally {
-            setIsProcessing(false);
-          }
-        },
-        onCancel: hideAlert,
-      });
+        showAlert({
+          title: '가족 초대 수락',
+          message: '가족 초대를 수락하시겠습니까?\n수락하면 해당 반려동물을 함께 관리할 수 있습니다.',
+          confirmText: '수락하기',
+          cancelText: '취소',
+          onConfirm: async () => {
+            hideAlert();
+            try {
+              setIsProcessing(true);
+              await familyService.registerFamily(userId, petId);
+              
+              // 가족 등록 성공 후 펫 정보 새로고침
+              await refreshPets();
+              
+              showSimpleAlert('성공', '가족 등록이 완료되었습니다! 🐾', () => {
+                // 등록 성공 및 새로고침 후 메인으로 이동
+                navigation.navigate('MainTabs', { screen: 'Home' });
+              });
+            } catch (error: any) {
+              showSimpleAlert('오류', error.message || '가족 등록에 실패했습니다.');
+            } finally {
+              setIsProcessing(false);
+            }
+          },
+          onCancel: hideAlert,
+        });
+      } catch (e) {
+        console.error('Failed to parse invite info:', e);
+        showSimpleAlert('오류', '초대 정보를 읽어오는데 실패했습니다.');
+      }
     }
   };
 

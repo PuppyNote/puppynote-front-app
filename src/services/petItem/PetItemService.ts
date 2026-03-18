@@ -117,6 +117,18 @@ class PetItemService {
       throw error;
     }
   }
+
+  /**
+   * 용품 구매 이력 삭제 API
+   */
+  public async deletePurchase(purchaseId: number): Promise<void> {
+    try {
+      await apiService.delete(`/api/v1/pet-items/purchases/${purchaseId}`);
+    } catch (error) {
+      console.error('Failed to delete purchase history:', error);
+      throw error;
+    }
+  }
 }
 
 export const petItemService = new PetItemService();

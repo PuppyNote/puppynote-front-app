@@ -126,21 +126,25 @@ export default function AddWalkScreen({ navigation }: any) {
       }
 
       // 2. 산책 기록 저장
-      await walkService.saveWalk({
+      const walkData = {
         petId: selectedPet.id,
         startTime: `${today}T${startTime}:00`,
         endTime: `${today}T${endTime}:00`,
-        latitude: coords.latitude,
-        longitude: coords.longitude,
+        latitude: parseFloat(coords.latitude.toFixed(6)),
+        longitude: parseFloat(coords.longitude.toFixed(6)),
         location,
         memo,
         photoKeys,
-      });
+      };
+
+      console.log('Saving walk record:', JSON.stringify(walkData, null, 2));
+      await walkService.saveWalk(walkData);
 
       showSimpleAlert('성공', '산책 기록이 저장되었습니다.', () => {
         navigation.goBack();
       });
     } catch (error: any) {
+      console.error('Error saving walk record:', error);
       showSimpleAlert('오류', error.message || '저장 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
