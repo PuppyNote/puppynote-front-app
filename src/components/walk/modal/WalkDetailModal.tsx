@@ -26,11 +26,13 @@ export default function WalkDetailModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [fullScreenImage, setFullScreenImage] = useState<string | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { alertConfig, showSimpleAlert, showConfirmAlert, hideAlert } = useAlert();
 
   useEffect(() => {
     if (visible && walkId) {
       fetchDetail();
+      setCurrentImageIndex(0);
     } else {
       setWalkDetail(null);
     }
@@ -76,6 +78,15 @@ export default function WalkDetailModal({
     return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
   };
 
+  const handleScroll = (event: any) => {
+    const contentOffset = event.nativeEvent.contentOffset.x;
+    const viewSize = event.nativeEvent.layoutMeasurement.width;
+    if (viewSize > 0) {
+      const index = Math.round(contentOffset / viewSize);
+      setCurrentImageIndex(index);
+    }
+  };
+
   if (!visible) return null;
 
   return (
@@ -113,7 +124,15 @@ export default function WalkDetailModal({
           {/* Photo Gallery */}
           {detail.photoUrls && detail.photoUrls.length > 0 && (
             <View style={styles.photoSection}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} pagingEnabled snapToInterval={width - 48} decelerationRate="fast">
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false} 
+                pagingEnabled 
+                snapToInterval={width - 48} 
+                decelerationRate="fast"
+                onMomentumScrollEnd={handleScroll}
+                scrollEventThrottle={16}
+              >
                 {detail.photoUrls.map((url, index) => (
                   <TouchableOpacity key={index} activeOpacity={0.9} onPress={() => setFullScreenImage(url)}>
                     <Image source={{ uri: url }} style={styles.walkImage} resizeMode="cover" />
@@ -121,7 +140,7 @@ export default function WalkDetailModal({
                 ))}
               </ScrollView>
               <View style={styles.photoCountBadge}>
-                <Text style={styles.photoCountText}>1/{detail.photoUrls.length}</Text>
+                <Text style={styles.photoCountText}>{currentImageIndex + 1}/{detail.photoUrls.length}</Text>
               </View>
             </View>
           )}
