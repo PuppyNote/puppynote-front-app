@@ -39,6 +39,12 @@ export default function SettingScreen({ navigation }: any) {
       onPress: () => setIsProfileModalVisible(true)
     },
     {
+      id: 'myPosts',
+      title: '내 게시물',
+      icon: '📝',
+      onPress: () => navigation.navigate('MyPosts')
+    },
+    {
       id: 'family',
       title: '가족 관리',
       icon: '👨‍👩‍👧‍👦',

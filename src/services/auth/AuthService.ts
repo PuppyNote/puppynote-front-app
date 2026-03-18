@@ -1,5 +1,4 @@
 import { apiService } from '../ApiService';
-import { deviceService } from './DeviceService';
 import { storageService } from './StorageService';
 
 export interface UserData {
@@ -8,6 +7,7 @@ export interface UserData {
 }
 
 export interface UserProfile {
+  userId: number;
   email: string;
   nickName: string;
   profileUrl: string | null;

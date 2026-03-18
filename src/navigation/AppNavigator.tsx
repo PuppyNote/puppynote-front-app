@@ -12,6 +12,10 @@ import SuppliesScreen from '../screens/supply/SuppliesScreen';
 import AddSupplyScreen from '../screens/supply/AddSupplyScreen';
 import CategoryManagementScreen from '../screens/supply/CategoryManagementScreen';
 import HealthScreen from '../screens/health/HealthScreen';
+import CommunityScreen from '../screens/community/CommunityScreen';
+import CommunityDetailScreen from '../screens/community/CommunityDetailScreen';
+import AddPostScreen from '../screens/community/AddPostScreen';
+import MyPostsScreen from '../screens/community/MyPostsScreen';
 import AddWalkScreen from '../screens/walk/AddWalkScreen';
 import SettingScreen from '../screens/setting/SettingScreen';
 import FamilyManagementScreen from '../screens/setting/FamilyManagementScreen';
@@ -49,11 +53,11 @@ function TabNavigator() {
         component={SuppliesScreen} 
         options={{ headerTitle: 'PuppyNote' }}
       />
-      {/* <Tab.Screen 
-        name="Health" 
-        component={HealthScreen} 
+      <Tab.Screen 
+        name="Community" 
+        component={CommunityScreen} 
         options={{ headerTitle: 'PuppyNote' }}
-      /> */}
+      />
       <Tab.Screen 
         name="Settings" 
         component={SettingScreen} 
@@ -97,6 +101,18 @@ export default function AppNavigator() {
         <Stack.Screen name="AddSupply" component={AddSupplyScreen} />
         <Stack.Screen name="CategoryManagement" component={CategoryManagementScreen} />
         <Stack.Screen 
+          name="CommunityDetail" 
+          component={CommunityDetailScreen}
+          options={{ 
+            headerShown: true,
+            header: (props) => <TopBar {...props} options={{ headerTitle: '게시물' }} />,
+          }} 
+        />
+        <Stack.Screen 
+          name="AddPost" 
+          component={AddPostScreen}
+        />
+        <Stack.Screen 
           name="FamilyManagement" 
           component={FamilyManagementScreen} 
           options={{ 
@@ -110,6 +126,13 @@ export default function AppNavigator() {
           options={{ 
             headerShown: true,
             header: (props) => <TopBar {...props} options={{ headerTitle: '알림 내역' }} />,
+          }} 
+        />
+        <Stack.Screen 
+          name="MyPosts" 
+          component={MyPostsScreen} 
+          options={{ 
+            headerShown: false,
           }} 
         />
       </Stack.Navigator>

@@ -23,10 +23,10 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         return isFocused 
           ? require('../../../../assets/bottomTab/supply-click.png') 
           : require('../../../../assets/bottomTab/supply.png');
-      case 'Health':
+      case 'Community':
         return isFocused 
-          ? require('../../../../assets/bottomTab/health-click.png') 
-          : require('../../../../assets/bottomTab/health.png');
+          ? require('../../../../assets/bottomTab/community-click.png') 
+          : require('../../../../assets/bottomTab/community.png');
       case 'Settings':
         return isFocused 
           ? require('../../../../assets/bottomTab/setting-click.png') 
