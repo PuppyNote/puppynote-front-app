@@ -40,7 +40,13 @@ export default function LoginScreen({ navigation }: any) {
       const response = await authService.login(email, deviceId, fcmToken, password);
       await handleLoginSuccess(response.settingStatus);
     } catch (error: any) {
-      showSimpleAlert('오류', error.message || '로그인에 실패했습니다.');
+      if (error.message === 'KAKAO') {
+        showSimpleAlert('알림', '카카오로 이미 가입된 계정입니다.');
+      } else if (error.message === 'NORMAL') {
+        showSimpleAlert('알림', '일반 회원가입이 되어있는 계정입니다.');
+      } else {
+        showSimpleAlert('오류', error.message || '로그인에 실패했습니다.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -60,7 +66,11 @@ export default function LoginScreen({ navigation }: any) {
     } catch (error: any) {
       console.log('Kakao Login Error:', error);
 
-      if (error.message !== 'Logged out') {
+      if (error.message === 'KAKAO') {
+        showSimpleAlert('알림', '카카오로 이미 가입된 계정입니다.');
+      } else if (error.message === 'NORMAL') {
+        showSimpleAlert('알림', '일반 회원가입이 되어있는 계정입니다.');
+      } else if (error.message !== 'Logged out') {
         // 상세 에러 정보를 팝업으로 표시하여 디버깅 용이하게 변경
         const errorMessage = error.message || '알 수 없는 오류';
         const errorCode = error.code ? `[${error.code}]` : '';
@@ -176,6 +186,13 @@ export default function LoginScreen({ navigation }: any) {
           <Text style={styles.signupLink}>회원가입</Text>
         </TouchableOpacity>
       </View>
+
+      <TouchableOpacity 
+        style={styles.forgotPasswordContainer} 
+        onPress={() => navigation.navigate('PasswordReset')}
+      >
+        <Text style={styles.forgotPasswordText}>비밀번호를 잊으셨나요?</Text>
+      </TouchableOpacity>
 
       <CustomAlert
         visible={alertConfig.visible}
@@ -329,5 +346,14 @@ const styles = StyleSheet.create({
   signupLink: {
     color: '#eebd2b',
     fontWeight: 'bold',
+  },
+  forgotPasswordContainer: {
+    marginTop: 16,
+  },
+  forgotPasswordText: {
+    fontSize: 13,
+    color: '#94a3b8',
+    fontWeight: '500',
+    textDecorationLine: 'underline',
   },
 });

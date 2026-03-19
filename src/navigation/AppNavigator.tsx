@@ -6,6 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/login/LoginScreen';
 import RegisterScreen from '../screens/login/RegisterScreen';
+import PasswordResetScreen from '../screens/login/PasswordResetScreen';
 import HomeScreen from '../screens/home/HomeScreen';
 import WalkManagementScreen from '../screens/walk/WalkManagement';
 import SuppliesScreen from '../screens/supply/SuppliesScreen';
@@ -95,6 +96,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="PasswordReset" component={PasswordResetScreen} />
         <Stack.Screen name="MainTabs" component={TabNavigator} />
         <Stack.Screen name="Walks" component={WalkManagementScreen} />
         <Stack.Screen name="AddWalk" component={AddWalkScreen} />

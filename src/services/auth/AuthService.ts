@@ -67,6 +67,29 @@ class AuthService {
     return response.data;
   }
 
+  // 비밀번호 재설정 인증번호 발송 API
+  public async sendPasswordResetVerification(email: string): Promise<string> {
+    const response = await apiService.post<string>('/api/v1/auth/password/email/send', { email });
+    
+    if (response.statusCode !== 200) {
+      throw new Error(response.message || '인증번호 발송에 실패했습니다.');
+    }
+    
+    return response.data;
+  }
+
+  // 비밀번호 재설정 API
+  public async resetPassword(email: string, newPassword: string): Promise<void> {
+    const response = await apiService.post<null>('/api/v1/auth/password/reset', {
+      email,
+      newPassword
+    });
+
+    if (response.statusCode !== 200) {
+      throw new Error(response.message || '비밀번호 재설정에 실패했습니다.');
+    }
+  }
+
   // 회원가입 API
   public async register(data: RegisterRequest): Promise<UserData> {
     const response = await apiService.post<UserData>('/api/v1/user/signup', data);
