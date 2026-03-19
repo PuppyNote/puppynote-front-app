@@ -263,6 +263,7 @@ export default function AddPostScreen({ navigation, route }: any) {
               autoCorrect={false}
               onSubmitEditing={() => addHashtag(tagInput)}
             />
+            <Text style={styles.tagHelperText}>* 띄어쓰기를 하면 해시태그가 추가됩니다.</Text>
           </View>
         </View>
 
@@ -427,6 +428,13 @@ const styles = StyleSheet.create({
     borderColor: '#f1f5f9',
     fontSize: 14,
     color: '#334155',
+  },
+  tagHelperText: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginTop: 8,
+    marginLeft: 4,
+    fontWeight: '500',
   },
   suggestionPopup: {
     position: 'absolute',
