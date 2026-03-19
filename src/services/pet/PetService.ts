@@ -18,6 +18,7 @@ export interface RegisterPetRequest {
   birthDate?: string;
   weight?: number;
   profileImage?: string;
+  registrationNumber?: string;
 }
 
 class PetService {
@@ -50,6 +51,7 @@ class PetService {
     name: string;
     birthDate?: string | null;
     profileImage?: string | null;
+    registrationNumber?: string | null;
   }): Promise<void> {
     const response = await apiService.patch(`/api/v1/pets/${petId}`, data);
     

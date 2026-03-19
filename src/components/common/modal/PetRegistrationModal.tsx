@@ -35,6 +35,7 @@ export default function PetRegistrationModal({
 }: PetRegistrationModalProps) {
   const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [registrationNumber, setRegistrationNumber] = useState('');
   const [image, setImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(false);
@@ -50,6 +51,7 @@ export default function PetRegistrationModal({
       const data = await homeService.getHomeInfo(petId);
       setName(data.petName || '');
       setBirthDate(data.birthDate || ''); 
+      setRegistrationNumber(data.registrationNumber || '');
       setImage(data.petProfileImageUrl || null);
     } catch (error) {
       console.error('Failed to fetch pet detail:', error);
@@ -66,6 +68,7 @@ export default function PetRegistrationModal({
         // 등록 모드일 때는 초기화
         setName('');
         setBirthDate('');
+        setRegistrationNumber('');
         setImage(null);
       }
     }
@@ -111,6 +114,7 @@ export default function PetRegistrationModal({
           name,
           birthDate: birthDate || null,
           profileImage: imageKey || null,
+          registrationNumber: registrationNumber || null,
         });
         showSimpleAlert('성공', '정보가 수정되었습니다.', () => onSuccess(editPetId, name));
       } else {
@@ -118,6 +122,7 @@ export default function PetRegistrationModal({
           name,
           birthDate: birthDate || undefined,
           profileImage: imageKey || undefined, 
+          registrationNumber: registrationNumber || undefined,
         });
         showSimpleAlert('성공', '반려동물이 등록되었습니다.', () => onSuccess(petData.petId, petData.petName));
       }
@@ -179,6 +184,15 @@ export default function PetRegistrationModal({
                     </Text>
                     <Text style={styles.calendarIcon}>📅</Text>
                   </TouchableOpacity>
+
+                  <Text style={styles.label}>동물등록번호 (선택)</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="동물등록번호를 입력하세요"
+                    value={registrationNumber}
+                    onChangeText={setRegistrationNumber}
+                    keyboardType="number-pad"
+                  />
                 </View>
 
                 <View style={styles.buttonGroup}>

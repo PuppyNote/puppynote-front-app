@@ -4,6 +4,7 @@ export interface HomeInfo {
   petName: string;
   petProfileImageUrl: string | null;
   birthDate: string | null;
+  registrationNumber: string | null;
   petAge: string | null;
   birthdayDday: number | null;
   walkedToday: boolean;

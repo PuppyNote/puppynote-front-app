@@ -1,21 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, ScrollView, Image, StyleSheet, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Image, StyleSheet, TouchableOpacity, RefreshControl, ActivityIndicator, Clipboard, Alert } from 'react-native';
 import {
   Layout,
   Card,
   Text,
   Badge,
   PetRegistrationModal,
+  CustomAlert,
 } from '../../components';
 import { usePet } from '../../context/PetContext';
 import { petItemService } from '../../services/petItem/PetItemService';
 import { homeService, HomeInfo } from '../../services/home/HomeService';
 import { petTipService } from '../../services/petTip/PetTipService';
+import { useAlert } from '../../hooks/useAlert';
 import { PetItem } from '../../types/PetItem';
 import { calculateDaysDifference } from '../../utils/DateUtil';
 
 export default function HomeScreen({ navigation }: any) {
   const { selectedPet, isLoadingPet, refreshPets } = usePet();
+  const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
   const [homeInfo, setHomeInfo] = useState<HomeInfo | null>(null);
   const [urgentSupplies, setUrgentSupplies] = useState<PetItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,6 +96,11 @@ export default function HomeScreen({ navigation }: any) {
     }
   };
 
+  const handleCopyRegistrationNumber = (number: string) => {
+    Clipboard.setString(number);
+    showSimpleAlert('알림', '동물등록번호가 복사되었습니다.');
+  };
+
   return (
     <Layout edges={['left', 'right']} backgroundColor="#fcfaf2" showPetTab={true}>
       {isLoading && !isRefreshing ? (
@@ -139,74 +147,87 @@ export default function HomeScreen({ navigation }: any) {
           ) : (
             <>
               {/* Status Overview Card - 클릭 시 수정 팝업 오픈 */}
-              <TouchableOpacity onPress={handlePetCardPress} activeOpacity={0.9}>
-                <Card style={styles.mainCard}>
-                  <View style={styles.petInfoRow}>
-                    <View style={styles.petImageContainer}>
-                      <View style={styles.petImagePlaceholder}>
-                        {homeInfo?.petProfileImageUrl ? (
-                          <Image 
-                            source={{ uri: homeInfo.petProfileImageUrl }} 
-                            style={styles.petImage} 
-                          />
-                        ) : (
-                          <Text style={styles.petEmoji}>🐶</Text>
-                        )}
+              <View style={{ position: 'relative' }}>
+                <TouchableOpacity onPress={handlePetCardPress} activeOpacity={0.9}>
+                  <Card style={styles.mainCard}>
+                    <View style={styles.petInfoRow}>
+                      <View style={styles.petImageContainer}>
+                        <View style={styles.petImagePlaceholder}>
+                          {homeInfo?.petProfileImageUrl ? (
+                            <Image 
+                              source={{ uri: homeInfo.petProfileImageUrl }} 
+                              style={styles.petImage} 
+                            />
+                          ) : (
+                            <Text style={styles.petEmoji}>🐶</Text>
+                          )}
+                        </View>
                       </View>
-                    </View>
-                    <View style={styles.petStatusInfo}>
-                      <View style={styles.petNameRow}>
-                        <Text style={styles.petNameText}>{homeInfo?.petName || selectedPet?.name}</Text>
-                        {homeInfo?.petAge && <Text style={styles.petAgeText}>{homeInfo.petAge}</Text>}
-                        <Text style={styles.editHintIcon}>✏️</Text>
-                      </View>
-                      <View style={styles.badgeRow}>
-                        {homeInfo?.birthdayDday !== null && (
+                      <View style={styles.petStatusInfo}>
+                        <View style={styles.petNameRow}>
+                          <Text style={styles.petNameText}>{homeInfo?.petName || selectedPet?.name}</Text>
+                          {homeInfo?.petAge && <Text style={styles.petAgeText}>{homeInfo.petAge}</Text>}
+                          <Text style={styles.editHintIcon}>✏️</Text>
+                        </View>
+                        <View style={styles.badgeRow}>
+                          {homeInfo?.birthdayDday !== null && (
+                            <Badge 
+                              label={homeInfo?.birthdayDday === 0 ? '🎂 오늘 생일!' : `🎂 D-${homeInfo?.birthdayDday}`} 
+                              variant="warning" 
+                            />
+                          )}
                           <Badge 
-                            label={homeInfo?.birthdayDday === 0 ? '🎂 오늘 생일!' : `🎂 D-${homeInfo?.birthdayDday}`} 
-                            variant="warning" 
+                            label={homeInfo?.walkedToday ? '오늘 산책 완료' : '산책 대기 중'} 
+                            variant={homeInfo?.walkedToday ? 'success' : 'neutral'} 
                           />
-                        )}
-                        <Badge 
-                          label={homeInfo?.walkedToday ? '오늘 산책 완료' : '산책 대기 중'} 
-                          variant={homeInfo?.walkedToday ? 'success' : 'neutral'} 
-                        />
+                        </View>
                       </View>
                     </View>
-                  </View>
-                  
-                  <View style={styles.divider} />
-                  
-                  <View style={styles.statsRow}>
-                    <TouchableOpacity 
-                      style={styles.statItem} 
-                      onPress={() => navigation.navigate('Walk')}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.statValue}>{homeInfo?.recentWalkCount ?? 0}</Text>
-                      <Text style={styles.statLabel}>최근 7일</Text>
-                    </TouchableOpacity>
-                    <View style={styles.verticalDivider} />
-                    <TouchableOpacity 
-                      style={styles.statItem} 
-                      onPress={() => navigation.navigate('Walk')}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.statValue}>{homeInfo?.monthlyWalkMinutes ?? 0}</Text>
-                      <Text style={styles.statLabel}>이달의 산책(분)</Text>
-                    </TouchableOpacity>
-                    <View style={styles.verticalDivider} />
-                    <TouchableOpacity 
-                      style={styles.statItem} 
-                      onPress={() => navigation.navigate('Supplies')}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.statValue}>{homeInfo?.petItemCount ?? 0}</Text>
-                      <Text style={styles.statLabel}>관리 용품</Text>
-                    </TouchableOpacity>
-                  </View>
-                </Card>
-              </TouchableOpacity>
+                    
+                    <View style={styles.divider} />
+                    
+                    <View style={styles.statsRow}>
+                      <TouchableOpacity 
+                        style={styles.statItem} 
+                        onPress={() => navigation.navigate('Walk')}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.statValue}>{homeInfo?.recentWalkCount ?? 0}</Text>
+                        <Text style={styles.statLabel}>최근 7일</Text>
+                      </TouchableOpacity>
+                      <View style={styles.verticalDivider} />
+                      <TouchableOpacity 
+                        style={styles.statItem} 
+                        onPress={() => navigation.navigate('Walk')}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.statValue}>{homeInfo?.monthlyWalkMinutes ?? 0}</Text>
+                        <Text style={styles.statLabel}>이달의 산책(분)</Text>
+                      </TouchableOpacity>
+                      <View style={styles.verticalDivider} />
+                      <TouchableOpacity 
+                        style={styles.statItem} 
+                        onPress={() => navigation.navigate('Supplies')}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.statValue}>{homeInfo?.petItemCount ?? 0}</Text>
+                        <Text style={styles.statLabel}>관리 용품</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </Card>
+                </TouchableOpacity>
+
+                {/* 등록번호 - 별도 Touchable로 분리하여 카드 클릭과 간섭 방지 */}
+                {homeInfo?.registrationNumber && (
+                  <TouchableOpacity 
+                    style={styles.registrationContainer}
+                    onPress={() => handleCopyRegistrationNumber(homeInfo.registrationNumber!)}
+                    activeOpacity={0.6}
+                  >
+                    <Text style={styles.registrationText}>No. {homeInfo.registrationNumber}</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
 
               {/* Walk Status Card */}
               {homeInfo && homeInfo.daysSinceLastWalk !== null && (
@@ -358,6 +379,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 20,
     elevation: 5,
+    position: 'relative',
+  },
+  registrationContainer: {
+    position: 'absolute',
+    top: 16,
+    right: 20,
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    zIndex: 10,
+  },
+  registrationText: {
+    fontSize: 10,
+    color: '#94a3b8',
+    fontWeight: 'bold',
   },
   petInfoRow: {
     flexDirection: 'row',
