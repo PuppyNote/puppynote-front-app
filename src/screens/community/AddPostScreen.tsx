@@ -15,7 +15,8 @@ import {
   Layout, 
   Text, 
   AddTopBar,
-  CustomAlert
+  CustomAlert,
+  MultiImageSelector
 } from '../../components';
 import { communityService } from '../../services/community/CommunityService';
 import { storageService } from '../../services/auth/StorageService';
@@ -95,29 +96,15 @@ export default function AddPostScreen({ navigation, route }: any) {
     }
   };
 
-  const handleImagePick = async () => {
-    if (images.length >= 5) {
-      showSimpleAlert('알림', '이미지는 최대 5개까지 등록 가능합니다.');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      selectionLimit: 5 - images.length,
-      quality: 0.8,
-    });
-
-    if (!result.canceled) {
-      const newImages = result.assets.map(asset => ({
-        uri: asset.uri,
-        isNew: true
-      }));
-      setImages(prev => [...prev, ...newImages]);
-    }
+  const handleAddImages = (newUris: string[]) => {
+    const newItems = newUris.map(uri => ({
+      uri,
+      isNew: true
+    }));
+    setImages(prev => [...prev, ...newItems]);
   };
 
-  const removeImage = (index: number) => {
+  const handleRemoveImage = (index: number) => {
     const target = images[index];
     if (!target.isNew && target.key) {
       setDeletedImageKeys(prev => [...prev, target.key!]);
@@ -195,28 +182,17 @@ export default function AddPostScreen({ navigation, route }: any) {
         contentContainerStyle={styles.scrollContent} 
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.imageSection}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageRow}>
-            <TouchableOpacity style={styles.imagePicker} onPress={handleImagePick}>
-              <Text style={styles.plusIcon}>+</Text>
-              <Text style={styles.imageCountText}>{images.length}/5</Text>
-            </TouchableOpacity>
-            
-            {images.map((img, index) => (
-              <View key={index} style={styles.imageContainer}>
-                <Image source={{ uri: img.uri }} style={styles.selectedImage} />
-                <TouchableOpacity style={styles.removeButton} onPress={() => removeImage(index)}>
-                  <Text style={styles.removeButtonText}>✕</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+        <MultiImageSelector 
+          images={images.map(img => img.uri)} 
+          maxCount={10} 
+          onAddImages={handleAddImages} 
+          onRemoveImage={handleRemoveImage}
+        />
 
         <View style={styles.inputSection}>
           <TextInput
             style={styles.contentInput}
-            placeholder="오늘 우리 아이와의 추억을 공유해보세요!"
+            placeholder="산책한 장소를 공유해보세요!"
             placeholderTextColor="#94a3b8"
             multiline
             textAlignVertical="top"
@@ -299,59 +275,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 24,
-  },
-  imageSection: {
-    marginBottom: 24,
-  },
-  imageRow: {
-    gap: 12,
-  },
-  imagePicker: {
-    width: 80,
-    height: 80,
-    backgroundColor: 'white',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  plusIcon: {
-    fontSize: 24,
-    color: '#94a3b8',
-    fontWeight: '300',
-  },
-  imageCountText: {
-    fontSize: 10,
-    color: '#94a3b8',
-    fontWeight: 'bold',
-    marginTop: 2,
-  },
-  imageContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  selectedImage: {
-    width: '100%',
-    height: '100%',
-  },
-  removeButton: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  removeButtonText: {
-    color: 'white',
-    fontSize: 12,
   },
   inputSection: {
     backgroundColor: 'white',

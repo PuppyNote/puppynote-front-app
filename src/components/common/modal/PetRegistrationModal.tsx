@@ -11,7 +11,6 @@ import {
   ScrollView,
   KeyboardAvoidingView,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { CustomText as Text } from '../item/CustomText';
 import { petService } from '../../../services/pet/PetService';
 import { homeService } from '../../../services/home/HomeService';
@@ -19,6 +18,7 @@ import { storageService } from '../../../services/auth/StorageService';
 import DatePickerModal from './DatePickerModal';
 import CustomAlert from './CustomAlert';
 import { useAlert } from '../../../hooks/useAlert';
+import { ImagePickerUtil } from '../../../utils/ImagePickerUtil';
 
 interface PetRegistrationModalProps {
   visible: boolean;
@@ -75,14 +75,9 @@ export default function PetRegistrationModal({
   }, [visible, editPetId, fetchPetDetail]);
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+    const result = await ImagePickerUtil.pickImageSingle();
 
-    if (!result.canceled) {
+    if (result && !result.canceled) {
       setImage(result.assets[0].uri);
     }
   };

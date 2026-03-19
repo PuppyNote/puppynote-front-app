@@ -9,9 +9,14 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import * as Location from 'expo-location';
-import { Layout, Text, CustomAlert, TimePickerModal, AddTopBar } from '../../components';
+import { 
+  Layout, 
+  Text, 
+  CustomAlert, 
+  TimePickerModal, 
+  AddTopBar,
+  MultiImageSelector
+} from '../../components';
 import { walkService } from '../../services/walk/WalkService';
 import { storageService } from '../../services/auth/StorageService';
 import { useAlert } from '../../hooks/useAlert';
@@ -78,26 +83,12 @@ export default function AddWalkScreen({ navigation }: any) {
     })();
   }, []);
 
-  const pickImage = async () => {
-    if (images.length >= 5) {
-      showSimpleAlert('알림', '사진은 최대 5장까지 등록 가능합니다.');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: false,
-      aspect: [4, 3],
-      quality: 0.8,
-    });
-
-    if (!result.canceled) {
-      setImages([...images, result.assets[0].uri]);
-    }
+  const handleAddImages = (newUris: string[]) => {
+    setImages(prev => [...prev, ...newUris]);
   };
 
-  const removeImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
+  const handleRemoveImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSave = async () => {
@@ -161,20 +152,12 @@ export default function AddWalkScreen({ navigation }: any) {
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>사진</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageScroll}>
-            <TouchableOpacity style={styles.imageAddButton} onPress={pickImage}>
-              <Text style={styles.imageAddIcon}>+</Text>
-              <Text style={styles.imageAddText}>{images.length}/5</Text>
-            </TouchableOpacity>
-            {images.map((uri, index) => (
-              <View key={index} style={styles.imageWrapper}>
-                <Image source={{ uri }} style={styles.imageItem} />
-                <TouchableOpacity style={styles.imageRemove} onPress={() => removeImage(index)}>
-                  <Text style={styles.imageRemoveText}>×</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </ScrollView>
+          <MultiImageSelector 
+            images={images} 
+            maxCount={5} 
+            onAddImages={handleAddImages} 
+            onRemoveImage={handleRemoveImage}
+          />
         </View>
 
         <View style={styles.section}>
@@ -327,55 +310,6 @@ const styles = StyleSheet.create({
   textArea: {
     height: 120,
     paddingTop: 16,
-  },
-  imageScroll: {
-    flexDirection: 'row',
-  },
-  imageAddButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  imageAddIcon: {
-    fontSize: 24,
-    color: '#94a3b8',
-  },
-  imageAddText: {
-    fontSize: 12,
-    color: '#94a3b8',
-    marginTop: 4,
-  },
-  imageWrapper: {
-    position: 'relative',
-    marginRight: 12,
-  },
-  imageItem: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-  },
-  imageRemove: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imageRemoveText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   saveButton: {
     backgroundColor: '#eebd2b',

@@ -8,7 +8,6 @@ import {
   Image,
   ActivityIndicator
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { 
   Layout, 
   Text, 
@@ -22,6 +21,7 @@ import { userCategoryService } from '../../services/userCategory/UserCategorySer
 import { storageService } from '../../services/auth/StorageService';
 import { UserCategoryResponse } from '../../types/PetItem';
 import { useAlert } from '../../hooks/useAlert';
+import { ImagePickerUtil } from '../../utils/ImagePickerUtil';
 
 export default function AddSupplyScreen({ navigation, route }: any) {
   const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
@@ -61,14 +61,9 @@ export default function AddSupplyScreen({ navigation, route }: any) {
   };
 
   const handleImagePick = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+    const result = await ImagePickerUtil.pickImageSingle();
 
-    if (!result.canceled) {
+    if (result && !result.canceled) {
       setImageUri(result.assets[0].uri);
     }
   };

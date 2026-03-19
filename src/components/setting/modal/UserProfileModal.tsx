@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  StyleSheet,
-  Modal,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
-  Platform,
-  ScrollView,
-  KeyboardAvoidingView,
+import { 
+  View, 
+  StyleSheet, 
+  Modal, 
+  TextInput, 
+  TouchableOpacity, 
+  Image, 
+  ActivityIndicator, 
+  Platform, 
+  ScrollView, 
+  KeyboardAvoidingView 
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { CustomText as Text } from '../../common/item/CustomText';
 import { authService, UserProfile } from '../../../services/auth/AuthService';
 import { storageService } from '../../../services/auth/StorageService';
 import CustomAlert from '../../common/modal/CustomAlert';
 import { useAlert } from '../../../hooks/useAlert';
+import { ImagePickerUtil } from '../../../utils/ImagePickerUtil';
 
 interface UserProfileModalProps {
   visible: boolean;
@@ -44,14 +44,9 @@ export default function UserProfileModal({
   }, [visible, initialData]);
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+    const result = await ImagePickerUtil.pickImageSingle();
 
-    if (!result.canceled) {
+    if (result && !result.canceled) {
       setProfileUrl(result.assets[0].uri);
     }
   };

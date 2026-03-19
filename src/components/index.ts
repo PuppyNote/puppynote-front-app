@@ -9,6 +9,7 @@ export { default as ScrollableTab } from './common/item/ScrollableTab';
 export { default as PetTab } from './common/item/PetTab';
 export { default as Badge } from './common/item/Badge';
 export { default as FloatingActionButton } from './common/item/FloatingActionButton';
+export { default as MultiImageSelector } from './common/item/MultiImageSelector';
 export { WheelPicker } from './common/item/WheelPicker';
 export { PagedFlatList } from './common/item/PagedFlatList';
 
