@@ -57,10 +57,10 @@ class DeviceService {
     }
   }
 
-  // 푸시 토큰(FCM) 가져오기
+  // 푸시 토큰 가져오기 (Expo Push Token)
   public async getFcmToken(): Promise<string> {
     if (!Device.isDevice) {
-      return 'emulator-fcm-token';
+      return 'emulator-push-token';
     }
 
     try {
@@ -76,11 +76,15 @@ class DeviceService {
         return 'permission-denied';
       }
 
-      const tokenData = await Notifications.getDevicePushTokenAsync();
-      return tokenData.data;
+      // 모든 플랫폼(iOS, Android)에서 호환되는 Expo Push Token을 가져옵니다.
+      const tokenData = await Notifications.getExpoPushTokenAsync({
+        projectId: Constants.expoConfig?.extra?.eas?.projectId,
+      });
+      
+      return tokenData.data; // ExponentPushToken[...] 형태
     } catch (error: any) {
-      console.error('FCM Token Error:', error.message);
-      return 'error-fcm-token';
+      console.error('Push Token Error:', error.message);
+      return 'error-push-token';
     }
   }
 }
