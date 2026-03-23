@@ -97,6 +97,21 @@ export default function CommunityScreen({ navigation, route }: any) {
     setShowSuggestions(false);
   };
 
+  const handleLikePress = async (postId: number) => {
+    try {
+      const response = await communityService.toggleLike(postId);
+      setPosts(currentPosts => 
+        currentPosts.map(post => 
+          post.postId === postId 
+            ? { ...post, liked: response.data.liked, likeCount: response.data.likeCount }
+            : post
+        )
+      );
+    } catch (error) {
+      console.error('Failed to toggle like:', error);
+    }
+  };
+
   const handleClearSearch = () => {
     setKeyword('');
     setSearchQuery('');
@@ -108,6 +123,8 @@ export default function CommunityScreen({ navigation, route }: any) {
     <PostCard 
       post={item} 
       onHashtagPress={handleHashtagPress}
+      onPress={() => navigation.navigate('CommunityDetail', { postId: item.postId })}
+      onLikePress={() => handleLikePress(item.postId)}
     />
   );
 

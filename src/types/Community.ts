@@ -8,6 +8,13 @@ export interface Post {
   imageUrls: string[];
   hashtags: string[];
   createdDate: string;
+  likeCount: number;
+  liked: boolean;
+}
+
+export interface LikeResponse {
+  liked: boolean;
+  likeCount: number;
 }
 
 export interface PostListResponse {

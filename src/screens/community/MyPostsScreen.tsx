@@ -34,11 +34,27 @@ export default function MyPostsScreen({ navigation, route }: any) {
     });
   };
 
+  const handleLikePress = async (postId: number) => {
+    try {
+      const response = await communityService.toggleLike(postId);
+      setPosts(currentPosts => 
+        currentPosts.map(post => 
+          post.postId === postId 
+            ? { ...post, liked: response.data.liked, likeCount: response.data.likeCount }
+            : post
+        )
+      );
+    } catch (error) {
+      console.error('Failed to toggle like:', error);
+    }
+  };
+
   const renderPostItem = ({ item }: { item: Post }) => (
     <PostCard 
       post={item} 
       onPress={() => navigation.navigate('CommunityDetail', { postId: item.postId })} 
       onHashtagPress={handleHashtagPress}
+      onLikePress={() => handleLikePress(item.postId)}
     />
   );
 

@@ -26,9 +26,10 @@ interface PostCardProps {
   post: Post;
   onPress: () => void;
   onHashtagPress?: (tag: string) => void;
+  onLikePress?: () => void;
 }
 
-export default function PostCard({ post, onPress, onHashtagPress }: PostCardProps) {
+export default function PostCard({ post, onPress, onHashtagPress, onLikePress }: PostCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpand = () => {
@@ -98,6 +99,27 @@ export default function PostCard({ post, onPress, onHashtagPress }: PostCardProp
           </TouchableOpacity>
         ))}
       </View>
+
+      {/* 5. Footer (Like Button) */}
+      <View style={styles.footer}>
+        <TouchableOpacity 
+          style={styles.likeButton} 
+          onPress={onLikePress}
+          activeOpacity={0.6}
+        >
+          <Image 
+            source={post.liked 
+              ? require('../../../../assets/community/clicked_like.png') 
+              : require('../../../../assets/community/like.png')
+            } 
+            style={styles.likeIcon}
+            resizeMode="contain"
+          />
+          <Text style={[styles.likeCount, post.liked && styles.likedText]}>
+            {post.likeCount}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </Card>
   );
 }
@@ -154,10 +176,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    marginBottom: 16,
   },
   hashtag: {
     fontSize: 13,
     color: '#eebd2b',
     fontWeight: '700',
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    paddingTop: 12,
+  },
+  likeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  likeIcon: {
+    width: 20,
+    height: 20,
+  },
+  likeCount: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '600',
+  },
+  likedText: {
+    color: '#ef4444',
   },
 });

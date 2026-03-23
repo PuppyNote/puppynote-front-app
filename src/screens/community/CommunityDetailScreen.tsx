@@ -87,6 +87,20 @@ export default function CommunityDetailScreen({ route, navigation }: any) {
     }
   };
 
+  const handleLikeToggle = async () => {
+    if (!post) return;
+    try {
+      const response = await communityService.toggleLike(postId);
+      setPost({
+        ...post,
+        liked: response.data.liked,
+        likeCount: response.data.likeCount
+      });
+    } catch (error) {
+      console.error('Failed to toggle like:', error);
+    }
+  };
+
   if (isLoading) {
     return (
       <Layout edges={['left', 'right']} backgroundColor="#fcfaf2" style={styles.center}>
@@ -151,6 +165,26 @@ export default function CommunityDetailScreen({ route, navigation }: any) {
                 <Text style={styles.hashtag}>#{tag}</Text>
               </TouchableOpacity>
             ))}
+          </View>
+
+          <View style={styles.likeSection}>
+            <TouchableOpacity 
+              style={styles.likeButton} 
+              onPress={handleLikeToggle}
+              activeOpacity={0.6}
+            >
+              <Image 
+                source={post.liked 
+                  ? require('../../../assets/community/clicked_like.png') 
+                  : require('../../../assets/community/like.png')
+                } 
+                style={styles.likeIcon}
+                resizeMode="contain"
+              />
+              <Text style={[styles.likeCount, post.liked && styles.likedText]}>
+                좋아요 {post.likeCount}개
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -248,6 +282,29 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#eebd2b',
     fontWeight: '600',
+  },
+  likeSection: {
+    marginTop: 24,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  likeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  likeIcon: {
+    width: 24,
+    height: 24,
+  },
+  likeCount: {
+    fontSize: 15,
+    color: '#64748b',
+    fontWeight: '600',
+  },
+  likedText: {
+    color: '#ef4444',
   },
   footer: {
     height: 60,
