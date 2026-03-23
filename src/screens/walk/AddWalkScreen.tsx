@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
+import * as Location from 'expo-location'; // 1. Location 임포트 추가
 import { 
   Layout, 
   Text, 
