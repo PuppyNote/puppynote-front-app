@@ -27,9 +27,10 @@ interface PostCardProps {
   onPress: () => void;
   onHashtagPress?: (tag: string) => void;
   onLikePress?: () => void;
+  onImagePress?: () => void;
 }
 
-export default function PostCard({ post, onPress, onHashtagPress, onLikePress }: PostCardProps) {
+export default function PostCard({ post, onPress, onHashtagPress, onLikePress, onImagePress }: PostCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpand = () => {
@@ -69,7 +70,7 @@ export default function PostCard({ post, onPress, onHashtagPress, onLikePress }:
             width={IMAGE_WIDTH} 
             height={IMAGE_WIDTH}
             borderRadius={16}
-            onImagePress={onPress}
+            onImagePress={onImagePress}
           />
         </View>
       )}

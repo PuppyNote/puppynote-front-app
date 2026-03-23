@@ -156,6 +156,14 @@ export const PhotoGallery = ({
     setIsZoomed(false);
   };
 
+  const handlePress = (url: string, index: number) => {
+    if (onImagePress) {
+      onImagePress(url, index);
+    } else {
+      openModal(index);
+    }
+  };
+
   if (!photoUrls || photoUrls.length === 0) return null;
 
   return (
@@ -175,7 +183,7 @@ export const PhotoGallery = ({
           <TouchableOpacity 
             key={index} 
             activeOpacity={0.9} 
-            onPress={() => openModal(index)}
+            onPress={() => handlePress(url, index)}
             style={{ width, height }}
           >
             <Image 
@@ -186,6 +194,7 @@ export const PhotoGallery = ({
           </TouchableOpacity>
         ))}
       </ScrollView>
+
 
       {hasMultipleImages && (
         <View style={styles.badge}>

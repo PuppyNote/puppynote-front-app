@@ -55,6 +55,7 @@ export default function MyPostsScreen({ navigation, route }: any) {
       onPress={() => navigation.navigate('CommunityDetail', { postId: item.postId })} 
       onHashtagPress={handleHashtagPress}
       onLikePress={() => handleLikePress(item.postId)}
+      onImagePress={() => navigation.navigate('CommunityDetail', { postId: item.postId })}
     />
   );
 
