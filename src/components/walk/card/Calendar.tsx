@@ -7,19 +7,29 @@ interface CalendarProps {
   onDateSelect?: (date: Date) => void;
   onMonthChange?: (year: number, month: number) => void;
   walkDates?: number[]; // 산책이 있는 날짜 배열 (예: [2, 5, 10])
+  selectedDate?: Date; // 현재 선택된 날짜
 }
 
-export default function Calendar({ onDateSelect, onMonthChange, walkDates = [] }: CalendarProps) {
+export default function Calendar({ 
+  onDateSelect, 
+  onMonthChange, 
+  walkDates = [],
+  selectedDate = new Date()
+}: CalendarProps) {
   const [viewDate, setViewDate] = useState(new Date());
   
   const today = new Date();
   const isTodayMonth = viewDate.getFullYear() === today.getFullYear() && viewDate.getMonth() === today.getMonth();
-
+  
   const currentYear = viewDate.getFullYear();
   const currentMonth = viewDate.getMonth();
 
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+  const handleDatePress = (day: number) => {
+    onDateSelect?.(new Date(currentYear, currentMonth, day));
+  };
 
   const handlePrevMonth = () => {
     const newDate = new Date(currentYear, currentMonth - 1, 1);
@@ -69,31 +79,45 @@ export default function Calendar({ onDateSelect, onMonthChange, walkDates = [] }
       </View>
 
       <View style={styles.calendarGrid}>
-        {calendarDays.map((day, i) => (
-          <TouchableOpacity 
-            key={i} 
-            style={styles.dayContainer}
-            disabled={!day}
-            onPress={() => day && onDateSelect?.(new Date(currentYear, currentMonth, day))}
-          >
-            {day && (
-              <>
+        {calendarDays.map((day, i) => {
+          if (!day) return <View key={i} style={styles.dayContainer} />;
+
+          const isToday = isTodayMonth && day === today.getDate();
+          
+          // 선택된 날짜 여부 (연, 월, 일 일치 & 오늘 아님)
+          const isSelected = selectedDate && 
+                             selectedDate.getDate() === day && 
+                             selectedDate.getMonth() === currentMonth && 
+                             selectedDate.getFullYear() === currentYear &&
+                             !isToday;
+
+          const hasWalk = walkDates.includes(day);
+
+          return (
+            <TouchableOpacity 
+              key={i} 
+              style={styles.dayContainer}
+              onPress={() => handleDatePress(day)}
+              activeOpacity={0.7}
+            >
+              <View style={[
+                styles.dayCircle,
+                isToday && styles.todayCircle,
+                !isToday && hasWalk && styles.walkDayCircle,
+                isSelected && styles.selectedCircle // 테두리만 덮어씌움
+              ]}>
                 <Text style={[
                   styles.dayText, 
-                  isTodayMonth && day === today.getDate() && styles.activeDay,
-                  !(isTodayMonth && day === today.getDate()) && walkDates.includes(day) && styles.walkDay
+                  isToday && styles.todayText,
+                  !isToday && hasWalk && styles.walkDayText,
+                  isSelected && styles.selectedDayText
                 ]}>
                   {day}
                 </Text>
-                {walkDates.includes(day) && (
-                  <View style={styles.indicatorContainer}>
-                    <Text style={styles.pawIcon}>🐾</Text>
-                  </View>
-                )}
-              </>
-            )}
-          </TouchableOpacity>
-        ))}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     </Card>
   );
@@ -150,42 +174,46 @@ const styles = StyleSheet.create({
   },
   dayContainer: {
     width: '14.28%',
-    height: 40,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
   },
+  dayCircle: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  todayCircle: {
+    backgroundColor: '#eebd2b',
+    borderColor: '#eebd2b',
+  },
+  selectedCircle: {
+    borderColor: '#eebd2b',
+    // backgroundColor를 설정하지 않아 기존 배경색 유지
+  },
+  walkDayCircle: {
+    backgroundColor: '#fffbeb',
+  },
   dayText: {
     fontSize: 14,
     color: '#334155',
-    width: 28,
-    height: 28,
-    textAlign: 'center',
-    lineHeight: 28,
+    fontWeight: '500',
   },
-  activeDay: {
-    fontWeight: 'bold',
-    backgroundColor: '#eebd2b',
-    borderRadius: 14,
+  todayText: {
     color: 'white',
-    overflow: 'hidden',
+    fontWeight: 'bold',
   },
-  walkDay: {
-    backgroundColor: '#fffbeb',
-    borderRadius: 14,
+  selectedDayText: {
     color: '#eebd2b',
     fontWeight: 'bold',
-    overflow: 'hidden',
   },
-  indicatorContainer: {
-    position: 'absolute',
-    bottom: -2,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pawIcon: {
-    fontSize: 10,
+  walkDayText: {
     color: '#eebd2b',
+    fontWeight: 'bold',
   },
 });

@@ -26,9 +26,11 @@ interface PostCardProps {
   post: Post;
   onPress: () => void;
   onHashtagPress?: (tag: string) => void;
+  onLikePress?: () => void;
+  onImagePress?: () => void;
 }
 
-export default function PostCard({ post, onPress, onHashtagPress }: PostCardProps) {
+export default function PostCard({ post, onPress, onHashtagPress, onLikePress, onImagePress }: PostCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpand = () => {
@@ -38,27 +40,42 @@ export default function PostCard({ post, onPress, onHashtagPress }: PostCardProp
 
   const Header = () => (
     <View style={styles.postHeader}>
-      <Image 
-        source={post.userProfileUrl ? { uri: post.userProfileUrl } : require('../../../../assets/puppynote-icon.png')} 
-        style={styles.profileImage} 
-      />
-      <View style={styles.headerInfo}>
-        <Text style={styles.nickname}>{post.userNickname}</Text>
-        <Text style={styles.date}>{new Date(post.createdDate).toLocaleDateString()}</Text>
+      <View style={styles.headerLeft}>
+        <Image 
+          source={post.userProfileUrl ? { uri: post.userProfileUrl } : require('../../../../assets/puppynote-icon.png')} 
+          style={styles.profileImage} 
+        />
+        <View style={styles.headerInfo}>
+          <Text style={styles.nickname}>{post.userNickname}</Text>
+          <Text style={styles.date}>{new Date(post.createdDate).toLocaleDateString()}</Text>
+        </View>
       </View>
+      
+      {/* 좋아요 버튼을 오른쪽 상단으로 이동 */}
+      <TouchableOpacity 
+        style={styles.likeButtonTop} 
+        onPress={onLikePress}
+        activeOpacity={0.6}
+      >
+        <Image 
+          source={post.liked 
+            ? require('../../../../assets/community/clicked_like.png') 
+            : require('../../../../assets/community/like.png')
+          } 
+          style={styles.likeIcon}
+          resizeMode="contain"
+        />
+        <Text style={[styles.likeCount, post.liked && styles.likedText]}>
+          {post.likeCount}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 
   return (
     <Card style={styles.postCard}>
-      {/* 1. Header & User Info */}
-      {onPress ? (
-        <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
-          <Header />
-        </TouchableOpacity>
-      ) : (
-        <Header />
-      )}
+      {/* 1. Header & User Info (좋아요 포함) */}
+      <Header />
 
       {/* 2. Photos */}
       {post.imageUrls && post.imageUrls.length > 0 && (
@@ -68,7 +85,7 @@ export default function PostCard({ post, onPress, onHashtagPress }: PostCardProp
             width={IMAGE_WIDTH} 
             height={IMAGE_WIDTH}
             borderRadius={16}
-            onImagePress={onPress}
+            onImagePress={onImagePress}
           />
         </View>
       )}
@@ -111,7 +128,12 @@ const styles = StyleSheet.create({
   postHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between', // 양 끝으로 배치
     marginBottom: 16,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   profileImage: {
     width: 40,
@@ -131,6 +153,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#94a3b8',
     marginTop: 2,
+  },
+  likeButtonTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 4,
   },
   imageSection: {
     width: IMAGE_WIDTH,
@@ -159,5 +190,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#eebd2b',
     fontWeight: '700',
+  },
+  likeIcon: {
+    width: 18,
+    height: 18,
+  },
+  likeCount: {
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '700',
+  },
+  likedText: {
+    color: '#ef4444',
   },
 });

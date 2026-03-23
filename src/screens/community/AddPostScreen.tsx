@@ -192,7 +192,7 @@ export default function AddPostScreen({ navigation, route }: any) {
         <View style={styles.inputSection}>
           <TextInput
             style={styles.contentInput}
-            placeholder="산책한 장소를 공유해보세요!"
+            placeholder="우리 아이와의 소중한 일상을 들려주세요! (날씨, 산책, 간식 등 어떤 이야기든 좋아요)"
             placeholderTextColor="#94a3b8"
             multiline
             textAlignVertical="top"

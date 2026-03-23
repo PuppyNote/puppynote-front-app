@@ -1,5 +1,5 @@
 import { apiService, ApiResponse } from '../ApiService';
-import { Post, PostListResponse, CreatePostRequest, UpdatePostRequest } from '../../types/Community';
+import { Post, PostListResponse, CreatePostRequest, UpdatePostRequest, LikeResponse } from '../../types/Community';
 
 class CommunityService {
   private readonly BASE_PATH = '/api/v1/community/posts';
@@ -55,6 +55,13 @@ class CommunityService {
    */
   async deletePost(postId: number): Promise<ApiResponse<null>> {
     return apiService.delete<null>(`${this.BASE_PATH}/${postId}`);
+  }
+
+  /**
+   * 게시물 좋아요 토글
+   */
+  async toggleLike(postId: number): Promise<ApiResponse<LikeResponse>> {
+    return apiService.post<LikeResponse>(`${this.BASE_PATH}/${postId}/like`);
   }
 }
 
