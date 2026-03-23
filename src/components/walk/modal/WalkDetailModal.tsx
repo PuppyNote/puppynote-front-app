@@ -26,7 +26,6 @@ export default function WalkDetailModal({
   const [detail, setWalkDetail] = useState<WalkDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [fullScreenImage, setFullScreenImage] = useState<string | null>(null);
   const { alertConfig, showSimpleAlert, showConfirmAlert, hideAlert } = useAlert();
 
   useEffect(() => {
@@ -116,7 +115,6 @@ export default function WalkDetailModal({
             <View style={styles.photoSection}>
               <PhotoGallery 
                 photoUrls={detail.photoUrls}
-                onImagePress={(url) => setFullScreenImage(url)}
               />
             </View>
           )}
@@ -181,26 +179,6 @@ export default function WalkDetailModal({
           <Text style={styles.errorText}>정보를 불러올 수 없습니다.</Text>
         </View>
       )}
-
-      {/* Image Full Screen View */}
-      <Modal visible={!!fullScreenImage} transparent animationType="fade">
-        <View style={styles.fullScreenOverlay}>
-          <ScrollView
-            maximumZoomScale={5}
-            minimumZoomScale={1}
-            showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.fullScreenScroll}
-          >
-            {fullScreenImage && (
-              <Image source={{ uri: fullScreenImage }} style={styles.fullScreenImage} resizeMode="contain" />
-            )}
-          </ScrollView>
-          <TouchableOpacity style={styles.fullScreenClose} onPress={() => setFullScreenImage(null)}>
-            <Text style={styles.fullScreenCloseText}>✕</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
 
       <CustomAlert 
         visible={alertConfig.visible}
