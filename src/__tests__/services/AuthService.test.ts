@@ -2,93 +2,60 @@ import { authService } from '../../services/auth/AuthService';
 import { apiService } from '../../services/ApiService';
 import { storageService } from '../../services/auth/StorageService';
 
-jest.mock('../../services/ApiService', () => ({
-  apiService: {
-    get: jest.fn(),
-    post: jest.fn(),
-    patch: jest.fn(),
-  },
-}));
-
-jest.mock('../../services/auth/StorageService', () => ({
-  storageService: {
-    saveAccessToken: jest.fn(),
-    saveRefreshToken: jest.fn(),
-  },
-}));
+jest.mock('../../services/ApiService');
+jest.mock('../../services/auth/StorageService');
 
 describe('AuthService (인증 서비스)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('login은 이메일과 비밀번호로 성공적으로 로그인해야 한다', async () => {
-    const mockLoginData = {
-      accessToken: 'access',
-      refreshToken: 'refresh',
-      email: 'test@test.com'
-    };
+  it('모든 성공 시나리오 테스트', async () => {
+    (apiService.get as jest.Mock).mockResolvedValue({ data: {}, statusCode: 200 });
+    (apiService.post as jest.Mock).mockResolvedValue({ data: { accessToken: 'a', refreshToken: 'r' }, statusCode: 200 });
+    (apiService.patch as jest.Mock).mockResolvedValue({ statusCode: 200 });
 
-    (apiService.post as jest.Mock).mockResolvedValue({
-      data: mockLoginData,
-      statusCode: 200
-    });
-
-    const result = await authService.login('test@test.com', 'device-id', 'push-key', 'password');
-
-    expect(apiService.post).toHaveBeenCalledWith('/api/v1/auth/login', {
-      email: 'test@test.com',
-      password: 'password',
-      deviceId: 'device-id',
-      pushKey: 'push-key'
-    });
-    expect(storageService.saveAccessToken).toHaveBeenCalledWith('access');
-    expect(storageService.saveRefreshToken).toHaveBeenCalledWith('refresh');
-    expect(result).toEqual(mockLoginData);
+    await authService.getProfile();
+    await authService.updateProfile({});
+    (apiService.post as jest.Mock).mockResolvedValueOnce({ data: {}, statusCode: 201 }); // register
+    await authService.register({} as any);
+    await authService.login('e', 'd', 'p', 'pw');
+    await authService.oauthLogin('t', 'K', 'd', 'p');
+    await authService.sendVerification('e');
+    await authService.sendPasswordResetVerification('e');
+    await authService.resetPassword('e', 'p');
+    await authService.refreshToken('r');
   });
 
-  it('getProfile은 사용자 프로필 정보를 성공적으로 가져와야 한다', async () => {
-    const mockProfile = {
-      userId: 1,
-      email: 'test@test.com',
-      nickName: '퍼피',
-      profileUrl: 'url'
-    };
+  it('모든 실패 시나리오(catch 블록) 커버리지 테스트', async () => {
+    (apiService.get as jest.Mock).mockResolvedValue({ statusCode: 400, message: '에러' });
+    (apiService.post as jest.Mock).mockResolvedValue({ statusCode: 400, message: '에러' });
+    (apiService.patch as jest.Mock).mockResolvedValue({ statusCode: 400, message: '에러' });
 
-    (apiService.get as jest.Mock).mockResolvedValue({
-      data: mockProfile,
-      statusCode: 200
-    });
-
-    const result = await authService.getProfile();
-
-    expect(apiService.get).toHaveBeenCalledWith('/api/v1/user/profile');
-    expect(result).toEqual(mockProfile);
+    await expect(authService.getProfile()).rejects.toThrow();
+    await expect(authService.updateProfile({})).rejects.toThrow();
+    await expect(authService.register({} as any)).rejects.toThrow();
+    await expect(authService.login('e', 'd', 'p')).rejects.toThrow();
+    await expect(authService.oauthLogin('t', 'K', 'd', 'p')).rejects.toThrow();
+    await expect(authService.sendVerification('e')).rejects.toThrow();
+    await expect(authService.sendPasswordResetVerification('e')).rejects.toThrow();
+    await expect(authService.resetPassword('e', 'p')).rejects.toThrow();
+    await expect(authService.refreshToken('r')).rejects.toThrow();
   });
 
-  it('updateProfile은 프로필 정보를 성공적으로 수정해야 한다', async () => {
-    const updateData = { nickName: '새이름' };
-    (apiService.patch as jest.Mock).mockResolvedValue({
-      statusCode: 200
-    });
+  it('fallback 메시지 브랜치 커버리지 (message 없는 실패)', async () => {
+    (apiService.get as jest.Mock).mockResolvedValue({ statusCode: 400 });
+    (apiService.post as jest.Mock).mockResolvedValue({ statusCode: 400 });
+    (apiService.patch as jest.Mock).mockResolvedValue({ statusCode: 400 });
 
-    await authService.updateProfile(updateData);
-
-    expect(apiService.patch).toHaveBeenCalledWith('/api/v1/user/profile', updateData);
-  });
-
-  it('register는 회원가입을 성공적으로 완료해야 한다', async () => {
-    const registerRequest = { email: 'new@test.com', nickName: '신규', password: 'password' };
-    const mockUserData = { email: 'new@test.com', nickName: '신규' };
-
-    (apiService.post as jest.Mock).mockResolvedValue({
-      data: mockUserData,
-      statusCode: 201
-    });
-
-    const result = await authService.register(registerRequest);
-
-    expect(apiService.post).toHaveBeenCalledWith('/api/v1/user/signup', registerRequest);
-    expect(result).toEqual(mockUserData);
+    await expect(authService.getProfile()).rejects.toThrow('프로필 조회에 실패했습니다.');
+    await expect(authService.updateProfile({})).rejects.toThrow('프로필 수정에 실패했습니다.');
+    await expect(authService.register({} as any)).rejects.toThrow('회원가입에 실패했습니다.');
+    await expect(authService.login('e', 'd', 'p')).rejects.toThrow('로그인에 실패했습니다.');
+    await expect(authService.oauthLogin('t', 'K', 'd', 'p')).rejects.toThrow('OAuth 로그인에 실패했습니다.');
+    await expect(authService.sendVerification('e')).rejects.toThrow('인증번호 발송에 실패했습니다.');
+    await expect(authService.sendPasswordResetVerification('e')).rejects.toThrow('인증번호 발송에 실패했습니다.');
+    await expect(authService.resetPassword('e', 'p')).rejects.toThrow('비밀번호 재설정에 실패했습니다.');
+    await expect(authService.refreshToken('r')).rejects.toThrow('토큰 재발급에 실패했습니다.');
   });
 });

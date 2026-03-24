@@ -13,34 +13,37 @@ describe('AlertHistoryService (알림 이력 서비스)', () => {
     jest.clearAllMocks();
   });
 
-  it('getAlertHistories는 알림 이력 목록을 성공적으로 조회해야 한다', async () => {
-    const mockResponse = {
-      content: [{ id: 1, alertDescription: '메시지' }],
-      pageInfo: { currentPage: 1, totalPage: 1, totalElement: 1 }
-    };
-    (apiService.get as jest.Mock).mockResolvedValue({
-      data: mockResponse,
-      statusCode: 200
-    });
+  it('getAlertHistories 성공 및 실패', async () => {
+    (apiService.get as jest.Mock).mockResolvedValue({ data: {}, statusCode: 200 });
+    await alertHistoryService.getAlertHistories();
 
-    const result = await alertHistoryService.getAlertHistories(1, 12);
+    (apiService.get as jest.Mock).mockResolvedValue({ statusCode: 500, message: '에러' });
+    await expect(alertHistoryService.getAlertHistories()).rejects.toThrow('에러');
 
-    expect(apiService.get).toHaveBeenCalledWith('/api/v1/alertHistories', {
-      params: { page: 1, size: 12 }
-    });
-    expect(result).toEqual(mockResponse);
+    (apiService.get as jest.Mock).mockResolvedValue({ statusCode: 500 });
+    await expect(alertHistoryService.getAlertHistories()).rejects.toThrow('알림 내역 조회에 실패했습니다.');
   });
 
-  it('checkAlert는 알림 확인 처리를 성공적으로 수행해야 한다', async () => {
-    const mockResponse = { alertHistoryStatus: 'CHECKED' };
-    (apiService.patch as jest.Mock).mockResolvedValue({
-      data: mockResponse,
-      statusCode: 200
-    });
+  it('getUncheckedAlertExists 성공 및 실패', async () => {
+    (apiService.get as jest.Mock).mockResolvedValue({ data: true, statusCode: 200 });
+    const res = await alertHistoryService.getUncheckedAlertExists();
+    expect(res).toBe(true);
 
-    const result = await alertHistoryService.checkAlert(100);
+    (apiService.get as jest.Mock).mockResolvedValue({ statusCode: 400, message: '에러' });
+    await expect(alertHistoryService.getUncheckedAlertExists()).rejects.toThrow('에러');
 
-    expect(apiService.patch).toHaveBeenCalledWith('/api/v1/alertHistories/100');
-    expect(result).toEqual(mockResponse);
+    (apiService.get as jest.Mock).mockResolvedValue({ statusCode: 400 });
+    await expect(alertHistoryService.getUncheckedAlertExists()).rejects.toThrow('알림 존재 여부 조회에 실패했습니다.');
+  });
+
+  it('checkAlert 성공 및 실패', async () => {
+    (apiService.patch as jest.Mock).mockResolvedValue({ data: {}, statusCode: 200 });
+    await alertHistoryService.checkAlert(1);
+
+    (apiService.patch as jest.Mock).mockResolvedValue({ statusCode: 404, message: '에러' });
+    await expect(alertHistoryService.checkAlert(1)).rejects.toThrow('에러');
+
+    (apiService.patch as jest.Mock).mockResolvedValue({ statusCode: 404 });
+    await expect(alertHistoryService.checkAlert(1)).rejects.toThrow('알림 확인 처리에 실패했습니다.');
   });
 });

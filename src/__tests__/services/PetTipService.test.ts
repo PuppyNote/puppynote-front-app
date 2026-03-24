@@ -32,5 +32,8 @@ describe('PetTipService (반려동물 팁 서비스)', () => {
     });
 
     await expect(petTipService.getRandomPetTip()).rejects.toThrow('서버 오류');
+
+    (apiService.get as jest.Mock).mockResolvedValue({ statusCode: 500 });
+    await expect(petTipService.getRandomPetTip()).rejects.toThrow('팁을 불러오는 데 실패했습니다.');
   });
 });

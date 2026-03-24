@@ -51,6 +51,9 @@ describe('HomeService (홈 서비스)', () => {
     });
 
     await expect(homeService.getHomeInfo(mockPetId)).rejects.toThrow('정보를 찾을 수 없습니다.');
+
+    (apiService.get as jest.Mock).mockResolvedValue({ statusCode: 404 });
+    await expect(homeService.getHomeInfo(mockPetId)).rejects.toThrow('홈 정보를 불러오는 데 실패했습니다.');
   });
 
   it('네트워크 통신 자체에 실패한 경우 에러를 던져야 한다', async () => {

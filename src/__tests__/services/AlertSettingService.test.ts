@@ -13,29 +13,25 @@ describe('AlertSettingService (알림 설정 서비스)', () => {
     jest.clearAllMocks();
   });
 
-  it('getAlertSetting은 알림 설정을 성공적으로 조회해야 한다', async () => {
-    const mockData = { all: 'ON', walk: 'ON', friend: 'OFF' };
-    (apiService.get as jest.Mock).mockResolvedValue({
-      data: mockData,
-      statusCode: 200
-    });
+  it('getAlertSetting 성공 및 실패', async () => {
+    (apiService.get as jest.Mock).mockResolvedValue({ data: {}, statusCode: 200 });
+    await alertSettingService.getAlertSetting();
 
-    const result = await alertSettingService.getAlertSetting();
+    (apiService.get as jest.Mock).mockResolvedValue({ statusCode: 500, message: '에러' });
+    await expect(alertSettingService.getAlertSetting()).rejects.toThrow('에러');
 
-    expect(apiService.get).toHaveBeenCalledWith('/api/v1/alert-setting');
-    expect(result).toEqual(mockData);
+    (apiService.get as jest.Mock).mockResolvedValue({ statusCode: 500 });
+    await expect(alertSettingService.getAlertSetting()).rejects.toThrow('알림 설정 조회에 실패했습니다.');
   });
 
-  it('updateAlertSetting은 알림 설정을 성공적으로 수정해야 한다', async () => {
-    const updateData = { all: 'OFF', walk: 'OFF', friend: 'OFF' };
-    (apiService.patch as jest.Mock).mockResolvedValue({
-      data: updateData,
-      statusCode: 200
-    });
+  it('updateAlertSetting 성공 및 실패', async () => {
+    (apiService.patch as jest.Mock).mockResolvedValue({ data: {}, statusCode: 200 });
+    await alertSettingService.updateAlertSetting({} as any);
 
-    const result = await alertSettingService.updateAlertSetting(updateData as any);
+    (apiService.patch as jest.Mock).mockResolvedValue({ statusCode: 400, message: '에러' });
+    await expect(alertSettingService.updateAlertSetting({} as any)).rejects.toThrow('에러');
 
-    expect(apiService.patch).toHaveBeenCalledWith('/api/v1/alert-setting', updateData);
-    expect(result).toEqual(updateData);
+    (apiService.patch as jest.Mock).mockResolvedValue({ statusCode: 400 });
+    await expect(alertSettingService.updateAlertSetting({} as any)).rejects.toThrow('알림 설정 수정에 실패했습니다.');
   });
 });

@@ -14,12 +14,17 @@ describe('DateUtil (날짜 유틸리티)', () => {
 
   it('calculateDaysDifference는 두 날짜 사이의 일수 차이를 정확히 계산해야 한다', () => {
     const baseDate = new Date(2026, 2, 23); // 2026-03-23
-    
+
     // 미래 날짜
     expect(calculateDaysDifference('2026-03-25', baseDate)).toBe(2);
     // 과거 날짜
     expect(calculateDaysDifference('2026-03-20', baseDate)).toBe(-3);
     // 같은 날짜
     expect(calculateDaysDifference('2026-03-23', baseDate)).toBe(0);
+  });
+
+  it('calculateDaysDifference는 baseDate 기본값(현재 날짜)으로 동작해야 한다', () => {
+    const result = calculateDaysDifference('2099-12-31');
+    expect(typeof result).toBe('number');
   });
 });

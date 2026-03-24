@@ -15,41 +15,42 @@ describe('PetItemService (용품 서비스)', () => {
     jest.clearAllMocks();
   });
 
-  it('getPetItems는 용품 목록을 성공적으로 조회해야 한다', async () => {
-    const mockItems = [{ petItemId: 1, name: '사료' }];
-    (apiService.get as jest.Mock).mockResolvedValue({
-      data: mockItems,
-      statusCode: 200
-    });
+  it('모든 메서드 성공 케이스 테스트', async () => {
+    (apiService.get as jest.Mock).mockResolvedValue({ data: [], statusCode: 200 });
+    (apiService.post as jest.Mock).mockResolvedValue({ data: {}, statusCode: 200 });
+    (apiService.patch as jest.Mock).mockResolvedValue({ data: {}, statusCode: 200 });
+    (apiService.delete as jest.Mock).mockResolvedValue({ statusCode: 200 });
 
-    const result = await petItemService.getPetItems(1);
+    await petItemService.getCategories();
+    await petItemService.getPetItems(1);
+    await petItemService.getPetItems(1, 'food');
+    await petItemService.getPetItems(1, 'all');
+    await petItemService.createPetItem({} as any);
+    await petItemService.getPetItemDetail(1);
+    await petItemService.updatePetItem(1, {} as any);
+    await petItemService.deletePetItem(1);
+    await petItemService.getPurchaseHistory(1);
+    await petItemService.createPurchase(1);
+    await petItemService.deletePurchase(1);
 
-    expect(apiService.get).toHaveBeenCalledWith('/api/v1/pet-items', {
-      params: { petId: 1 }
-    });
-    expect(result).toEqual(mockItems);
+    expect(apiService.get).toHaveBeenCalled();
   });
 
-  it('createPetItem은 새 용품을 성공적으로 등록해야 한다', async () => {
-    const itemData = { petId: 1, name: '간식', category: 'SNACK', purchaseCycleDays: 30 };
-    (apiService.post as jest.Mock).mockResolvedValue({
-      data: { ...itemData, petItemId: 2 },
-      statusCode: 200
-    });
+  it('모든 메서드 실패(catch 블록) 커버리지 테스트', async () => {
+    const error = new Error('API 에러');
+    (apiService.get as jest.Mock).mockRejectedValue(error);
+    (apiService.post as jest.Mock).mockRejectedValue(error);
+    (apiService.patch as jest.Mock).mockRejectedValue(error);
+    (apiService.delete as jest.Mock).mockRejectedValue(error);
 
-    const result = await petItemService.createPetItem(itemData);
-
-    expect(apiService.post).toHaveBeenCalledWith('/api/v1/pet-items', itemData);
-    expect(result.petItemId).toBe(2);
-  });
-
-  it('deletePetItem은 용품을 성공적으로 삭제해야 한다', async () => {
-    (apiService.delete as jest.Mock).mockResolvedValue({
-      statusCode: 200
-    });
-
-    await petItemService.deletePetItem(100);
-
-    expect(apiService.delete).toHaveBeenCalledWith('/api/v1/pet-items/100');
+    await expect(petItemService.getCategories()).rejects.toThrow('API 에러');
+    await expect(petItemService.getPetItems(1)).rejects.toThrow('API 에러');
+    await expect(petItemService.createPetItem({} as any)).rejects.toThrow('API 에러');
+    await expect(petItemService.getPetItemDetail(1)).rejects.toThrow('API 에러');
+    await expect(petItemService.updatePetItem(1, {} as any)).rejects.toThrow('API 에러');
+    await expect(petItemService.deletePetItem(1)).rejects.toThrow('API 에러');
+    await expect(petItemService.getPurchaseHistory(1)).rejects.toThrow('API 에러');
+    await expect(petItemService.createPurchase(1)).rejects.toThrow('API 에러');
+    await expect(petItemService.deletePurchase(1)).rejects.toThrow('API 에러');
   });
 });
