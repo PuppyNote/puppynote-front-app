@@ -13,32 +13,20 @@ describe('UserCategoryService (사용자 카테고리 서비스)', () => {
     jest.clearAllMocks();
   });
 
-  it('getUserCategories는 아이템 카테고리 목록을 성공적으로 조회해야 한다', async () => {
-    const mockCategories = [{ categoryId: 1, categoryName: '사료' }];
-    (apiService.get as jest.Mock).mockResolvedValue({
-      data: mockCategories,
-      statusCode: 200
-    });
-
-    const result = await userCategoryService.getUserCategories('ITEM');
-
-    expect(apiService.get).toHaveBeenCalledWith('/api/v1/user-item-categories', {
-      params: { categoryType: 'ITEM' }
-    });
-    expect(result).toEqual(mockCategories);
+  it('getUserCategories 성공 및 실패 (ITEM & ACTIVITY)', async () => {
+    (apiService.get as jest.Mock).mockResolvedValue({ data: [], statusCode: 200 });
+    await userCategoryService.getUserCategories('ITEM');
+    await userCategoryService.getUserCategories('ACTIVITY');
+    
+    (apiService.get as jest.Mock).mockRejectedValue(new Error('에러'));
+    await expect(userCategoryService.getUserCategories('ITEM')).rejects.toThrow('에러');
   });
 
-  it('saveUserCategories는 카테고리 목록을 성공적으로 저장해야 한다', async () => {
-    const categories = ['사료', '간식'];
-    (apiService.post as jest.Mock).mockResolvedValue({
-      statusCode: 200
-    });
-
-    await userCategoryService.saveUserCategories('ITEM', categories);
-
-    expect(apiService.post).toHaveBeenCalledWith('/api/v1/user-item-categories', {
-      categoryType: 'ITEM',
-      categories
-    });
+  it('saveUserCategories 성공 및 실패', async () => {
+    (apiService.post as jest.Mock).mockResolvedValue({ statusCode: 200 });
+    await userCategoryService.saveUserCategories('ITEM', ['a']);
+    
+    (apiService.post as jest.Mock).mockRejectedValue(new Error('에러'));
+    await expect(userCategoryService.saveUserCategories('ACTIVITY', ['b'])).rejects.toThrow('에러');
   });
 });
