@@ -4,6 +4,7 @@ export default {
   expo: {
     name: "PuppyNote",
     slug: "puppynote-front-app",
+    platforms: ["ios"],
     scheme: "puppynote",
     version: "1.0.0",
     orientation: "portrait",
@@ -16,7 +17,7 @@ export default {
       backgroundColor: "#ffffff"
     },
     ios: {
-      supportsTablet: true,
+      supportsTablet: false,
       bundleIdentifier: "com.puppynote",
       googleServicesFile: "./GoogleService-Info.plist",
       icon: "./assets/puppynote-ios-app-icon.png",

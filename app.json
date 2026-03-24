@@ -2,6 +2,7 @@
   "expo": {
     "name": "PuppyNote",
     "slug": "puppynote-front-app",
+    "platforms": ["ios"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/puppynote-icon.png",
@@ -13,7 +14,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.puppynote",
       "googleServicesFile": "./GoogleService-Info.plist",
       "icon": "./assets/puppynote-ios-app-icon.png",
