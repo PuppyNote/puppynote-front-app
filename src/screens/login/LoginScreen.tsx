@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Platform, Alert } from 'react-native';
 import { login as kakaoLogin } from '@react-native-seoul/kakao-login';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useRecoilValue } from 'recoil';
 import { Layout, Text, CustomAlert, PetRegistrationModal, EntryOptionModal, InviteCodeModal } from '../../components';
 import { authService } from '../../services/auth/AuthService';
@@ -80,6 +81,37 @@ export default function LoginScreen({ navigation }: any) {
           '카카오 로그인 오류', 
           `에러: ${errorMessage} ${errorCode}\n\n상세: ${errorDetail.slice(0, 100)}${errorDetail.length > 100 ? '...' : ''}`
         );
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (credential.identityToken) {
+        const response = await authService.oauthLogin(
+          credential.identityToken, 
+          'APPLE', 
+          deviceId, 
+          fcmToken
+        );
+        await handleLoginSuccess(response.settingStatus);
+      }
+    } catch (e: any) {
+      if (e.code === 'ERR_REQUEST_CANCELED') {
+        // 사용자가 로그인을 취소한 경우
+      } else {
+        showSimpleAlert('오류', '애플 로그인에 실패했습니다.');
+        console.error(e);
       }
     } finally {
       setIsLoading(false);
@@ -171,12 +203,14 @@ export default function LoginScreen({ navigation }: any) {
               style={styles.socialButtonImage}
             />
           </TouchableOpacity>
-          {/* <TouchableOpacity activeOpacity={0.8} disabled={isLoading}>
-            <Image
-              source={require('../../../assets/loginButton/google.png')}
-              style={styles.socialButtonImage}
-            />
-          </TouchableOpacity> */}
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity activeOpacity={0.8} onPress={handleAppleLogin} disabled={isLoading}>
+              <Image
+                source={require('../../../assets/loginButton/apple.png')}
+                style={styles.socialButtonImage}
+              />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 

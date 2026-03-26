@@ -19,10 +19,12 @@ export default {
     ios: {
       supportsTablet: false,
       bundleIdentifier: "com.puppynote",
+      usesAppleSignIn: true,
       googleServicesFile: "./GoogleService-Info.plist",
       icon: "./assets/puppynote-ios-app-icon.png",
       infoPlist: {
-        ITSAppUsesNonExemptEncryption: false
+        ITSAppUsesNonExemptEncryption: false,
+        NSHumanReadableCopyright: "Copyright © 2026 PuppyNote. All rights reserved."
       },
       // iOS에서 Google Maps 설정을 제거하여 Apple Maps가 기본이 되도록 함
       config: {
@@ -73,7 +75,8 @@ export default {
     extra: {
       eas: {
         projectId: "15ac1ca0-2636-4f5e-a117-8fd5eaff2c24"
-      }
+      },
+      supportUrl: "https://github.com/tkdrl/puppynote-front-app"
     }
   }
 };

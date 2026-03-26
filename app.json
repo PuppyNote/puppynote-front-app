@@ -19,7 +19,8 @@
       "googleServicesFile": "./GoogleService-Info.plist",
       "icon": "./assets/puppynote-ios-app-icon.png",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false      
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSHumanReadableCopyright": "Copyright © 2026 PuppyNote. All rights reserved."
       }
     },
     "android": {
