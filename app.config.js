@@ -51,6 +51,7 @@ export default {
       favicon: "./assets/puppynote-icon.png"
     },
     plugins: [
+      "expo-apple-authentication",
       // react-native-maps 플러그인을 제거하여 iOS에서 Google Maps 종속성을 빼버림
       // "react-native-maps", 
       [
