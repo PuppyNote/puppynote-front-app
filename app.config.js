@@ -40,6 +40,10 @@ export default {
           apiKey: process.env.GOOGLE_MAPS_API_KEY || ""
         }
       },
+      // 태블릿 제외를 위한 하드웨어 요구사항 설정
+      permissions: [
+        "android.permission.CALL_PHONE" // 전화 기능을 사용하는 앱으로 인식시켜 태블릿 제외 유도
+      ],
       adaptiveIcon: {
         foregroundImage: "./assets/puppynote-aos-app-icon.png",
         backgroundColor: "#ffffff"
