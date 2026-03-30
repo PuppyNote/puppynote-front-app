@@ -45,6 +45,7 @@ export { default as UserCategoryPickerModal } from './supply/modal/UserCategoryP
 // Setting
 export { default as UserProfileModal } from './setting/modal/UserProfileModal';
 export { default as AlertSettingModal } from './setting/modal/AlertSettingModal';
+export { default as WithdrawalModal } from './setting/modal/WithdrawalModal';
 
 // Health
 export { default as HealthItem } from './health/item/HealthItem';

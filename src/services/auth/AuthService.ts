@@ -154,6 +154,16 @@ class AuthService {
 
     return response.data;
   }
+
+  /**
+   * 회원탈퇴 API
+   */
+  public async withdraw(): Promise<void> {
+    const response = await apiService.delete<null>('/api/v1/user/withdraw');
+    if (response.statusCode !== 200) {
+      throw new Error(response.message || '회원탈퇴에 실패했습니다.');
+    }
+  }
 }
 
 export const authService = new AuthService();
