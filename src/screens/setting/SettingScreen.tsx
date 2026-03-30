@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image, ScrollView, ActivityIndicator } from 'react-native';
-import { Layout, Text, CustomAlert, AlertSettingModal, UserProfileModal } from '../../components';
+import { Layout, Text, CustomAlert, AlertSettingModal, UserProfileModal, WithdrawalModal } from '../../components';
 import { authService, UserProfile } from '../../services/auth/AuthService';
 import { storageService } from '../../services/auth/StorageService';
 import { usePet } from '../../context/PetContext';
@@ -11,6 +11,7 @@ export default function SettingScreen({ navigation }: any) {
   const { resetPetContext } = usePet();
   const [isAlertSettingModalVisible, setIsAlertSettingModalVisible] = useState(false);
   const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
+  const [isWithdrawModalVisible, setIsWithdrawModalVisible] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -76,6 +77,21 @@ export default function SettingScreen({ navigation }: any) {
     });
   };
 
+  const handleWithdraw = async () => {
+    try {
+      await authService.withdraw();
+      setIsWithdrawModalVisible(false);
+      resetPetContext();
+      await storageService.clearTokens();
+      await storageService.clearSelectedPet();
+      showSimpleAlert('성공', '회원탈퇴가 완료되었습니다.', () => {
+        navigation.replace('Login');
+      });
+    } catch (error: any) {
+      showSimpleAlert('오류', error.message || '회원탈퇴 중 오류가 발생했습니다.');
+    }
+  };
+
   return (
     <Layout edges={['top', 'left', 'right', 'bottom']} backgroundColor="#fcfaf2">
       <ScrollView 
@@ -136,6 +152,13 @@ export default function SettingScreen({ navigation }: any) {
           <TouchableOpacity style={styles.prettyLogoutButton} onPress={handleLogout} activeOpacity={0.8}>
             <Text style={styles.prettyLogoutText}>로그아웃</Text>
           </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.withdrawButton} 
+            onPress={() => setIsWithdrawModalVisible(true)} 
+            activeOpacity={0.8}
+          >
+            <Text style={styles.withdrawText}>회원탈퇴</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -152,6 +175,12 @@ export default function SettingScreen({ navigation }: any) {
           setIsProfileModalVisible(false);
           loadUserProfile();
         }}
+      />
+
+      <WithdrawalModal
+        visible={isWithdrawModalVisible}
+        onClose={() => setIsWithdrawModalVisible(false)}
+        onConfirm={handleWithdraw}
       />
 
       <CustomAlert 
@@ -296,6 +325,15 @@ const styles = StyleSheet.create({
     fontSize: 14, // 16에서 14로 감소
     color: '#ef4444',
     fontWeight: 'bold',
+  },
+  withdrawButton: {
+    alignSelf: 'center',
+    paddingVertical: 8,
+  },
+  withdrawText: {
+    fontSize: 12,
+    color: '#94a3b8',
+    textDecorationLine: 'underline',
   },
   versionContainer: {
     alignItems: 'center',
