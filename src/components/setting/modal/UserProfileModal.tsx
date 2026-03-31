@@ -11,12 +11,15 @@ import {
   ScrollView, 
   KeyboardAvoidingView 
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { CustomText as Text } from '../../common/item/CustomText';
 import { authService, UserProfile } from '../../../services/auth/AuthService';
 import { storageService } from '../../../services/auth/StorageService';
+import { usePet } from '../../../context/PetContext';
 import CustomAlert from '../../common/modal/CustomAlert';
 import { useAlert } from '../../../hooks/useAlert';
 import { ImagePickerUtil } from '../../../utils/ImagePickerUtil';
+import WithdrawalModal from './WithdrawalModal';
 
 interface UserProfileModalProps {
   visible: boolean;
@@ -31,9 +34,12 @@ export default function UserProfileModal({
   onClose,
   initialData,
 }: UserProfileModalProps) {
+  const navigation = useNavigation<any>();
+  const { resetPetContext } = usePet();
   const [nickName, setNickName] = useState('');
   const [profileUrl, setProfileUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isWithdrawModalVisible, setIsWithdrawModalVisible] = useState(false);
   const { alertConfig, showSimpleAlert, hideAlert } = useAlert();
 
   useEffect(() => {
@@ -81,6 +87,22 @@ export default function UserProfileModal({
       showSimpleAlert('오류', error.message || '프로필 수정 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleWithdraw = async () => {
+    try {
+      await authService.withdraw();
+      setIsWithdrawModalVisible(false);
+      onClose(); // 프로필 모달도 닫기
+      resetPetContext();
+      await storageService.clearTokens();
+      await storageService.clearSelectedPet();
+      showSimpleAlert('성공', '회원탈퇴가 완료되었습니다.', () => {
+        navigation.replace('Login');
+      });
+    } catch (error: any) {
+      showSimpleAlert('오류', error.message || '회원탈퇴 중 오류가 발생했습니다.');
     }
   };
 
@@ -140,10 +162,26 @@ export default function UserProfileModal({
                   )}
                 </TouchableOpacity>
               </View>
+
+              <View style={styles.withdrawSection}>
+                <TouchableOpacity 
+                  style={styles.withdrawButton} 
+                  onPress={() => setIsWithdrawModalVisible(true)}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.withdrawText}>회원탈퇴</Text>
+                </TouchableOpacity>
+              </View>
             </ScrollView>
           </View>
         </KeyboardAvoidingView>
       </View>
+
+      <WithdrawalModal
+        visible={isWithdrawModalVisible}
+        onClose={() => setIsWithdrawModalVisible(false)}
+        onConfirm={handleWithdraw}
+      />
 
       <CustomAlert 
         visible={alertConfig.visible}
@@ -278,5 +316,20 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: '#0f172a',
     fontWeight: 'bold',
+  },
+  withdrawSection: {
+    marginTop: 32,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    paddingTop: 16,
+    alignItems: 'center',
+  },
+  withdrawButton: {
+    padding: 8,
+  },
+  withdrawText: {
+    fontSize: 12,
+    color: '#94a3b8',
+    textDecorationLine: 'underline',
   },
 });
