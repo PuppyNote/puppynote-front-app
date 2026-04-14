@@ -1,5 +1,7 @@
 # 🐾 PuppyNote (퍼피노트) - Front-end
 
+AppStore: https://apps.apple.com/kr/app/puppynote/id6760515755
+
 PuppyNote는 반려동물의 산책 기록, 건강 상태, 물품 관리 및 가족 공유 기능을 제공하는 통합 반려동물 케어 플랫폼입니다. Expo와 React Native를 기반으로 제작되어 iOS와 Android 환경에서 원활한 사용자 경험을 제공합니다.
 
 ## 🚀 주요 기능
