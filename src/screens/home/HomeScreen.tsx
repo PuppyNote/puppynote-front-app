@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, ScrollView, Image, StyleSheet, TouchableOpacity, RefreshControl, ActivityIndicator, Clipboard, Alert } from 'react-native';
+import * as Location from 'expo-location';
 import {
   Layout,
   Card,
@@ -12,6 +13,7 @@ import { usePet } from '../../context/PetContext';
 import { petItemService } from '../../services/petItem/PetItemService';
 import { homeService, HomeInfo } from '../../services/home/HomeService';
 import { petTipService } from '../../services/petTip/PetTipService';
+import { weatherService, WeatherInfo } from '../../services/weather/WeatherService';
 import { useAlert } from '../../hooks/useAlert';
 import { PetItem } from '../../types/PetItem';
 import { calculateDaysDifference } from '../../utils/DateUtil';
@@ -25,6 +27,23 @@ export default function HomeScreen({ navigation }: any) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentTip, setCurrentTip] = useState<string>('');
   const [isPetModalVisible, setIsPetModalVisible] = useState(false);
+  const [weatherData, setWeatherData] = useState<WeatherInfo | null>(null);
+
+  const loadWeatherData = useCallback(async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.warn('Permission to access location was denied');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const weather = await weatherService.getWeather(location.coords.latitude, location.coords.longitude);
+      setWeatherData(weather);
+    } catch (error) {
+      console.error('Failed to load weather data:', error);
+    }
+  }, []);
 
   const loadHomeData = useCallback(async (petId: number) => {
     try {
@@ -56,6 +75,9 @@ export default function HomeScreen({ navigation }: any) {
         console.warn('Failed to fetch pet tip:', error);
       }
 
+      // 2. 날씨 정보 조회
+      loadWeatherData();
+
       if (selectedPet) {
         await loadHomeData(selectedPet.id);
       }
@@ -65,7 +87,7 @@ export default function HomeScreen({ navigation }: any) {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [selectedPet, loadHomeData]);
+  }, [selectedPet, loadHomeData, loadWeatherData]);
 
   useEffect(() => {
     if (!isLoadingPet) {
@@ -75,6 +97,7 @@ export default function HomeScreen({ navigation }: any) {
 
   const onRefresh = () => {
     setIsRefreshing(true);
+    loadWeatherData();
     if (selectedPet) {
       loadHomeData(selectedPet.id).finally(() => setIsRefreshing(false));
     } else {
@@ -117,18 +140,33 @@ export default function HomeScreen({ navigation }: any) {
         >
           {/* Welcome Section */}
           <View style={styles.welcomeSection}>
-            <Text style={styles.welcomeTitle}>안녕하세요, 집사님! 👋</Text>
-            <Text style={styles.welcomeSubtitle}>
-              {!selectedPet 
-                ? '반려동물을 등록하고 PuppyNote를 시작해보세요!' 
-                : homeInfo 
-                  ? (homeInfo.walkedToday 
-                    ? '오늘 산책을 완료했어요! 정말 멋져요. ✨' 
-                    : homeInfo.daysSinceLastWalk !== null 
-                      ? `마지막 산책으로부터 ${homeInfo.daysSinceLastWalk}일이 지났어요.`
-                      : '오늘도 즐거운 하루 되세요!')
-                  : '오늘도 즐거운 하루 되세요!'}
-            </Text>
+            <View style={styles.welcomeRow}>
+              <View style={styles.welcomeTextContainer}>
+                <Text style={styles.welcomeTitle}>안녕하세요, 집사님! 👋</Text>
+                <Text style={styles.welcomeSubtitle}>
+                  {!selectedPet 
+                    ? '반려동물을 등록하고 PuppyNote를 시작해보세요!' 
+                    : homeInfo 
+                      ? (homeInfo.walkedToday 
+                        ? '오늘 산책을 완료했어요! 정말 멋져요. ✨' 
+                        : homeInfo.daysSinceLastWalk !== null 
+                          ? `마지막 산책으로부터 ${homeInfo.daysSinceLastWalk}일이 지났어요.`
+                          : '오늘도 즐거운 하루 되세요!')
+                      : '오늘도 즐거운 하루 되세요!'}
+                </Text>
+              </View>
+              {weatherData && (
+                <View style={styles.weatherWidget}>
+                  <Text style={styles.weatherEmoji}>
+                    {weatherService.getWeatherEmoji(weatherData.weatherCode)}
+                  </Text>
+                  <View style={styles.weatherTextInfo}>
+                    <Text style={styles.weatherTemp}>{weatherData.temperature.toFixed(1)}°C</Text>
+                    <Text style={styles.weatherDesc}>{weatherData.weatherDescription}</Text>
+                  </View>
+                </View>
+              )}
+            </View>
           </View>
 
           {!selectedPet ? (
@@ -228,6 +266,37 @@ export default function HomeScreen({ navigation }: any) {
                   </TouchableOpacity>
                 )}
               </View>
+
+              {/* Walk Recommendation Card */}
+              {weatherData && (
+                <Card 
+                  style={[
+                    styles.walkSummaryCard,
+                    (weatherData.walkCondition === 'GREAT' || weatherData.walkCondition === 'GOOD') ? styles.borderSuccess :
+                    weatherData.walkCondition === 'MODERATE' ? styles.borderWarning :
+                    styles.borderError,
+                    { marginBottom: 16 }
+                  ]}
+                >
+                  <View style={styles.walkSummaryContent}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.walkSummaryLabel}>오늘의 산책 추천</Text>
+                      <Text style={styles.walkSummaryValue}>{weatherData.walkMessage}</Text>
+                    </View>
+                    <View style={[
+                      styles.walkStatusIndicator,
+                      (weatherData.walkCondition === 'GREAT' || weatherData.walkCondition === 'GOOD') ? styles.bgSuccess :
+                      weatherData.walkCondition === 'MODERATE' ? styles.bgWarning :
+                      styles.bgError
+                    ]}>
+                      <Text style={styles.walkStatusIcon}>
+                        {(weatherData.walkCondition === 'GREAT' || weatherData.walkCondition === 'GOOD') ? '🐕' :
+                         weatherData.walkCondition === 'MODERATE' ? '🌤️' : '🚫'}
+                      </Text>
+                    </View>
+                  </View>
+                </Card>
+              )}
 
               {/* Walk Status Card */}
               {homeInfo && homeInfo.daysSinceLastWalk !== null && (
@@ -358,6 +427,15 @@ const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 24,
   },
+  welcomeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+  },
+  welcomeTextContainer: {
+    flex: 1,
+  },
   welcomeTitle: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -368,6 +446,39 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748b',
     fontWeight: '500',
+  },
+  weatherWidget: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    gap: 8,
+  },
+  weatherEmoji: {
+    fontSize: 28,
+  },
+  weatherTextInfo: {
+    alignItems: 'flex-start',
+  },
+  weatherTemp: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    lineHeight: 20,
+  },
+  weatherDesc: {
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: '600',
   },
   mainCard: {
     padding: 20,
