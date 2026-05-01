@@ -43,7 +43,7 @@ export default {
         "android.permission.CALL_PHONE"
       ],
       adaptiveIcon: {
-        foregroundImage: "./assets/puppynote-aos-app-icon.png",
+        foregroundImage: "./assets/puppynote-icon.png",
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
