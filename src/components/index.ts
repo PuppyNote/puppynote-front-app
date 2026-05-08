@@ -12,6 +12,7 @@ export { default as FloatingActionButton } from './common/item/FloatingActionBut
 export { default as MultiImageSelector } from './common/item/MultiImageSelector';
 export { WheelPicker } from './common/item/WheelPicker';
 export { PagedFlatList } from './common/item/PagedFlatList';
+export { default as SearchBar } from './common/item/SearchBar';
 
 // Common - Card
 export { default as Card } from './common/card/Card';
