@@ -13,6 +13,7 @@ import SuppliesScreen from '../screens/supply/SuppliesScreen';
 import AddSupplyScreen from '../screens/supply/AddSupplyScreen';
 import CategoryManagementScreen from '../screens/supply/CategoryManagementScreen';
 import HealthScreen from '../screens/health/HealthScreen';
+import FoodScreen from '../screens/food/FoodScreen';
 import CommunityScreen from '../screens/community/CommunityScreen';
 import CommunityDetailScreen from '../screens/community/CommunityDetailScreen';
 import AddPostScreen from '../screens/community/AddPostScreen';
@@ -22,7 +23,7 @@ import SettingScreen from '../screens/setting/SettingScreen';
 import FamilyManagementScreen from '../screens/setting/FamilyManagementScreen';
 import AlertHistoryScreen from '../screens/notification/AlertHistoryScreen';
 import BottomTab from '../components/common/item/BottomTab';
-import { TopBar } from '../components';
+import TopBar from '../components/common/item/TopBar';
 import { apiService } from '../services/ApiService';
 import { usePet } from '../context/PetContext';
 
@@ -57,6 +58,11 @@ function TabNavigator() {
       <Tab.Screen 
         name="Community" 
         component={CommunityScreen} 
+        options={{ headerTitle: 'PuppyNote' }}
+      />
+      <Tab.Screen 
+        name="Food" 
+        component={FoodScreen} 
         options={{ headerTitle: 'PuppyNote' }}
       />
       <Tab.Screen 
