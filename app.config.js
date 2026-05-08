@@ -1,4 +1,5 @@
 import 'dotenv/config';
+const packageJson = require('./package.json');
 
 export default {
   expo: {
@@ -6,7 +7,7 @@ export default {
     slug: "puppynote-front-app",
     platforms: ["ios"],
     scheme: "puppynote",
-    version: "1.0.0",
+    version: packageJson.version,
     orientation: "portrait",
     icon: "./assets/puppynote-icon.png",
     userInterfaceStyle: "light",
@@ -19,6 +20,7 @@ export default {
     ios: {
       supportsTablet: false,
       bundleIdentifier: "com.puppynote",
+      buildNumber: packageJson.version,
       usesAppleSignIn: true,
       googleServicesFile: "./GoogleService-Info.plist",
       icon: "./assets/puppynote-ios-app-icon.png",
@@ -26,13 +28,10 @@ export default {
         ITSAppUsesNonExemptEncryption: false,
         NSHumanReadableCopyright: "Copyright © 2026 PuppyNote. All rights reserved."
       },
-      // iOS에서 Google Maps 설정을 제거하여 Apple Maps가 기본이 되도록 함
-      config: {
-        // googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || ""
-      }
+      config: {}
     },
     android: {
-      versionCode: 3,
+      versionCode: 4, // 필요시 packageJson.version을 기반으로 자동 계산 로직 추가 가능
       package: "com.puppynote",
       googleServicesFile: "./google-services.json",
       config: {
@@ -40,12 +39,11 @@ export default {
           apiKey: process.env.GOOGLE_MAPS_API_KEY || ""
         }
       },
-      // 태블릿 제외를 위한 하드웨어 요구사항 설정
       permissions: [
-        "android.permission.CALL_PHONE" // 전화 기능을 사용하는 앱으로 인식시켜 태블릿 제외 유도
+        "android.permission.CALL_PHONE"
       ],
       adaptiveIcon: {
-        foregroundImage: "./assets/puppynote-aos-app-icon.png",
+        foregroundImage: "./assets/puppynote-icon.png",
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
@@ -56,8 +54,6 @@ export default {
     },
     plugins: [
       "expo-apple-authentication",
-      // react-native-maps 플러그인을 제거하여 iOS에서 Google Maps 종속성을 빼버림
-      // "react-native-maps", 
       [
         "expo-build-properties",
         {
