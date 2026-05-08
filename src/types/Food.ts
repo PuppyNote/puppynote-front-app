@@ -12,7 +12,7 @@ export interface FoodSearchResponse {
 }
 
 export interface FoodSearchRequest {
-  question: string;
+  question?: string;
   page?: number;
   size?: number;
 }

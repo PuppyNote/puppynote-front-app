@@ -91,13 +91,6 @@ export default function FoodScreen() {
 
   // 실시간 검색 (Debounce)
   useEffect(() => {
-    if (!keyword.trim()) {
-      setFoods([]);
-      setTotalCount(0);
-      setIsAiResult(false);
-      return;
-    }
-
     const timer = setTimeout(() => {
       searchFoods(true);
     }, 500); // 500ms 대기 후 검색
@@ -106,17 +99,12 @@ export default function FoodScreen() {
   }, [keyword]);
 
   const searchFoods = useCallback(async (isInitial: boolean = true) => {
-    if (!keyword.trim()) {
-      showSimpleAlert('알림', '검색어를 입력해주세요.');
-      return;
-    }
-
     const currentPage = isInitial ? 0 : page + 1;
     
     setIsLoading(true);
     try {
       const response = await foodService.searchFoods({
-        question: keyword,
+        question: keyword.trim() || undefined,
         page: currentPage,
         size: 10
       });

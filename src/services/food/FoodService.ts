@@ -7,9 +7,11 @@ class FoodService {
    */
   async searchFoods(params: FoodSearchRequest): Promise<FoodSearchResponse> {
     const { question, page = 0, size = 10 } = params;
-    const response = await apiService.get<FoodSearchResponse>(
-      `/api/v1/foods?question=${encodeURIComponent(question)}&page=${page}&size=${size}`
-    );
+    let url = `/api/v1/foods?page=${page}&size=${size}`;
+    if (question) {
+      url += `&question=${encodeURIComponent(question)}`;
+    }
+    const response = await apiService.get<FoodSearchResponse>(url);
     return response.data;
   }
 
