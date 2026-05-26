@@ -27,6 +27,10 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         return isFocused 
           ? require('../../../../assets/bottomTab/community-click.png') 
           : require('../../../../assets/bottomTab/community.png');
+      case 'Food':
+        return isFocused 
+          ? require('../../../../assets/bottomTab/food-click.png') 
+          : require('../../../../assets/bottomTab/food.png');
       case 'Settings':
         return isFocused 
           ? require('../../../../assets/bottomTab/setting-click.png') 

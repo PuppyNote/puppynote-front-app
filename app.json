@@ -3,8 +3,7 @@
     "name": "PuppyNote",
     "slug": "puppynote-front-app",
     "platforms": ["ios"],
-    "version": "1.0.1",
-
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/puppynote-icon.png",
     "userInterfaceStyle": "light",
@@ -17,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.puppynote",
-      "buildNumber": "1.0.1",
+      "buildNumber": "1.0.2",
       "googleServicesFile": "./GoogleService-Info.plist",
       "icon": "./assets/puppynote-ios-app-icon.png",
       "infoPlist": {
@@ -26,7 +25,7 @@
       }
     },
     "android": {
-      "versionCode": 3,
+      "versionCode": 4,
       "package": "com.puppynote",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {

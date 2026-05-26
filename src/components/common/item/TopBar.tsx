@@ -38,7 +38,7 @@ export default function TopBar({ navigation, options, route, title: manualTitle 
   };
 
   // 메인 탭 화면인지 확인
-  const mainTabs = ['Home', 'Walk', 'Supplies', 'Community', 'Settings'];
+  const mainTabs = ['Home', 'Walk', 'Supplies', 'Community', 'Food', 'Settings'];
   const isMainTab = route?.name ? mainTabs.includes(route.name) : false;
   
   // 메인 탭이 아니고 뒤로가기가 가능할 때만 뒤로가기 버튼 표시

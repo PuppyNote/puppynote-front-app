@@ -2,9 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { 
   View, 
   StyleSheet, 
-  TextInput, 
   TouchableOpacity, 
-  Image, 
   FlatList,
   Dimensions,
   ScrollView
@@ -14,7 +12,8 @@ import {
   Text, 
   FloatingActionButton,
   PagedFlatList,
-  PostCard
+  PostCard,
+  SearchBar
 } from '../../components';
 import { communityService } from '../../services/community/CommunityService';
 import { Post } from '../../types/Community';
@@ -132,30 +131,22 @@ export default function CommunityScreen({ navigation, route }: any) {
     <Layout edges={['left', 'right']} backgroundColor="#fcfaf2">
       {/* Search Bar Area */}
       <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="해시태그를 검색해보세요"
-            placeholderTextColor="#94a3b8"
-            value={keyword}
-            onChangeText={(text) => {
-              isInternalUpdate.current = false;
-              setKeyword(text);
-            }}
-            returnKeyType="search"
-            onSubmitEditing={() => {
-              isInternalUpdate.current = true;
-              const cleanedKeyword = keyword.trim().replace(/^#/, '');
-              setSearchQuery(cleanedKeyword);
-              setShowSuggestions(false);
-            }}
-          />
-          {keyword.length > 0 && (
-            <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
-              <Text style={styles.clearButtonText}>✕</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        <SearchBar
+          placeholder="해시태그를 검색해보세요"
+          value={keyword}
+          onChangeText={(text) => {
+            isInternalUpdate.current = false;
+            setKeyword(text);
+          }}
+          onSearch={() => {
+            isInternalUpdate.current = true;
+            const cleanedKeyword = keyword.trim().replace(/^#/, '');
+            setSearchQuery(cleanedKeyword);
+            setShowSuggestions(false);
+          }}
+          onClear={handleClearSearch}
+          showSearchButton={false}
+        />
 
         {/* Autocomplete Suggestions Popup */}
         {showSuggestions && (
@@ -207,34 +198,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
     zIndex: 100, // Ensure suggestions are on top
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 48,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: '#0f172a',
-    fontWeight: '500',
-  },
-  clearButton: {
-    padding: 4,
-    marginLeft: 8,
-  },
-  clearButtonText: {
-    fontSize: 16,
-    color: '#94a3b8',
-    fontWeight: '600',
   },
   suggestionWrapper: {
     position: 'absolute',
