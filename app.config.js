@@ -55,6 +55,52 @@ export default {
     plugins: [
       "expo-apple-authentication",
       [
+        "react-native-android-widget",
+        {
+          widgets: [
+            {
+              name: "WeeklyCalendar",
+              label: "주간 산책 캘린더",
+              description: "이번 주 산책 기록을 확인하세요.",
+              minWidth: "160dp",
+              minHeight: "110dp",
+              targetCellWidth: 2,
+              targetCellHeight: 1
+            },
+            {
+              name: "MonthlyCalendar",
+              label: "월간 산책 캘린더",
+              description: "이번 달 산책 기록을 확인하세요.",
+              minWidth: "160dp",
+              minHeight: "160dp",
+              targetCellWidth: 2,
+              targetCellHeight: 2
+            }
+          ]
+        }
+      ],
+      [
+        "expo-widgets",
+        {
+          widgets: [
+            {
+              name: "WeeklyCalendar",
+              displayName: "주간 산책 캘린더",
+              description: "이번 주 산책 기록을 확인하세요.",
+              supportedFamilies: ["systemSmall", "systemMedium"],
+              entryPoint: "./src/widgets/WeeklyCalendar.tsx"
+            },
+            {
+              name: "MonthlyCalendar",
+              displayName: "월간 산책 캘린더",
+              description: "이번 달 산책 기록을 확인하세요.",
+              supportedFamilies: ["systemMedium", "systemLarge"],
+              entryPoint: "./src/widgets/MonthlyCalendar.tsx"
+            }
+          ]
+        }
+      ],
+      [
         "expo-build-properties",
         {
           android: {
