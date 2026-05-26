@@ -5,7 +5,7 @@ export default {
   expo: {
     name: "PuppyNote",
     slug: "puppynote-front-app",
-    platforms: ["ios"],
+    platforms: ["ios", "android"],
     scheme: "puppynote",
     version: packageJson.version,
     orientation: "portrait",
@@ -80,31 +80,11 @@ export default {
         }
       ],
       [
-        "expo-widgets",
-        {
-          widgets: [
-            {
-              name: "WeeklyCalendar",
-              displayName: "주간 산책 캘린더",
-              description: "이번 주 산책 기록을 확인하세요.",
-              supportedFamilies: ["systemSmall", "systemMedium"],
-              entryPoint: "./src/widgets/WeeklyCalendar.tsx"
-            },
-            {
-              name: "MonthlyCalendar",
-              displayName: "월간 산책 캘린더",
-              description: "이번 달 산책 기록을 확인하세요.",
-              supportedFamilies: ["systemMedium", "systemLarge"],
-              entryPoint: "./src/widgets/MonthlyCalendar.tsx"
-            }
-          ]
-        }
-      ],
-      [
         "expo-build-properties",
         {
           android: {
-            "extraMavenRepos": ["https://devrepo.kakao.com/nexus/content/groups/public/"]
+            "extraMavenRepos": ["https://devrepo.kakao.com/nexus/content/groups/public/"],
+            "kotlinVersion": "2.0.21"
           },
           ios: {
             "useFrameworks": "static"
@@ -114,8 +94,7 @@ export default {
       [
         "@react-native-seoul/kakao-login",
         {
-          kakaoAppKey: process.env.KAKAO_NATIVE_APP_KEY || "",
-          kotlinVersion: "2.0.21"
+          kakaoAppKey: process.env.KAKAO_NATIVE_APP_KEY || ""
         }
       ]
     ],
