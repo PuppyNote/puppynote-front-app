@@ -22,10 +22,12 @@ import AddWalkScreen from '../screens/walk/AddWalkScreen';
 import SettingScreen from '../screens/setting/SettingScreen';
 import FamilyManagementScreen from '../screens/setting/FamilyManagementScreen';
 import AlertHistoryScreen from '../screens/notification/AlertHistoryScreen';
+import WebViewShellScreen from '../screens/webview/WebViewShellScreen';
 import BottomTab from '../components/common/item/BottomTab';
 import TopBar from '../components/common/item/TopBar';
 import { apiService } from '../services/ApiService';
 import { usePet } from '../context/PetContext';
+import { WEBVIEW_MODE } from '../config/webview';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -93,12 +95,15 @@ export default function AppNavigator() {
 
   return (
     <NavigationContainer ref={navigationRef}>
-      <Stack.Navigator 
-        initialRouteName="Splash"
+      <Stack.Navigator
+        // 웹뷰 전환 단계: EXPO_PUBLIC_WEBVIEW_MODE=true 이면 모바일 웹 쉘로 진입합니다.
+        // 기본값은 false라 기존 네이티브 화면 동작이 그대로 유지됩니다.
+        initialRouteName={WEBVIEW_MODE ? 'WebViewShell' : 'Splash'}
         screenOptions={{
           headerShown: false,
         }}
       >
+        <Stack.Screen name="WebViewShell" component={WebViewShellScreen} />
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
