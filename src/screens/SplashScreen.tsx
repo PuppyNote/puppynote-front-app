@@ -22,8 +22,8 @@ export default function SplashScreen({ navigation }: any) {
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         if (token) {
-          // 토큰이 있으면 메인 화면으로 이동
-          navigation.replace('MainTabs');
+          // 토큰이 있으면 WebView 쉘로 이동 (메인 화면은 이제 모바일 웹)
+          navigation.replace('WebViewShell');
         } else {
           // 토큰이 없으면 로그인 화면으로 이동
           navigation.replace('Login');

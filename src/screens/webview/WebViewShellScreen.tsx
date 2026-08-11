@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, BackHandler, Linking, Platform, StyleSheet, View } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import WebView, { WebViewNavigation } from 'react-native-webview';
@@ -39,6 +40,11 @@ const NOT_CONFIGURED_ERROR: WebViewLoadError = {
  * 관련 문서: docs/webview-migration/02-js-bridge-protocol.md
  */
 export default function WebViewShellScreen() {
+  const route = useRoute<any>();
+  /** 로그인 화면의 "회원가입"/"비밀번호 찾기"처럼 특정 웹 경로로 바로 진입해야 할 때 씁니다. */
+  const path: string = route.params?.path ?? '';
+  const targetUrl = path ? `${WEB_URL}${path}` : WEB_URL;
+
   const webViewRef = useRef<WebView>(null);
   const canGoBackRef = useRef(false);
 
@@ -144,7 +150,7 @@ export default function WebViewShellScreen() {
         <WebView
           key={reloadKey}
           ref={webViewRef}
-          source={{ uri: WEB_URL }}
+          source={{ uri: targetUrl }}
           style={styles.webView}
           // 브릿지는 웹의 어떤 코드보다 먼저 들어가야 합니다.
           injectedJavaScriptBeforeContentLoaded={injectedJavaScript}

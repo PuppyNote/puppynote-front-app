@@ -27,7 +27,7 @@ export default function LoginScreen({ navigation }: any) {
   const handleLoginSuccess = async (settingStatus?: string) => {
     // 펫 목록 갱신
     await refreshPets();
-    navigation.replace('MainTabs');
+    navigation.replace('WebViewShell');
   };
 
   const handleLogin = async () => {
@@ -131,13 +131,13 @@ export default function LoginScreen({ navigation }: any) {
   const handlePetRegistrationSuccess = async (petId: number, petName: string) => {
     setIsPetModalVisible(false);
     await storageService.saveSelectedPet(petId, petName);
-    navigation.replace('MainTabs');
+    navigation.replace('WebViewShell');
   };
 
   const handleInviteCodeSuccess = async (petId: number, petName: string) => {
     setIsInviteModalVisible(false);
     await storageService.saveSelectedPet(petId, petName);
-    navigation.replace('MainTabs');
+    navigation.replace('WebViewShell');
   };
 
   return (
@@ -216,14 +216,14 @@ export default function LoginScreen({ navigation }: any) {
 
       <View style={styles.signupContainer}>
         <Text style={styles.signupText}>계정이 없으신가요?</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <TouchableOpacity onPress={() => navigation.navigate('WebViewShell', { path: '/register' })}>
           <Text style={styles.signupLink}>회원가입</Text>
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity 
-        style={styles.forgotPasswordContainer} 
-        onPress={() => navigation.navigate('PasswordReset')}
+      <TouchableOpacity
+        style={styles.forgotPasswordContainer}
+        onPress={() => navigation.navigate('WebViewShell', { path: '/password-reset' })}
       >
         <Text style={styles.forgotPasswordText}>비밀번호를 잊으셨나요?</Text>
       </TouchableOpacity>
