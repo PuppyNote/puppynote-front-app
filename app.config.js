@@ -5,7 +5,7 @@ export default {
   expo: {
     name: "PuppyNote",
     slug: "puppynote-front-app",
-    platforms: ["ios"],
+    platforms: ["ios", "android"],
     scheme: "puppynote",
     version: packageJson.version,
     orientation: "portrait",

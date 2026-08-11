@@ -12,8 +12,8 @@
 
 ## 단계
 
-- **Phase 0 (현재)** — 디자인 스펙 정리, 브릿지 규약 초안, 브릿지/쉘 기초 구현
-- Phase 1 이후 — 화면별 이식 (별도 티켓)
+- Phase 0 — 디자인 스펙 정리, 브릿지 규약 초안, 브릿지/쉘 기초 구현
+- **Phase 1 (현재)** — front.puppynote.co.kr 배포 완료, 앱 기본 진입점을 WebView 쉘로 전환
 
 ## 앱 쪽 코드 위치
 
@@ -33,8 +33,9 @@ src/__tests__/bridge/           주입 스크립트 왕복 테스트
 ## 실행
 
 ```bash
-# .env.example 참고해 .env 설정 후
-EXPO_PUBLIC_WEB_URL=http://10.0.2.2:3000 EXPO_PUBLIC_WEBVIEW_MODE=true npm run android
+npm run android
 ```
 
-`EXPO_PUBLIC_WEBVIEW_MODE`가 `true`가 아니면 기존 네이티브 화면으로 그대로 동작합니다.
+기본값이 WebView 모드 on(front.puppynote.co.kr)이라 별도 설정 없이 바로 WebView 쉘로 진입합니다.
+로컬 웹 서버를 보거나 네이티브 화면으로 잠시 되돌리려면 `.env.example` 참고해 `.env`에서
+`EXPO_PUBLIC_WEB_URL` / `EXPO_PUBLIC_WEBVIEW_MODE`를 덮어쓰세요.
