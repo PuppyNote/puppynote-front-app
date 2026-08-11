@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1050196086892",
+    "project_id": "puppynote-7c231",
+    "storage_bucket": "puppynote-7c231.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1050196086892:android:34b725d789564bd7690849",
+        "android_client_info": {
+          "package_name": "com.puppynote"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBxJFwmWoMK_qj2F1NMF3IHPEHX2kc2xM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
