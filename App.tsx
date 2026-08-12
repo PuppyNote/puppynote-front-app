@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppNavigator from './src/navigation/AppNavigator';
 import { DeviceProvider } from './src/context/DeviceContext';
 import { PetProvider } from './src/context/PetContext';
+import ForceUpdateGate from './src/components/common/ForceUpdateGate';
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
         <PetProvider>
           <AppNavigator />
           <StatusBar style="auto" />
+          <ForceUpdateGate />
         </PetProvider>
       </DeviceProvider>
     </GestureHandlerRootView>
