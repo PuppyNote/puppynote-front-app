@@ -143,8 +143,10 @@ export default function WebViewShellScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
-      <StatusBar style="dark" />
+    // 'top'을 빼서 상태바 아래까지 WebView가 꽉 채우게 합니다. 모바일 웹이
+    // viewport-fit=cover + env(safe-area-inset-top) CSS로 자체 처리합니다.
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+      <StatusBar style="dark" translucent />
 
       {!!WEB_URL && !error && (
         <WebView
