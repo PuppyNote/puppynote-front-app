@@ -41,9 +41,16 @@ export default {
           apiKey: process.env.GOOGLE_MAPS_API_KEY || ""
         }
       },
+      // CAMERA를 일부러 선언하지 않습니다: react-native-webview 13.15.0의
+      // RNCWebViewModuleImpl#needsCameraPermission()이 "매니페스트에 CAMERA가
+      // 있는데 런타임 허용은 안 된 상태"면 캡처 인텐트를 그냥 null로 두고 조용히
+      // 포기합니다(별도 권한 요청 로직 없음) - <input capture> 눌러도 아무 반응이
+      // 없던 원인이 이것입니다. CAMERA를 선언 안 하면 이 라이브러리는 카메라 촬영을
+      // 외부 카메라 앱에 위임하는 경로를 타는데, 그 경로는 우리 앱이 CAMERA 권한을
+      // 가질 필요가 없습니다. ponytail: 네이티브 카메라 기능(예: expo-camera)을
+      // 앱에서 직접 쓰게 되면 그때 런타임 권한 요청 플로우를 붙이고 다시 선언하세요.
       permissions: [
         "android.permission.CALL_PHONE",
-        "android.permission.CAMERA",
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.READ_EXTERNAL_STORAGE"
       ],
