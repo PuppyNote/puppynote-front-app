@@ -3,6 +3,7 @@ import { ActivityIndicator, BackHandler, Linking, Platform, StyleSheet, View } f
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import * as ImagePicker from 'expo-image-picker';
 import WebView, { WebViewNavigation } from 'react-native-webview';
 // 루트 index.d.ts가 일부 타입만 re-export 해서 나머지는 lib에서 직접 가져옵니다.
 import type {
@@ -58,6 +59,15 @@ export default function WebViewShellScreen() {
   useEffect(() => {
     const timer = setTimeout(() => setIsMinSplashElapsed(true), SPLASH_MIN_DURATION);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    // react-native-webview는 <input capture>를 누르면 카메라 앱에 촬영을
+    // 위임하는데, CAMERA 권한이 매니페스트엔 있지만(expo-image-picker가 강제
+    // 선언) 런타임으로 아직 허용 안 된 상태면 그 인텐트 생성 자체를 조용히
+    // 건너뛴다(react-native-webview에 재요청 로직이 없음). 웹의 파일 입력이
+    // 뜨기 전에 미리 받아둔다.
+    void ImagePicker.requestCameraPermissionsAsync();
   }, []);
 
   const isWebReady = isLoaded && !error;
